@@ -1,11 +1,11 @@
-
-import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig } from '../types';
+import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig } from '../types';
 
 const STORAGE_KEY = 'novatab_shortcuts';
 const LAYOUT_KEY = 'novatab_layout';
 const TASKS_KEY = 'novatab_tasks';
 const BG_KEY = 'novatab_bg_config';
 const VIEW_STATE_KEY = 'novatab_view_state';
+const CLOCK_CONFIG_KEY = 'novatab_clock_config';
 
 export interface ViewState {
   category: Category | 'All';
@@ -39,24 +39,25 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
     iconValue: 'Mail',
     profiles: [
       {
-        id: 'p_def',
-        name: 'Bireysel', // goktugturhan71
+        id: 'p_bireysel',
+        name: 'Bireysel', // goktugturhan71@gmail.com
         url: 'https://mail.google.com/mail/u/0/#inbox',
         avatarColor: 'bg-blue-500'
       },
       {
-        id: 'p_pers',
-        name: 'Kişisel', // turhan.gokt01
+        id: 'p_kisisel',
+        name: 'Kişisel', // turhan.gokt01@gmail.com
         url: 'https://mail.google.com/mail/u/1/#inbox',
         avatarColor: 'bg-emerald-500'
       },
       {
-        id: 'p_work',
-        name: 'İş', // goktugt.brigade
+        id: 'p_is',
+        name: 'İş', // goktugt.brigade@adctasarim.com
         url: 'https://mail.google.com/mail/u/2/#inbox',
         avatarColor: 'bg-orange-500'
       }
-    ]
+    ],
+    defaultProfileId: 'p_bireysel'
   },
   {
     id: 'g_drive',
@@ -101,7 +102,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'nextion',
     title: 'Nextion Editor',
-    url: 'https://nextion.tech/editor/', // Web download link as placeholder
+    url: 'https://nextion.tech/editor/', 
     category: Category.DEV,
     iconType: 'lucide',
     iconValue: 'Monitor'
@@ -109,7 +110,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'app_blender',
     title: 'Blender',
-    url: 'blender:', // Protocol handler
+    url: 'blender:', 
     category: Category.APPS,
     iconType: 'image',
     iconValue: 'https://download.blender.org/branding/community/blender_community_badge_white.png'
@@ -117,7 +118,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'app_fusion',
     title: 'Fusion 360',
-    url: 'fusion360://', // Protocol handler
+    url: 'fusion360://', 
     category: Category.APPS,
     iconType: 'image',
     iconValue: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Autodesk_Fusion_360_Logo.png/64px-Autodesk_Fusion_360_Logo.png'
@@ -149,7 +150,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'app_stitch',
     title: 'Google Stitch',
-    url: 'https://google.com', // Placeholder
+    url: 'https://google.com', 
     category: Category.OTHER,
     iconType: 'lucide',
     iconValue: 'Image'
@@ -181,7 +182,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'app_1',
     title: 'Spotify',
-    url: 'spotify:', // URI Scheme
+    url: 'spotify:', 
     category: Category.APPS,
     iconType: 'lucide',
     iconValue: 'Music'
@@ -189,7 +190,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   {
     id: 'app_2',
     title: 'VS Code',
-    url: 'vscode:', // URI Scheme
+    url: 'vscode:', 
     category: Category.APPS,
     iconType: 'lucide',
     iconValue: 'Code'
@@ -218,6 +219,12 @@ const DEFAULT_LAYOUT: WidgetConfig[] = [
   { id: 'categories', visible: true, order: 3 },
   { id: 'shortcuts', visible: true, order: 4 },
 ];
+
+const DEFAULT_CLOCK_CONFIG: ClockConfig = {
+  timeFormat: '24h',
+  dateFormat: 'full',
+  showSeconds: false
+};
 
 export const getShortcuts = (): Shortcut[] => {
   try {
@@ -305,5 +312,23 @@ export const saveViewState = (state: ViewState) => {
     localStorage.setItem(VIEW_STATE_KEY, JSON.stringify(state));
   } catch (e) {
     console.error("Failed to save view state", e);
+  }
+};
+
+// Clock Configuration Persistence
+export const getClockConfig = (): ClockConfig => {
+  try {
+    const stored = localStorage.getItem(CLOCK_CONFIG_KEY);
+    return stored ? JSON.parse(stored) : DEFAULT_CLOCK_CONFIG;
+  } catch (e) {
+    return DEFAULT_CLOCK_CONFIG;
+  }
+};
+
+export const saveClockConfig = (config: ClockConfig) => {
+  try {
+    localStorage.setItem(CLOCK_CONFIG_KEY, JSON.stringify(config));
+  } catch (e) {
+    console.error("Failed to save clock config", e);
   }
 };

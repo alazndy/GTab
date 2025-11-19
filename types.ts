@@ -65,3 +65,12 @@ export interface BackgroundConfig {
   type: BackgroundType;
   value: string; // URL for image, Hex/RGBA for color
 }
+
+export type TimeFormat = '12h' | '24h';
+export type DateFormat = 'full' | 'long' | 'medium' | 'short' | 'hidden';
+
+export interface ClockConfig {
+  timeFormat: TimeFormat;
+  dateFormat: DateFormat;
+  showSeconds: boolean;
+}

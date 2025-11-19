@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, Trash2, Save, LayoutGrid, Users, Search, ChevronDown, Check, Star } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { X, Plus, Trash2, Save, LayoutGrid, Users, Search, ChevronDown, Check, Star, Pencil, RotateCcw } from 'lucide-react';
 import { Shortcut, ShortcutProfile, IconType, Category } from '../types';
 import DynamicIcon, { iconMap } from './DynamicIcon';
 
@@ -8,6 +8,7 @@ interface ShortcutSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   shortcut: Shortcut | null;
+  allShortcuts?: Shortcut[];
   onSave: (updatedShortcut: Shortcut) => void;
 }
 
@@ -19,7 +20,7 @@ const COLORS = [
   'bg-rose-500', 'bg-gray-500'
 ];
 
-const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, onClose, shortcut, onSave }) => {
+const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, onClose, shortcut, allShortcuts = [], onSave }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'profiles'>('general');
   const [formData, setFormData] = useState<Shortcut | null>(null);
   
@@ -27,6 +28,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
   const [iconSearch, setIconSearch] = useState('');
   
   // Profile state
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const [newProfileName, setNewProfileName] = useState('');
   const [newProfileUrl, setNewProfileUrl] = useState('');
   const [newProfileColor, setNewProfileColor] = useState(COLORS[10]);
@@ -34,6 +36,24 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
   // Color Picker State
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate unique profile suggestions from all shortcuts
+  const suggestedProfiles = useMemo(() => {
+    const suggestions = new Map<string, { name: string; color: string }>();
+    
+    allShortcuts.forEach(s => {
+      s.profiles?.forEach(p => {
+        if (p.name && !suggestions.has(p.name)) {
+          suggestions.set(p.name, { 
+            name: p.name, 
+            color: p.avatarColor || COLORS[0] 
+          });
+        }
+      });
+    });
+
+    return Array.from(suggestions.values());
+  }, [allShortcuts]);
 
   useEffect(() => {
     if (shortcut) {
@@ -43,6 +63,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
         profiles: shortcut.profiles || []
       });
       setIconSearch(''); // Reset search when opening
+      resetProfileForm();
     }
   }, [shortcut, isOpen]);
 
@@ -57,6 +78,14 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const resetProfileForm = () => {
+    setEditingProfileId(null);
+    setNewProfileName('');
+    setNewProfileUrl('');
+    setNewProfileColor(COLORS[10]);
+    setIsColorPickerOpen(false);
+  };
+
   if (!isOpen || !formData) return null;
 
   const handleSave = () => {
@@ -66,24 +95,53 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     }
   };
 
-  const addProfile = () => {
+  const handleProfileSubmit = () => {
     if (!newProfileName.trim()) return;
-    
-    const newProfile: ShortcutProfile = {
-      id: crypto.randomUUID(),
-      name: newProfileName,
-      url: newProfileUrl.trim() || undefined,
-      avatarColor: newProfileColor
-    };
 
-    setFormData({
-      ...formData,
-      profiles: [...(formData.profiles || []), newProfile]
-    });
+    if (editingProfileId) {
+      // Update existing
+      const updatedProfiles = formData.profiles?.map(p => {
+        if (p.id === editingProfileId) {
+          return {
+            ...p,
+            name: newProfileName,
+            url: newProfileUrl.trim() || undefined,
+            avatarColor: newProfileColor
+          };
+        }
+        return p;
+      });
+      
+      setFormData({ ...formData, profiles: updatedProfiles });
+    } else {
+      // Create new
+      const newProfile: ShortcutProfile = {
+        id: crypto.randomUUID(),
+        name: newProfileName,
+        url: newProfileUrl.trim() || undefined,
+        avatarColor: newProfileColor
+      };
 
-    setNewProfileName('');
-    setNewProfileUrl('');
-    setIsColorPickerOpen(false);
+      setFormData({
+        ...formData,
+        profiles: [...(formData.profiles || []), newProfile]
+      });
+    }
+
+    resetProfileForm();
+  };
+
+  const handleEditProfile = (profile: ShortcutProfile) => {
+    setEditingProfileId(profile.id);
+    setNewProfileName(profile.name);
+    setNewProfileUrl(profile.url || '');
+    setNewProfileColor(profile.avatarColor || COLORS[10]);
+    // Optional: focus input
+  };
+
+  const applySuggestion = (suggestion: { name: string, color: string }) => {
+    setNewProfileName(suggestion.name);
+    setNewProfileColor(suggestion.color);
   };
 
   const removeProfile = (id: string) => {
@@ -94,6 +152,10 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
       defaultProfileId: isDefault ? undefined : formData.defaultProfileId,
       profiles: formData.profiles?.filter(p => p.id !== id)
     });
+    
+    if (editingProfileId === id) {
+      resetProfileForm();
+    }
   };
 
   const toggleDefaultProfile = (id: string) => {
@@ -157,7 +219,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           
           {activeTab === 'general' && (
             <div className="space-y-6">
@@ -294,12 +356,47 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
             <div className="space-y-6">
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
                 <p className="text-xs text-purple-200">
-                  Profiller, aynı sitede farklı hesaplar açmak için kullanılır. Varsayılan olarak ayarladığınız profil (yıldızlı), kısayola tıklandığında otomatik açılır.
+                  Profiller, aynı sitede farklı hesaplar (örn: İş, Kişisel Gmail) kullanmanızı sağlar. <br/>
+                  Yıldız ikonuna tıklayarak varsayılan profili seçebilirsiniz.
                 </p>
               </div>
 
-              {/* Add New Profile */}
-              <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-3 z-20 relative">
+              {/* Add/Edit Profile Form */}
+              <div className={`bg-white/5 p-4 rounded-xl border transition-colors space-y-3 z-20 relative ${editingProfileId ? 'border-purple-500/50 bg-purple-500/5' : 'border-white/10'}`}>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/40">
+                    {editingProfileId ? 'Profili Düzenle' : 'Yeni Profil Ekle'}
+                  </span>
+                  {editingProfileId && (
+                    <button onClick={resetProfileForm} className="text-xs text-white/50 hover:text-white flex items-center gap-1">
+                      <RotateCcw size={10} /> Vazgeç
+                    </button>
+                  )}
+                </div>
+
+                {/* Suggestions Section */}
+                {!editingProfileId && suggestedProfiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="text-[10px] text-white/40 w-full">Kayıtlı Profillerden Seç:</span>
+                    {suggestedProfiles.map(suggestion => {
+                        // Don't suggest if already exists in this shortcut
+                        const exists = formData.profiles?.some(p => p.name === suggestion.name);
+                        if (exists) return null;
+
+                        return (
+                            <button
+                                key={suggestion.name}
+                                onClick={() => applySuggestion(suggestion)}
+                                className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all group"
+                            >
+                                <div className={`w-2 h-2 rounded-full ${suggestion.color}`}></div>
+                                <span className="text-xs text-white/80 group-hover:text-white">{suggestion.name}</span>
+                            </button>
+                        );
+                    })}
+                  </div>
+                )}
+                
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <input 
@@ -347,13 +444,20 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                   onChange={e => setNewProfileUrl(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:border-purple-500/50 focus:outline-none font-mono text-xs"
                 />
-                 <p className="text-[10px] text-white/40">İpucu: Gmail için .../u/0/ veya .../u/1/ kullanın.</p>
+                 <p className="text-[10px] text-white/40">İpucu: Gmail hesapları için <b>.../u/0/</b> veya <b>.../u/1/</b> gibi uzantılar ekleyin.</p>
+                
                 <button 
-                  onClick={addProfile}
+                  onClick={handleProfileSubmit}
                   disabled={!newProfileName.trim()}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                  className={`w-full text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2
+                    ${editingProfileId ? 'bg-purple-600 hover:bg-purple-500' : 'bg-white/10 hover:bg-white/20'}
+                  `}
                 >
-                  Ekle
+                  {editingProfileId ? (
+                    <><Save size={14} /> Güncelle</>
+                  ) : (
+                    <><Plus size={14} /> Ekle</>
+                  )}
                 </button>
               </div>
 
@@ -362,27 +466,34 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                  {formData.profiles && formData.profiles.length > 0 ? (
                    formData.profiles.map((profile) => (
                      <div key={profile.id} className={`flex items-center justify-between p-3 rounded-lg border transition-all group ${formData.defaultProfileId === profile.id ? 'bg-purple-500/10 border-purple-500/30' : 'bg-white/5 border-white/5'}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full ${profile.avatarColor || 'bg-gray-500'} flex items-center justify-center text-xs font-bold text-white shadow-sm border border-white/10`}>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className={`w-8 h-8 rounded-full shrink-0 ${profile.avatarColor || 'bg-gray-500'} flex items-center justify-center text-xs font-bold text-white shadow-sm border border-white/10`}>
                             {profile.name.substring(0,2).toUpperCase()}
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <div className="text-sm font-medium text-white flex items-center gap-2">
-                                {profile.name}
+                                <span className="truncate">{profile.name}</span>
                                 {formData.defaultProfileId === profile.id && (
-                                    <span className="text-[10px] bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/20">Varsayılan</span>
+                                    <span className="text-[10px] bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/20 shrink-0">Varsayılan</span>
                                 )}
                             </div>
                             <div className="text-xs text-white/40 truncate max-w-[200px]">{profile.url || 'Ana URL'}</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                             <button
                                 onClick={() => toggleDefaultProfile(profile.id)}
                                 className={`p-2 rounded-lg transition-colors ${formData.defaultProfileId === profile.id ? 'text-yellow-400 hover:bg-yellow-400/10' : 'text-white/20 hover:text-yellow-400 hover:bg-white/10'}`}
                                 title={formData.defaultProfileId === profile.id ? "Varsayılanı Kaldır" : "Varsayılan Yap"}
                             >
                                 <Star size={16} fill={formData.defaultProfileId === profile.id ? "currentColor" : "none"} />
+                            </button>
+                            <button 
+                              onClick={() => handleEditProfile(profile)}
+                              className={`p-2 rounded-lg transition-colors ${editingProfileId === profile.id ? 'text-blue-400 bg-blue-400/10' : 'text-white/30 hover:text-blue-400 hover:bg-blue-400/10'}`}
+                              title="Düzenle"
+                            >
+                              <Pencil size={16} />
                             </button>
                             <button 
                               onClick={() => removeProfile(profile.id)}
@@ -395,7 +506,10 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                      </div>
                    ))
                  ) : (
-                   <div className="text-center py-8 text-white/30 text-sm">Henüz profil eklenmemiş</div>
+                   <div className="text-center py-8 text-white/30 text-sm border border-dashed border-white/10 rounded-xl">
+                     Henüz profil eklenmemiş. <br/>
+                     "Yeni Profil Ekle" formunu kullanın.
+                   </div>
                  )}
               </div>
             </div>

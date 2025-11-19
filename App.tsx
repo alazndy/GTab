@@ -8,12 +8,14 @@ import TasksWidget from './components/TasksWidget';
 import AddModal from './components/AddModal';
 import ShortcutSettingsModal from './components/ShortcutSettingsModal';
 import BackgroundSettingsModal from './components/BackgroundSettingsModal';
-import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig } from './types';
+import ClockSettingsModal from './components/ClockSettingsModal';
+import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig } from './types';
 import { 
   getShortcuts, saveShortcuts, 
   getLayoutConfig, saveLayoutConfig, 
   getBackgroundConfig, saveBackgroundConfig, PRESET_BACKGROUNDS,
-  getViewState, saveViewState 
+  getViewState, saveViewState,
+  getClockConfig, saveClockConfig
 } from './services/storageService';
 
 const App: React.FC = () => {
@@ -21,6 +23,7 @@ const App: React.FC = () => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [layout, setLayout] = useState<WidgetConfig[]>([]);
   const [bgConfig, setBgConfig] = useState<BackgroundConfig>({ type: 'random', value: '' });
+  const [clockConfig, setClockConfig] = useState<ClockConfig>({ timeFormat: '24h', dateFormat: 'full', showSeconds: false });
   const [activeBgUrl, setActiveBgUrl] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -28,6 +31,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
+  const [isClockModalOpen, setIsClockModalOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState<Category | 'All'>('All');
   const [filterProfile, setFilterProfile] = useState<string | 'All'>('All');
   
@@ -40,10 +44,12 @@ const App: React.FC = () => {
 
   // Initial Load
   useEffect(() => {
-    setShortcuts(getShortcuts());
+    const loadedShortcuts = getShortcuts();
+    setShortcuts(loadedShortcuts);
     setLayout(getLayoutConfig());
     const loadedBgConfig = getBackgroundConfig();
     setBgConfig(loadedBgConfig);
+    setClockConfig(getClockConfig());
     
     // Load View State
     const viewState = getViewState();
@@ -86,6 +92,12 @@ const App: React.FC = () => {
     }
     // Random is handled only on mount or explicit shuffle, so we don't change it here to prevent jitter
   }, [bgConfig]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      saveClockConfig(clockConfig);
+    }
+  }, [clockConfig, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
@@ -168,7 +180,13 @@ const App: React.FC = () => {
   const renderWidgetContent = (id: WidgetId) => {
     switch (id) {
       case 'clock':
-        return <Clock />;
+        return (
+          <Clock 
+            config={clockConfig} 
+            isEditMode={isEditMode} 
+            onOpenSettings={() => setIsClockModalOpen(true)}
+          />
+        );
       case 'search':
         return <SearchBar />;
       case 'tasks':
@@ -413,7 +431,7 @@ const App: React.FC = () => {
                     </button>
                   )}
 
-                  <div className={`w-full ${isEditMode ? 'pointer-events-none' : ''}`}>
+                  <div className={`w-full ${isEditMode ? '' : ''}`}>
                      {renderWidgetContent(widget.id)}
                   </div>
                 </div>
@@ -433,6 +451,7 @@ const App: React.FC = () => {
       <ShortcutSettingsModal
         isOpen={!!editingShortcut}
         shortcut={editingShortcut}
+        allShortcuts={shortcuts}
         onClose={() => setEditingShortcut(null)}
         onSave={updateShortcut}
       />
@@ -442,6 +461,13 @@ const App: React.FC = () => {
         currentConfig={bgConfig}
         onClose={() => setIsBgModalOpen(false)}
         onSave={setBgConfig}
+      />
+
+      <ClockSettingsModal
+        isOpen={isClockModalOpen}
+        config={clockConfig}
+        onClose={() => setIsClockModalOpen(false)}
+        onSave={setClockConfig}
       />
     </div>
   );
