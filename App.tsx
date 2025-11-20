@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Folder, GripVertical, Eye, EyeOff, Pencil, Check, RefreshCcw, Users, Image as ImageIcon } from 'lucide-react';
 import Clock from './components/Clock';
 import SearchBar from './components/SearchBar';
@@ -19,21 +19,36 @@ import {
 } from './services/storageService';
 
 const App: React.FC = () => {
-  // Data State
-  const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
-  const [layout, setLayout] = useState<WidgetConfig[]>([]);
-  const [bgConfig, setBgConfig] = useState<BackgroundConfig>({ type: 'random', value: '' });
-  const [clockConfig, setClockConfig] = useState<ClockConfig>({ timeFormat: '24h', dateFormat: 'full', showSeconds: false });
-  const [activeBgUrl, setActiveBgUrl] = useState('');
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Data State - Initialize LAZILY to avoid "flicker" and double render on mount
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => getShortcuts());
+  const [layout, setLayout] = useState<WidgetConfig[]>(() => getLayoutConfig());
+  const [bgConfig, setBgConfig] = useState<BackgroundConfig>(() => getBackgroundConfig());
+  const [clockConfig, setClockConfig] = useState<ClockConfig>(() => getClockConfig());
+  
+  // View State
+  const [viewState] = useState(() => getViewState());
+  const [filterCategory, setFilterCategory] = useState<Category | 'All'>(viewState.category);
+  const [filterProfile, setFilterProfile] = useState<string | 'All'>(viewState.profile);
+
+  // Background Image State - Initialize immediately
+  const [activeBgUrl, setActiveBgUrl] = useState<string>(() => {
+    const config = getBackgroundConfig();
+    if (config.type === 'image') return config.value;
+    if (config.type === 'random') {
+      // Pick one immediately for the first render
+      return config.value || PRESET_BACKGROUNDS[Math.floor(Math.random() * PRESET_BACKGROUNDS.length)];
+    }
+    return '';
+  });
+  
+  // Start as true so we don't hide the background on first load.
+  const [isBgImageLoaded, setIsBgImageLoaded] = useState(true);
   
   // UI State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [isClockModalOpen, setIsClockModalOpen] = useState(false);
-  const [filterCategory, setFilterCategory] = useState<Category | 'All'>('All');
-  const [filterProfile, setFilterProfile] = useState<string | 'All'>('All');
   
   // Settings Modal State
   const [editingShortcut, setEditingShortcut] = useState<Shortcut | null>(null);
@@ -42,85 +57,79 @@ const App: React.FC = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
-  // Initial Load
-  useEffect(() => {
-    const loadedShortcuts = getShortcuts();
-    setShortcuts(loadedShortcuts);
-    setLayout(getLayoutConfig());
-    const loadedBgConfig = getBackgroundConfig();
-    setBgConfig(loadedBgConfig);
-    setClockConfig(getClockConfig());
-    
-    // Load View State
-    const viewState = getViewState();
-    setFilterCategory(viewState.category);
-    setFilterProfile(viewState.profile);
+  // Track first run
+  const isFirstRun = useRef(true);
 
-    // Determine initial visual background
-    if (loadedBgConfig.type === 'image') {
-      setActiveBgUrl(loadedBgConfig.value);
-    } else if (loadedBgConfig.type === 'random') {
-      const randomBg = PRESET_BACKGROUNDS[Math.floor(Math.random() * PRESET_BACKGROUNDS.length)];
-      setActiveBgUrl(randomBg);
-    } else {
-      setActiveBgUrl(''); // Color mode
+  // Persistence Effects
+  useEffect(() => { saveShortcuts(shortcuts); }, [shortcuts]);
+  useEffect(() => { saveLayoutConfig(layout); }, [layout]);
+  useEffect(() => { saveBackgroundConfig(bgConfig); }, [bgConfig]);
+  useEffect(() => { saveClockConfig(clockConfig); }, [clockConfig]);
+  useEffect(() => { saveViewState({ category: filterCategory, profile: filterProfile }); }, [filterCategory, filterProfile]);
+
+  // Optimized Background Loader
+  useEffect(() => {
+    // Skip the effect on first mount
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
     }
-    
-    setIsInitialized(true);
-  }, []);
 
-  // Persistence effects
-  useEffect(() => {
-    // Only save if initialized to prevent overwriting data with empty array on mount
-    if (isInitialized) {
-      saveShortcuts(shortcuts);
-    }
-  }, [shortcuts, isInitialized]);
-
-  useEffect(() => {
-    if (layout.length > 0) saveLayoutConfig(layout);
-  }, [layout]);
-
-  useEffect(() => {
-    saveBackgroundConfig(bgConfig);
-    
-    // Update visual state based on config change
-    if (bgConfig.type === 'image') {
-      setActiveBgUrl(bgConfig.value);
-    } else if (bgConfig.type === 'color') {
+    if (bgConfig.type === 'color') {
       setActiveBgUrl('');
+      setIsBgImageLoaded(true);
+      return;
     }
-    // Random is handled only on mount or explicit shuffle, so we don't change it here to prevent jitter
+
+    let targetUrl = bgConfig.value;
+
+    if (bgConfig.type === 'random') {
+        if (activeBgUrl && PRESET_BACKGROUNDS.includes(activeBgUrl) && !bgConfig.value) {
+           targetUrl = activeBgUrl;
+        } else if (!targetUrl) {
+           targetUrl = PRESET_BACKGROUNDS[Math.floor(Math.random() * PRESET_BACKGROUNDS.length)];
+        }
+    }
+
+    if (!targetUrl) return;
+
+    if (targetUrl === activeBgUrl) {
+        setIsBgImageLoaded(true);
+        return;
+    }
+
+    // Trigger fade out
+    setIsBgImageLoaded(false);
+    
+    // Preload new image then set it active
+    const img = new Image();
+    img.src = targetUrl;
+    img.onload = () => {
+      setActiveBgUrl(targetUrl);
+      setIsBgImageLoaded(true);
+    };
+    img.onerror = () => {
+        setIsBgImageLoaded(true);
+    };
+
   }, [bgConfig]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      saveClockConfig(clockConfig);
-    }
-  }, [clockConfig, isInitialized]);
-
-  useEffect(() => {
-    if (isInitialized) {
-      saveViewState({ category: filterCategory, profile: filterProfile });
-    }
-  }, [filterCategory, filterProfile, isInitialized]);
-
-  // Actions
-  const addShortcuts = (items: ShortcutPayload[]) => {
+  // Memoized Actions to prevent unnecessary re-renders of children
+  const addShortcuts = useCallback((items: ShortcutPayload[]) => {
     const newShortcuts: Shortcut[] = items.map(item => ({
       ...item,
       id: crypto.randomUUID()
     }));
     setShortcuts(prev => [...prev, ...newShortcuts]);
-  };
+  }, []);
 
-  const deleteShortcut = (id: string) => {
+  const deleteShortcut = useCallback((id: string) => {
     setShortcuts(prev => prev.filter(s => s.id !== id));
-  };
+  }, []);
 
-  const updateShortcut = (updated: Shortcut) => {
+  const updateShortcut = useCallback((updated: Shortcut) => {
     setShortcuts(prev => prev.map(s => s.id === updated.id ? updated : s));
-  };
+  }, []);
 
   const toggleWidgetVisibility = (id: WidgetId) => {
     setLayout(prev => prev.map(item => 
@@ -309,29 +318,32 @@ const App: React.FC = () => {
 
   const tasksConfig = layout.find(w => w.id === 'tasks');
   const mainWidgets = layout.filter(w => w.id !== 'tasks');
-
-  // Style logic
-  const backgroundStyle: React.CSSProperties = {
-     filter: 'brightness(0.4) grayscale(100%) contrast(1.1)', 
-     opacity: 1
-  };
-
-  if (bgConfig.type === 'color') {
-     backgroundStyle.backgroundColor = bgConfig.value;
-     backgroundStyle.backgroundImage = 'none';
-     backgroundStyle.filter = 'none'; // Don't apply grayscale to solid colors
-  } else {
-     backgroundStyle.backgroundImage = `url('${activeBgUrl}')`;
-     // Keep existing filter for images to ensure text readability
-  }
+  const isColorBg = bgConfig.type === 'color';
 
   return (
     <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white">
-      {/* Background */}
-      <div 
-        className="fixed inset-0 z-0 bg-cover bg-center transition-all duration-700 bg-black"
-        style={backgroundStyle}
-      />
+      {/* Background Container with Image Optimization */}
+      <div className="fixed inset-0 z-0 bg-black pointer-events-none select-none">
+          {isColorBg ? (
+             <div 
+                className="absolute inset-0 transition-colors duration-700"
+                style={{ backgroundColor: bgConfig.value }} 
+             />
+          ) : (
+             <img 
+                src={activeBgUrl}
+                alt="Background"
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+                style={{ 
+                    opacity: isBgImageLoaded ? 1 : 0,
+                    filter: 'brightness(0.4) grayscale(100%) contrast(1.1)'
+                }}
+                // Fix: Removed @ts-expect-error since fetchpriority is now valid or not causing error
+                fetchpriority="high"
+                loading="eager"
+             />
+          )}
+      </div>
 
       {/* Floating Tasks Widget (Top Left) */}
       {(tasksConfig?.visible || isEditMode) && (

@@ -39,14 +39,15 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
 
   // Calculate unique profile suggestions from all shortcuts
   const suggestedProfiles = useMemo(() => {
-    const suggestions = new Map<string, { name: string; color: string }>();
+    const suggestions = new Map<string, { name: string; color: string; url?: string }>();
     
     allShortcuts.forEach(s => {
       s.profiles?.forEach(p => {
         if (p.name && !suggestions.has(p.name)) {
           suggestions.set(p.name, { 
             name: p.name, 
-            color: p.avatarColor || COLORS[0] 
+            color: p.avatarColor || COLORS[0],
+            url: p.url
           });
         }
       });
@@ -54,6 +55,20 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
 
     return Array.from(suggestions.values());
   }, [allShortcuts]);
+
+  // Memoize filtered icons to prevent lag during typing
+  // IMPORTANT: We limit the results to 60 to prevent the DOM from freezing
+  // when rendering 1000+ icons at once.
+  const filteredIcons = useMemo(() => {
+    const searchLower = iconSearch.toLowerCase().trim();
+    const keys = Object.keys(iconMap);
+    
+    if (!searchLower) return keys.slice(0, 60); // Show top 60 default
+    
+    return keys
+        .filter(name => name.toLowerCase().includes(searchLower))
+        .slice(0, 60); // Limit results for performance
+  }, [iconSearch]);
 
   useEffect(() => {
     if (shortcut) {
@@ -139,9 +154,10 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     // Optional: focus input
   };
 
-  const applySuggestion = (suggestion: { name: string, color: string }) => {
+  const applySuggestion = (suggestion: { name: string, color: string, url?: string }) => {
     setNewProfileName(suggestion.name);
     setNewProfileColor(suggestion.color);
+    setNewProfileUrl(suggestion.url || '');
   };
 
   const removeProfile = (id: string) => {
@@ -164,10 +180,6 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
       defaultProfileId: formData.defaultProfileId === id ? undefined : id
     });
   };
-
-  const filteredIcons = Object.keys(iconMap).filter(name => 
-    name.toLowerCase().includes(iconSearch.toLowerCase())
-  );
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -295,29 +307,31 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                 {formData.iconType === 'lucide' && (
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-xs text-white/50">Bir ikon seçin:</p>
+                      <p className="text-xs text-white/50">
+                         Toplam {Object.keys(iconMap).length} ikon bulundu. Aramak için yazın:
+                      </p>
                     </div>
                     
                     <div className="relative mb-3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={14} />
                         <input 
                             type="text" 
-                            placeholder="İkon ara... (örn: user, mail, code)" 
+                            placeholder="İkon ara... (örn: wifi, cpu, car)" 
                             value={iconSearch}
                             onChange={(e) => setIconSearch(e.target.value)}
                             className="w-full bg-black/20 border border-white/10 rounded-lg py-2 pl-9 pr-3 text-xs text-white focus:border-blue-500/50 focus:outline-none placeholder-white/30"
                         />
                     </div>
 
-                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+                    <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto custom-scrollbar content-start min-h-[100px]">
                       {filteredIcons.length > 0 ? (
                         filteredIcons.map((iconName) => (
                           <button
                             key={iconName}
                             onClick={() => setFormData({...formData, iconValue: iconName})}
-                            className={`p-2 rounded-lg transition-all ${
+                            className={`p-2 rounded-lg transition-all flex flex-col items-center gap-1 w-14 h-14 justify-center ${
                               formData.iconValue === iconName 
-                                ? 'bg-blue-500 text-white shadow-lg scale-110' 
+                                ? 'bg-blue-500 text-white shadow-lg scale-110 z-10' 
                                 : 'bg-black/30 text-white/60 hover:bg-white/10 hover:text-white'
                             }`}
                             title={iconName}
@@ -326,7 +340,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                           </button>
                         ))
                       ) : (
-                        <div className="w-full text-center py-4 text-xs text-white/30 italic">
+                        <div className="w-full text-center py-8 text-xs text-white/30 italic">
                           "{iconSearch}" ile eşleşen ikon bulunamadı.
                         </div>
                       )}
@@ -439,12 +453,12 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                 
                 <input 
                   type="text" 
-                  placeholder="Özel URL (Boş bırakılırsa ana URL kullanılır)"
+                  placeholder="Özel URL veya E-posta Adresi"
                   value={newProfileUrl}
                   onChange={e => setNewProfileUrl(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm focus:border-purple-500/50 focus:outline-none font-mono text-xs"
                 />
-                 <p className="text-[10px] text-white/40">İpucu: Gmail hesapları için <b>.../u/0/</b> veya <b>.../u/1/</b> gibi uzantılar ekleyin.</p>
+                 <p className="text-[10px] text-white/40">İpucu: Tam URL (https://...) veya Google uygulamaları için e-posta adresi girebilirsiniz.</p>
                 
                 <button 
                   onClick={handleProfileSubmit}

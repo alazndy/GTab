@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Shortcut, ShortcutProfile } from '../types';
 import { X, Settings, ExternalLink, User } from 'lucide-react';
 import DynamicIcon from './DynamicIcon';
@@ -11,7 +11,60 @@ interface ShortcutCardProps {
   onEdit: (shortcut: Shortcut) => void;
 }
 
-const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilter = 'All', onDelete, onEdit }) => {
+// Helper to ensure URL has protocol
+const ensureProtocol = (url: string | undefined) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  
+  // Check if it starts with a protocol (e.g. http://, https://, mailto:, spotify:, file:)
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) {
+    return trimmed;
+  }
+  
+  // Default to https
+  return `https://${trimmed}`;
+};
+
+// Smart URL Resolver
+const resolveTargetUrl = (shortcut: Shortcut, profile?: ShortcutProfile) => {
+  const mainUrl = ensureProtocol(shortcut.url);
+  
+  if (!profile) return mainUrl;
+  
+  const pUrl = profile.url?.trim();
+  
+  // If profile has no URL/Email configured, fallback to main URL
+  if (!pUrl) return mainUrl;
+
+  // Check if the profile "URL" is actually an email address
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (emailRegex.test(pUrl)) {
+     // It is an email address.
+     // If the main shortcut is a Google service, append ?authuser=EMAIL
+     if (mainUrl.includes('google.com') || mainUrl.includes('youtube.com')) {
+        try {
+            const urlObj = new URL(mainUrl);
+            urlObj.searchParams.set('authuser', pUrl);
+            return urlObj.toString();
+        } catch {
+            // Fallback for simple appending if parsing fails (rare)
+            const separator = mainUrl.includes('?') ? '&' : '?';
+            return `${mainUrl}${separator}authuser=${pUrl}`;
+        }
+     }
+     
+     // For non-Google sites, if an email is provided, we default to mailto
+     // This prevents the "Cannot GET /email" error and provides a logical action
+     return `mailto:${pUrl}`;
+  }
+
+  // If it's not an email, treat it as a specific URL override
+  return ensureProtocol(pUrl);
+};
+
+const ShortcutCard: React.FC<ShortcutCardProps> = memo(({ shortcut, activeProfileFilter = 'All', onDelete, onEdit }) => {
   const hasProfiles = shortcut.profiles && shortcut.profiles.length > 0;
 
   // 1. Determine if we are targeting a specific profile via GLOBAL FILTER
@@ -27,14 +80,18 @@ const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilt
   // 3. The profile to visually represent and link to
   const displayProfile = activeProfile || defaultProfile;
 
-  // 4. Calculate Target URL
-  const targetUrl = displayProfile 
-    ? (displayProfile.url && displayProfile.url.trim() !== '' ? displayProfile.url : shortcut.url)
-    : shortcut.url;
+  // 4. Calculate Target URL using smart resolution
+  const targetUrl = resolveTargetUrl(shortcut, displayProfile);
 
+  // Helper for favicon
   const getFavicon = (url: string) => {
     try {
-        const domain = new URL(url).hostname;
+        const fullUrl = ensureProtocol(url);
+        // If url is mailto:, we can't really get a favicon, default to shortcut url favicon
+        if (fullUrl.startsWith('mailto:')) {
+            return getFavicon(shortcut.url);
+        }
+        const domain = new URL(fullUrl).hostname;
         return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
     } catch {
         return 'https://picsum.photos/64/64';
@@ -50,6 +107,8 @@ const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilt
         <img 
           src={shortcut.iconValue} 
           alt={shortcut.title} 
+          loading="lazy"
+          decoding="async"
           className="w-10 h-10 rounded-md mb-3 shadow-md object-contain bg-white/10"
           onError={(e) => (e.target as HTMLImageElement).src = getFavicon(shortcut.url)}
         />
@@ -60,6 +119,8 @@ const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilt
         <img 
           src={getFavicon(shortcut.url)} 
           alt={shortcut.title} 
+          loading="lazy"
+          decoding="async"
           className="w-10 h-10 rounded-md mb-3 shadow-md object-contain"
           onError={(e) => {
             (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=?';
@@ -71,8 +132,8 @@ const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilt
   const handleProfileClick = (e: React.MouseEvent, profile: ShortcutProfile) => {
     e.stopPropagation();
     e.preventDefault();
-    const pUrl = profile.url && profile.url.trim() !== '' ? profile.url : shortcut.url;
-    window.location.href = pUrl;
+    const url = resolveTargetUrl(shortcut, profile);
+    window.location.href = url;
   };
 
   return (
@@ -168,6 +229,6 @@ const ShortcutCard: React.FC<ShortcutCardProps> = ({ shortcut, activeProfileFilt
       )}
     </div>
   );
-};
+});
 
 export default ShortcutCard;
