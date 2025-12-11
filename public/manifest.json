@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "GTAB - Kişiselleştirilebilir Başlangıç Sayfası",
+  "version": "1.0.0",
+  "description": "Kendi kişiselleştirilebilir yeni sekme sayfanız. Kısayollar, görevler, arama ve daha fazlası.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ]
+}
