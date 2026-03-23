@@ -1,0 +1,3 @@
+## 2024-05-18 - App.tsx Memoization Pattern
+**Learning:** The React application structure re-renders the entire main widget stack frequently, such as during drag-and-drop actions. Expensive operations inside `renderWidgetContent` like `new Set` mappings for unique categories/profiles and iterating large arrays to filter are bottlenecks on the main render thread.
+**Action:** Use `React.useMemo` to hoist such data derivations up into the main component body rather than recalculating them inline on every widget render switch statement execution.
