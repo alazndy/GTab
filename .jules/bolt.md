@@ -1,0 +1,3 @@
+## 2026-03-24 - [Avoid `O(n log n)` sort and `flatMap` inside React render cycle]
+**Learning:** In the `App.tsx` component, computing values like `activeCategories`, `uniqueProfiles`, and `filteredShortcuts` directly inside the `renderWidgetContent` function results in expensive array operations (e.g., `O(n log n)` `sort`, `flatMap`, `Set` iterations, and `filter`) running on *every* re-render of the parent component, unnecessarily consuming CPU cycles. Since `shortcuts` state updates trigger re-renders, recalculating derived data adds notable overhead.
+**Action:** Extract expensive data transformations out of render paths into memoized hooks (`React.useMemo`). Only recalculate when dependencies (like `shortcuts`, `filterCategory`, or `filterProfile`) actually change.
