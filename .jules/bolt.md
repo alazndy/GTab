@@ -1,0 +1,3 @@
+## 2024-05-20 - Memoization of expensive array operations in App.tsx
+**Learning:** The `App.tsx` component had an issue where filtering operations and unique set generations (`activeCategories`, `uniqueProfiles`, `filteredShortcuts`) were computed inside `renderWidgetContent` on every single render. Since `App` maintains heavily updated states (like drag states or clock states), these array operations were a significant bottleneck.
+**Action:** Always wrap heavy derivations from collections in `React.useMemo` within root/parent components to prevent unnecessary blocking of the main thread during unrelated state changes.
