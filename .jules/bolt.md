@@ -1,0 +1,3 @@
+## 2024-05-24 - Expensive Array Manipulations Inside Render Maps
+**Learning:** In `App.tsx`, performing O(N) array operations (like mapping to a Set, sorting, and complex filtering on user shortcuts and profiles) directly inside the `renderWidgetContent` switch statement means these operations run on *every* single app state change (such as dragging widgets, opening modals, or changing the clock). This causes significant, unnecessary re-renders in a complex UI mapping setup.
+**Action:** Extract expensive list computations (categories, profiles, filtering) to the component root and wrap them in `React.useMemo` to ensure they only recalculate when their specific dependencies (`shortcuts`, `filterCategory`, `filterProfile`) actually change.
