@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   PlusIcon, 
   FolderIcon, 
@@ -373,11 +373,11 @@ const App: React.FC = () => {
     }
   };
 
-  const tasksConfig = layout.find(w => w.id === 'tasks');
-  const mainWidgets = layout.filter(w => w.id !== 'tasks');
-  const isColorBg = bgConfig.type === 'color';
+  const tasksConfig = useMemo(() => layout.find(w => w.id === 'tasks'), [layout]);
+  const mainWidgets = useMemo(() => layout.filter(w => w.id !== 'tasks'), [layout]);
+  const isColorBg = useMemo(() => bgConfig.type === 'color', [bgConfig.type]);
 
-  const activeFolder = shortcuts.find(s => s.id === activeFolderId);
+  const activeFolder = useMemo(() => shortcuts.find(s => s.id === activeFolderId), [shortcuts, activeFolderId]);
 
   return (
     <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white">
