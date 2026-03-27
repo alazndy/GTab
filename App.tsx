@@ -42,6 +42,15 @@ const App: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<Category | 'All'>(viewState.category);
   const [filterProfile, setFilterProfile] = useState<string | 'All'>(viewState.profile);
   
+  // Memoized Derived Data
+  const activeCategories = React.useMemo(() => {
+    return ['All', ...new Set(shortcuts.map(s => s.category))];
+  }, [shortcuts]);
+
+  const uniqueProfiles = React.useMemo(() => {
+    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+  }, [shortcuts]);
+
   // Folder State
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
 
@@ -286,8 +295,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
