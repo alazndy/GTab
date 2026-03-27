@@ -227,13 +227,14 @@ const App: React.FC = () => {
   };
 
   // --- Shortcut DnD ---
-  const handleShortcutDragStart = (e: React.DragEvent, id: string) => {
+  // Memoize event handlers to prevent breaking React.memo inside ShortcutCard
+  const handleShortcutDragStart = useCallback((e: React.DragEvent, id: string) => {
       shortcutDragItem.current = id;
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", id);
-  };
+  }, []);
 
-  const handleShortcutDrop = (e: React.DragEvent, targetId: string) => {
+  const handleShortcutDrop = useCallback((e: React.DragEvent, targetId: string) => {
       e.preventDefault();
       const draggedId = shortcutDragItem.current;
       if (!draggedId || draggedId === targetId) return;
@@ -270,11 +271,32 @@ const App: React.FC = () => {
       
       shortcutDragItem.current = null;
       shortcutDragOverItem.current = null;
-  };
+  }, []);
 
-  const handleShortcutDragOver = (e: React.DragEvent) => {
+  const handleShortcutDragOver = useCallback((e: React.DragEvent) => {
       e.preventDefault();
-  };
+  }, []);
+
+  // --- Performance Optimizations ---
+
+  // Memoize callback props so ShortcutCard components don't unnecessarily re-render
+  const handleEditShortcut = useCallback((s: Shortcut) => setEditingShortcut(s), []);
+  const handleFolderClick = useCallback((s: Shortcut) => setActiveFolderId(s.id), []);
+
+  // Memoize expensive array calculations to prevent recalculation on every render
+  const activeCategories = React.useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+
+  const uniqueProfiles = React.useMemo(() =>
+    Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(),
+  [shortcuts]);
+
+  const filteredShortcuts = React.useMemo(() =>
+    shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+    }),
+  [shortcuts, filterCategory, filterProfile]);
 
   // --- Rendering ---
   const renderWidgetContent = (id: WidgetId) => {
@@ -286,8 +308,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +335,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
@@ -338,8 +353,8 @@ const App: React.FC = () => {
                         shortcut={shortcut}
                         activeProfileFilter={filterProfile}
                         onDelete={deleteShortcut}
-                        onEdit={(s) => setEditingShortcut(s)}
-                        onFolderClick={(s) => setActiveFolderId(s.id)}
+                        onEdit={handleEditShortcut}
+                        onFolderClick={handleFolderClick}
                         draggable={true}
                         onDragStart={handleShortcutDragStart}
                         onDragOver={handleShortcutDragOver}
