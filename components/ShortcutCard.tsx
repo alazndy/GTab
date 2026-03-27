@@ -26,6 +26,9 @@ const ensureProtocol = (url: string | undefined) => {
   return `https://${trimmed}`;
 };
 
+// Cache for favicon URLs to prevent expensive URL parsing on every render
+const faviconCache = new Map<string, string>();
+
 const resolveTargetUrl = (shortcut: Shortcut, profile?: ShortcutProfile) => {
   const mainUrl = ensureProtocol(shortcut.url);
   if (!profile) return mainUrl;
@@ -74,14 +77,26 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
   const targetUrl = resolveTargetUrl(shortcut, displayProfile);
 
   const getFavicon = (url: string) => {
+    const cacheKey = `${url}|${shortcut.url}`;
+    if (faviconCache.has(cacheKey)) {
+        return faviconCache.get(cacheKey)!;
+    }
+
+    let result: string;
     try {
         const fullUrl = ensureProtocol(url);
-        if (fullUrl.startsWith('mailto:')) return getFavicon(shortcut.url);
-        const domain = new URL(fullUrl).hostname;
-        return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        if (fullUrl.startsWith('mailto:')) {
+            result = getFavicon(shortcut.url);
+        } else {
+            const domain = new URL(fullUrl).hostname;
+            result = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        }
     } catch {
-        return 'https://picsum.photos/64/64';
+        result = 'https://picsum.photos/64/64';
     }
+
+    faviconCache.set(cacheKey, result);
+    return result;
   };
 
   const renderIconContent = (s: Shortcut, sizeClass = "w-10 h-10") => {
