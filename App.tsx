@@ -76,6 +76,20 @@ const App: React.FC = () => {
 
   const isFirstRun = useRef(true);
 
+  // Memoized Computations for Performance
+  // Extracts unique categories avoiding recalculation on every render
+  const activeCategories = React.useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+
+  // Extracts unique profiles, sorts them avoiding O(n log n) and flatMap on every render
+  const uniqueProfiles = React.useMemo(() => Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(), [shortcuts]);
+
+  // Filters shortcuts based on active category and profile avoiding filter array operations on every render
+  const filteredShortcuts = React.useMemo(() => shortcuts.filter(s => {
+    const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+    const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+    return matchesCategory && matchesProfile;
+  }), [shortcuts, filterCategory, filterProfile]);
+
   // Persistence Effects
   useEffect(() => { saveShortcuts(shortcuts); }, [shortcuts]);
   useEffect(() => { saveLayoutConfig(layout); }, [layout]);
