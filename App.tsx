@@ -353,6 +353,23 @@ const App: React.FC = () => {
     });
   }, [shortcuts, filterCategory, filterProfile]);
 
+  // --- Memoized Derived Data ---
+  const activeCategories = React.useMemo(() => {
+    return ['All', ...new Set(shortcuts.map(s => s.category))];
+  }, [shortcuts]);
+
+  const uniqueProfiles = React.useMemo(() => {
+    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+  }, [shortcuts]);
+
+  const filteredShortcuts = React.useMemo(() => {
+    return shortcuts.filter(s => {
+        const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+        const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+        return matchesCategory && matchesProfile;
+    });
+  }, [shortcuts, filterCategory, filterProfile]);
+
   // --- Rendering ---
   const renderWidgetContent = (id: WidgetId) => {
     switch (id) {
