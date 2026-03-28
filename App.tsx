@@ -276,6 +276,21 @@ const App: React.FC = () => {
       e.preventDefault();
   };
 
+  // ⚡ Bolt: Memoize callbacks to prevent unnecessary re-renders of ShortcutCard
+  const handleFolderClick = useCallback((s: Shortcut) => setActiveFolderId(s.id), []);
+  const handleAddItem = useCallback(() => setIsModalOpen(true), []);
+
+  // ⚡ Bolt: Memoize expensive array/set operations to avoid recalculating on every render
+  const activeCategories = React.useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+  const uniqueProfiles = React.useMemo(() => Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(), [shortcuts]);
+
+  // ⚡ Bolt: Memoize filtered shortcuts to avoid iterating through the entire list on every render
+  const filteredShortcuts = React.useMemo(() => shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+  }), [shortcuts, filterCategory, filterProfile]);
+
   // --- Rendering ---
   const renderWidgetContent = (id: WidgetId) => {
     switch (id) {
@@ -286,8 +301,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +328,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
@@ -338,8 +346,8 @@ const App: React.FC = () => {
                         shortcut={shortcut}
                         activeProfileFilter={filterProfile}
                         onDelete={deleteShortcut}
-                        onEdit={(s) => setEditingShortcut(s)}
-                        onFolderClick={(s) => setActiveFolderId(s.id)}
+                        onEdit={setEditingShortcut}
+                        onFolderClick={handleFolderClick}
                         draggable={true}
                         onDragStart={handleShortcutDragStart}
                         onDragOver={handleShortcutDragOver}
@@ -464,9 +472,9 @@ const App: React.FC = () => {
               folder={activeFolder}
               isOpen={true}
               onClose={() => setActiveFolderId(null)}
-              onEditItem={(s) => setEditingShortcut(s)}
-              onDeleteItem={(id) => deleteShortcut(id)}
-              onAddItem={() => setIsModalOpen(true)}
+              onEditItem={setEditingShortcut}
+              onDeleteItem={deleteShortcut}
+              onAddItem={handleAddItem}
             />
         )}
       </React.Suspense>
