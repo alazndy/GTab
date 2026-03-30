@@ -180,13 +180,15 @@ const App: React.FC = () => {
     });
   }, []);
 
-  const toggleWidgetVisibility = (id: WidgetId) => {
+  // ⚡ Bolt: Memoize callback to avoid re-renders when passed down to child components
+  const toggleWidgetVisibility = useCallback((id: WidgetId) => {
     setLayout(prev => prev.map(item => 
       item.id === id ? { ...item, visible: !item.visible } : item
     ));
-  };
+  }, []);
 
-  const resetLayout = () => {
+  // ⚡ Bolt: Memoize callback to prevent unnecessary layout updates
+  const resetLayout = useCallback(() => {
     setLayout([
       { id: 'clock', visible: true, order: 0 },
       { id: 'search', visible: true, order: 1 },
@@ -194,19 +196,20 @@ const App: React.FC = () => {
       { id: 'categories', visible: true, order: 3 },
       { id: 'shortcuts', visible: true, order: 4 },
     ]);
-  };
+  }, []);
 
   // --- Widget DnD ---
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  // ⚡ Bolt: Memoize drag/drop handlers to keep reference stable
+  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
     dragItem.current = index;
     e.dataTransfer.effectAllowed = "move";
-  };
-  const handleDragEnter = (e: React.DragEvent, index: number) => {
+  }, []);
+  const handleDragEnter = useCallback((e: React.DragEvent, index: number) => {
     dragOverItem.current = index;
     e.preventDefault();
-  };
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
-  const handleDragEnd = () => {
+  }, []);
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
+  const handleDragEnd = useCallback(() => {
     if (dragItem.current !== null && dragOverItem.current !== null) {
       const renderedWidgets = layout.filter(w => w.id !== 'tasks');
       const draggedId = renderedWidgets[dragItem.current].id;
@@ -224,20 +227,22 @@ const App: React.FC = () => {
     }
     dragItem.current = null;
     dragOverItem.current = null;
-  };
+  }, [layout]);
 
   // --- Shortcut DnD ---
-  const handleShortcutDragStart = (e: React.DragEvent, id: string) => {
+  // ⚡ Bolt: Memoize shortcut drag/drop to prevent child re-renders (specifically for ShortcutCard)
+  const handleShortcutDragStart = useCallback((e: React.DragEvent, id: string) => {
       shortcutDragItem.current = id;
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", id);
-  };
+  }, []);
 
-  const handleShortcutDrop = (e: React.DragEvent, targetId: string) => {
+  const handleShortcutDrop = useCallback((e: React.DragEvent, targetId: string) => {
       e.preventDefault();
       const draggedId = shortcutDragItem.current;
       if (!draggedId || draggedId === targetId) return;
 
+      // Ensure stable functional state updates to avoid stale closures
       setShortcuts(prev => {
           const draggedIndex = prev.findIndex(s => s.id === draggedId);
           const targetIndex = prev.findIndex(s => s.id === targetId);
@@ -270,11 +275,27 @@ const App: React.FC = () => {
       
       shortcutDragItem.current = null;
       shortcutDragOverItem.current = null;
-  };
+  }, []);
 
-  const handleShortcutDragOver = (e: React.DragEvent) => {
+  const handleShortcutDragOver = useCallback((e: React.DragEvent) => {
       e.preventDefault();
-  };
+  }, []);
+
+  // ⚡ Bolt: Memoize expensive array calculations at component level so they only re-run when actual data changes
+  const activeCategories = React.useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+  const uniqueProfiles = React.useMemo(() => Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(), [shortcuts]);
+
+  // ⚡ Bolt: Memoize filtering logic to avoid running it on every single App re-render
+  const filteredShortcuts = React.useMemo(() => shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+  }), [shortcuts, filterCategory, filterProfile]);
+
+  // ⚡ Bolt: Memoize layout lookup
+  const tasksConfig = React.useMemo(() => layout.find(w => w.id === 'tasks'), [layout]);
+  const mainWidgets = React.useMemo(() => layout.filter(w => w.id !== 'tasks'), [layout]);
+  const activeFolder = React.useMemo(() => shortcuts.find(s => s.id === activeFolderId), [shortcuts, activeFolderId]);
 
   // --- Rendering ---
   const renderWidgetContent = (id: WidgetId) => {
@@ -286,8 +307,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +334,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
@@ -373,11 +387,7 @@ const App: React.FC = () => {
     }
   };
 
-  const tasksConfig = layout.find(w => w.id === 'tasks');
-  const mainWidgets = layout.filter(w => w.id !== 'tasks');
   const isColorBg = bgConfig.type === 'color';
-
-  const activeFolder = shortcuts.find(s => s.id === activeFolderId);
 
   return (
     <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white">
