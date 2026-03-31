@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   PlusIcon, 
   FolderIcon, 
@@ -286,8 +286,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +313,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
@@ -373,11 +366,20 @@ const App: React.FC = () => {
     }
   };
 
-  const tasksConfig = layout.find(w => w.id === 'tasks');
-  const mainWidgets = layout.filter(w => w.id !== 'tasks');
+  const tasksConfig = useMemo(() => layout.find(w => w.id === 'tasks'), [layout]);
+  const mainWidgets = useMemo(() => layout.filter(w => w.id !== 'tasks'), [layout]);
   const isColorBg = bgConfig.type === 'color';
 
-  const activeFolder = shortcuts.find(s => s.id === activeFolderId);
+  const activeFolder = useMemo(() => shortcuts.find(s => s.id === activeFolderId), [shortcuts, activeFolderId]);
+
+  const activeCategories = useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+  const uniqueProfiles = useMemo(() => Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(), [shortcuts]);
+
+  const filteredShortcuts = useMemo(() => shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+  }), [shortcuts, filterCategory, filterProfile]);
 
   return (
     <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white">
