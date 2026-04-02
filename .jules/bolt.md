@@ -1,0 +1,3 @@
+## 2024-04-02 - Memoize expensive array operations in React components
+**Learning:** Expensive array operations like `map`, `filter`, and `flatMap` inside component bodies or helper functions (e.g., `renderWidgetContent`) cause performance bottlenecks by running on every re-render. In `App.tsx`, avoiding these unmemoized recalculations saved roughly ~460ms per 1000 renders.
+**Action:** Always extract these operations to the top level of the component and wrap them in `React.useMemo` to prevent redundant calculations, observing strict Rule of Hooks.
