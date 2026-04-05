@@ -76,6 +76,23 @@ const App: React.FC = () => {
 
   const isFirstRun = useRef(true);
 
+  // Memoized Computations
+  const activeCategories = React.useMemo(() => {
+    return ['All', ...new Set(shortcuts.map(s => s.category))];
+  }, [shortcuts]);
+
+  const uniqueProfiles = React.useMemo(() => {
+    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+  }, [shortcuts]);
+
+  const filteredShortcuts = React.useMemo(() => {
+    return shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+    });
+  }, [shortcuts, filterCategory, filterProfile]);
+
   // Persistence Effects
   useEffect(() => { saveShortcuts(shortcuts); }, [shortcuts]);
   useEffect(() => { saveLayoutConfig(layout); }, [layout]);
@@ -197,43 +214,48 @@ const App: React.FC = () => {
   };
 
   // --- Widget DnD ---
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
     dragItem.current = index;
     e.dataTransfer.effectAllowed = "move";
-  };
-  const handleDragEnter = (e: React.DragEvent, index: number) => {
+  }, []);
+  const handleDragEnter = useCallback((e: React.DragEvent, index: number) => {
     dragOverItem.current = index;
     e.preventDefault();
-  };
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
-  const handleDragEnd = () => {
+  }, []);
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
+  const handleDragEnd = useCallback(() => {
     if (dragItem.current !== null && dragOverItem.current !== null) {
-      const renderedWidgets = layout.filter(w => w.id !== 'tasks');
-      const draggedId = renderedWidgets[dragItem.current].id;
-      const targetId = renderedWidgets[dragOverItem.current].id;
-      const realDragIndex = layout.findIndex(w => w.id === draggedId);
-      const realTargetIndex = layout.findIndex(w => w.id === targetId);
+      const dragIndex = dragItem.current;
+      const dragOverIndex = dragOverItem.current;
+      setLayout(prevLayout => {
+        const renderedWidgets = prevLayout.filter(w => w.id !== 'tasks');
+        const draggedId = renderedWidgets[dragIndex].id;
+        const targetId = renderedWidgets[dragOverIndex].id;
+        const realDragIndex = prevLayout.findIndex(w => w.id === draggedId);
+        const realTargetIndex = prevLayout.findIndex(w => w.id === targetId);
 
-      if (realDragIndex !== -1 && realTargetIndex !== -1) {
-          const _layout = [...layout];
-          const draggedItemContent = _layout[realDragIndex];
-          _layout.splice(realDragIndex, 1);
-          _layout.splice(realTargetIndex, 0, draggedItemContent);
-          setLayout(_layout.map((item, idx) => ({ ...item, order: idx })));
-      }
+        if (realDragIndex !== -1 && realTargetIndex !== -1) {
+            const _layout = [...prevLayout];
+            const draggedItemContent = _layout[realDragIndex];
+            _layout.splice(realDragIndex, 1);
+            _layout.splice(realTargetIndex, 0, draggedItemContent);
+            return _layout.map((item, idx) => ({ ...item, order: idx }));
+        }
+        return prevLayout;
+      });
     }
     dragItem.current = null;
     dragOverItem.current = null;
-  };
+  }, []);
 
   // --- Shortcut DnD ---
-  const handleShortcutDragStart = (e: React.DragEvent, id: string) => {
+  const handleShortcutDragStart = useCallback((e: React.DragEvent, id: string) => {
       shortcutDragItem.current = id;
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", id);
-  };
+  }, []);
 
-  const handleShortcutDrop = (e: React.DragEvent, targetId: string) => {
+  const handleShortcutDrop = useCallback((e: React.DragEvent, targetId: string) => {
       e.preventDefault();
       const draggedId = shortcutDragItem.current;
       if (!draggedId || draggedId === targetId) return;
@@ -270,11 +292,14 @@ const App: React.FC = () => {
       
       shortcutDragItem.current = null;
       shortcutDragOverItem.current = null;
-  };
+  }, []);
 
-  const handleShortcutDragOver = (e: React.DragEvent) => {
+  const handleShortcutDragOver = useCallback((e: React.DragEvent) => {
       e.preventDefault();
-  };
+  }, []);
+
+  const handleEditShortcut = useCallback((s: Shortcut) => setEditingShortcut(s), []);
+  const handleFolderClick = useCallback((s: Shortcut) => setActiveFolderId(s.id), []);
 
   // --- Rendering ---
   const renderWidgetContent = (id: WidgetId) => {
@@ -286,8 +311,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +338,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
@@ -333,18 +351,18 @@ const App: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 gap-y-8 w-full pb-24">
                   {filteredShortcuts.map(shortcut => (
-                      <ShortcutCard 
-                        key={shortcut.id} 
-                        shortcut={shortcut}
-                        activeProfileFilter={filterProfile}
-                        onDelete={deleteShortcut}
-                        onEdit={(s) => setEditingShortcut(s)}
-                        onFolderClick={(s) => setActiveFolderId(s.id)}
-                        draggable={true}
-                        onDragStart={handleShortcutDragStart}
-                        onDragOver={handleShortcutDragOver}
-                        onDrop={handleShortcutDrop}
-                      />
+                        <ShortcutCard
+                          key={shortcut.id}
+                          shortcut={shortcut}
+                          activeProfileFilter={filterProfile}
+                          onDelete={deleteShortcut}
+                          onEdit={handleEditShortcut}
+                          onFolderClick={handleFolderClick}
+                          draggable={true}
+                          onDragStart={handleShortcutDragStart}
+                          onDragOver={handleShortcutDragOver}
+                          onDrop={handleShortcutDrop}
+                        />
                   ))}
                   <button 
                       onClick={() => {
