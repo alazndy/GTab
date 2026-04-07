@@ -1,0 +1,3 @@
+## 2024-04-07 - React.memo child re-render gotcha
+**Learning:** Even if a child component like `ShortcutCard` is wrapped in `React.memo`, it will STILL re-render unnecessarily if ANY of its props are inline arrow functions (e.g. `onEdit={(s) => setEditingShortcut(s)}`) because their referential identity changes on every parent render. This totally defeats the purpose of the memoization.
+**Action:** When attempting to optimize child component re-renders with `React.memo`, meticulously inspect all passed props. Any handler function MUST be wrapped in `useCallback` at the top level of the parent component to maintain referential equality. The same applies to array filtering operations, which should be wrapped in `useMemo`.
