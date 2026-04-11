@@ -6,12 +6,9 @@ import { Task } from '../types';
 import { getTasks, saveTasks } from '../services/storageService';
 
 const TasksWidget: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  // ⚡ Bolt: Use lazy state initialization to prevent unnecessary initial render cycle
+  const [tasks, setTasks] = useState<Task[]>(() => getTasks());
   const [newTaskText, setNewTaskText] = useState('');
-
-  useEffect(() => {
-    setTasks(getTasks());
-  }, []);
 
   useEffect(() => {
     saveTasks(tasks);
