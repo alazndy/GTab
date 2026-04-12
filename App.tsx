@@ -66,6 +66,15 @@ const App: React.FC = () => {
   // Settings Modal State
   const [editingShortcut, setEditingShortcut] = useState<Shortcut | null>(null);
 
+  // Memoized Derived State
+  const activeCategories = React.useMemo(() => ['All', ...new Set(shortcuts.map(s => s.category))], [shortcuts]);
+  const uniqueProfiles = React.useMemo(() => Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort(), [shortcuts]);
+  const filteredShortcuts = React.useMemo(() => shortcuts.filter(s => {
+      const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
+      const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
+      return matchesCategory && matchesProfile;
+  }), [shortcuts, filterCategory, filterProfile]);
+
   // Widget Drag Refs
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
@@ -286,8 +295,6 @@ const App: React.FC = () => {
       case 'tasks':
         return <TasksWidget />;
       case 'categories':
-        const activeCategories = ['All', ...new Set(shortcuts.map(s => s.category))];
-        const uniqueProfiles = Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
         return (
           <div className="flex flex-col gap-4 w-full mb-8 animate-fade-in">
             <div className="flex flex-wrap justify-center gap-2">
@@ -315,11 +322,6 @@ const App: React.FC = () => {
           </div>
         );
       case 'shortcuts':
-        const filteredShortcuts = shortcuts.filter(s => {
-            const matchesCategory = filterCategory === 'All' || s.category === filterCategory;
-            const matchesProfile = filterProfile === 'All' || (s.profiles && s.profiles.some(p => p.name === filterProfile));
-            return matchesCategory && matchesProfile;
-        });
         return (
           <div className="w-full">
             {filteredShortcuts.length === 0 ? (
