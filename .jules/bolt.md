@@ -1,0 +1,3 @@
+## 2024-05-15 - React Lazy State Initialization
+**Learning:** Initializing synchronous external state (e.g., from localStorage) using an empty array followed by a mount `useEffect` is an anti-pattern that causes an unnecessary re-render. More critically in this application, it introduces a bug where a secondary effect tracking the same state (`useEffect(() => saveTasks(tasks), [tasks])`) fires prematurely and briefly overwrites the saved data with an empty array.
+**Action:** Always prefer lazy state initialization (`useState(() => getTasks())`) over mount-time `useEffect` fetching for synchronous data to prevent redundant initial renders and avoid race conditions with persistence logic.
