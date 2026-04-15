@@ -521,7 +521,14 @@ const App: React.FC = () => {
                  )}
                </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 w-full pb-24" style={{ columnGap: `${cardConfig.gridGapX ?? 16}px`, rowGap: `${cardConfig.gridGapY ?? 16}px` }}>
+                <div 
+                  className="grid w-full pb-24" 
+                  style={{ 
+                    columnGap: `${cardConfig.gridGapX ?? 16}px`, 
+                    rowGap: `${cardConfig.gridGapY ?? 16}px`,
+                    gridTemplateColumns: `repeat(${cardConfig.gridCols ?? 6}, minmax(0, 1fr))`
+                  }}
+                >
                   {filteredShortcuts.map(shortcut => (
                       <ShortcutCard
                         key={shortcut.id}

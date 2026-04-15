@@ -518,6 +518,22 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
                             />
                         </div>
                     </div>
+
+                    {/* Izgara Kolon Sayısı */}
+                    <div className="col-span-1 md:col-span-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <SectionLabel>Bir Satırdaki Kısayol Sayısı (Grid Columns)</SectionLabel>
+                            <span className="text-[10px] font-bold text-blue-400">{localCard.gridCols ?? 6} Kolon</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="range" min={2} max={12} step={1}
+                                value={localCard.gridCols ?? 6}
+                                onChange={e => cardSet('gridCols', Number(e.target.value))}
+                                className="flex-1 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <hr className="border-white/5" />

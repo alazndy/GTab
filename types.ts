@@ -109,4 +109,5 @@ export interface CardConfig {
   glowEnabled?: boolean;
   gridGapX?: number; // Yatay boşluk
   gridGapY?: number; // Dikey boşluk
+  gridCols?: number; // Bir satırdaki kart sayısı
 }

@@ -108,7 +108,8 @@ export const DEFAULT_CARD_CONFIG: CardConfig = {
   cardWidth: 100,
   glowEnabled: true,
   gridGapX: 16,
-  gridGapY: 16
+  gridGapY: 16,
+  gridCols: 6
 };
 
 export const getShortcuts = (): Shortcut[] => {
