@@ -549,10 +549,12 @@ const App: React.FC = () => {
                           setActiveFolderId(null);
                           setIsModalOpen(true);
                       }}
-                      className="group h-32 rounded-xl border border-white/10 border-dashed bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center transition-all hover:scale-105 hover:border-white/30"
+                      className={`group rounded-xl border border-white/5 border-dashed bg-transparent hover:bg-white/5 flex flex-col items-center justify-center transition-all opacity-30 hover:opacity-100 ${
+                        (cardConfig?.size === 'sm' ? 'h-24' : cardConfig?.size === 'lg' ? 'h-40' : cardConfig?.size === 'xl' ? 'h-48' : 'h-32')
+                      }`}
                   >
-                      <div className="p-3 rounded-full bg-white/10 group-hover:bg-white/20 mb-2 transition-colors"><PlusIcon className="w-6 h-6 text-white/70" /></div>
-                      <span className="text-sm text-white/60 font-medium">Yeni Ekle</span>
+                      <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 mb-1 transition-colors"><PlusIcon className="w-5 h-5 text-white/50" /></div>
+                      <span className="text-[11px] text-white/40 font-medium group-hover:text-white/60">Yeni Ekle</span>
                   </button>
                 </div>
             )}
