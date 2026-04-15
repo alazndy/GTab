@@ -109,7 +109,11 @@ export const DEFAULT_CARD_CONFIG: CardConfig = {
   glowEnabled: true,
   gridGapX: 16,
   gridGapY: 16,
-  gridCols: 6
+  gridCols: 6,
+  showCardBorder: true,
+  cardBorderOpacity: 10,
+  menuOpacity: 95,
+  menuBorderOpacity: 10
 };
 
 export const getShortcuts = (): Shortcut[] => {

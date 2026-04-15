@@ -59,8 +59,10 @@ const App: React.FC = () => {
           accent: 'text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]',
           glass: 'border-pink-500/20 backdrop-blur-xl transition-all',
           glassBgRgb: '255,255,255',
-          menuBg: 'rgba(28,10,55,0.97)',
-          menuBorder: 'rgba(236,72,153,0.25)',
+          menuBg: 'rgba(20,20,30,0.97)',
+          menuBorder: 'rgba(236,72,153,0.3)',
+          menuBgRgb: '20,20,30',
+          menuBorderRgb: '236,72,153',
           accentColor: '#ec4899',
         };
       case 'starship':
@@ -72,6 +74,8 @@ const App: React.FC = () => {
           glassBgRgb: '255,255,255',
           menuBg: 'rgba(3,6,24,0.97)',
           menuBorder: 'rgba(96,165,250,0.2)',
+          menuBgRgb: '3,6,24',
+          menuBorderRgb: '96,165,250',
           accentColor: '#60a5fa',
         };
       case 'terminal':
@@ -83,6 +87,8 @@ const App: React.FC = () => {
           glassBgRgb: '0,0,0',
           menuBg: 'rgba(0,8,2,0.97)',
           menuBorder: 'rgba(34,197,94,0.3)',
+          menuBgRgb: '0,8,2',
+          menuBorderRgb: '34,197,94',
           accentColor: '#22c55e',
         };
       case 'portal':
@@ -94,6 +100,8 @@ const App: React.FC = () => {
           glassBgRgb: '20,20,20',
           menuBg: 'rgba(10,10,10,0.98)',
           menuBorder: 'rgba(255,153,0,0.4)',
+          menuBgRgb: '10,10,10',
+          menuBorderRgb: '255,153,0',
           accentColor: '#FF9900',
         };
       default:
@@ -105,6 +113,8 @@ const App: React.FC = () => {
           glassBgRgb: '255,255,255',
           menuBg: 'rgba(10,10,12,0.97)',
           menuBorder: 'rgba(255,255,255,0.1)',
+          menuBgRgb: '10,10,12',
+          menuBorderRgb: '255,255,255',
           accentColor: '#60a5fa',
         };
     }
@@ -580,8 +590,10 @@ const App: React.FC = () => {
         '--theme-accent': themeStyles.accentColor,
         '--menu-bg': themeStyles.menuBg,
         '--menu-border': themeStyles.menuBorder,
+        '--menu-bg-rgb': themeStyles.menuBgRgb,
+        '--menu-border-rgb': themeStyles.menuBorderRgb,
         ...fontStyle,
-      } as React.CSSProperties}
+      } as any}
     >
       <div className={`fixed inset-0 z-0 bg-black pointer-events-none select-none ${isThemeBg ? themeStyles.overlay : ''}`}>
           {isColorBg ? (

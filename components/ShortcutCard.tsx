@@ -153,8 +153,11 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
         >
             <div
                 onClick={handleMainClick}
-                className={`relative backdrop-blur-md border border-white/10 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass}`}
-                style={{ backgroundColor: `rgba(255,255,255,${bgOpacity / 100})` }}
+                className={`relative backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${cardConfig?.showCardBorder !== false ? 'border' : 'border-0'}`}
+                style={{ 
+                  backgroundColor: `rgba(255,255,255,${bgOpacity / 100})`,
+                  borderColor: cardConfig?.showCardBorder !== false ? `rgba(255,255,255,${(cardConfig?.cardBorderOpacity ?? 10) / 100})` : 'transparent'
+                }}
             >
                 <div className={`grid grid-cols-2 gap-1 p-1 bg-black/20 rounded-lg flex-shrink-0 ${isSmall ? 'w-9 h-9 mb-1' : 'w-[52px] h-[52px] mb-2'}`}>
                    {previewItems.map(child => (
@@ -219,19 +222,18 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
         style={cardWidthStyle}
     >
       <div
-        className={`relative backdrop-blur-md border flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-sm w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${
-          activeProfile
-            ? 'border-blue-500/30 shadow-blue-500/10'
-            : defaultProfile
-            ? 'border-white/20 shadow-white/5'
-            : 'border-white/10'
-        } ${glowClass}`}
+        className={`relative backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-sm w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${
+          cardConfig?.showCardBorder !== false ? 'border' : 'border-0'
+        }`}
         style={{
           backgroundColor: activeProfile
             ? 'rgba(59,130,246,0.2)'
             : defaultProfile
             ? `rgba(255,255,255,${(bgOpacity + 5) / 100})`
             : `rgba(255,255,255,${bgOpacity / 100})`,
+          borderColor: cardConfig?.showCardBorder !== false 
+            ? (activeProfile ? 'rgba(59,130,246,0.4)' : `rgba(255,255,255,${(cardConfig?.cardBorderOpacity ?? 10) / 100})`)
+            : 'transparent'
         }}
       >
         
@@ -277,7 +279,11 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
 
       {hasProfiles && !activeProfile && (
         <div className="absolute top-[95%] left-1/2 -translate-x-1/2 min-w-[180px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top z-40">
-          <div className="backdrop-blur-xl rounded-xl p-2 shadow-2xl flex flex-col gap-1" style={{ backgroundColor: 'var(--menu-bg, rgba(10,10,12,0.97))', border: '1px solid var(--menu-border, rgba(255,255,255,0.1))' }}>
+          <div className="backdrop-blur-xl rounded-xl p-2 shadow-2xl flex flex-col gap-1" 
+             style={{ 
+               backgroundColor: `rgba(var(--menu-bg-rgb, 10,10,12), ${(cardConfig?.menuOpacity ?? 95) / 100})`, 
+               border: `${cardConfig?.menuBorderOpacity === 0 ? '0px' : '1px'} solid rgba(var(--menu-border-rgb, 255,255,255), ${(cardConfig?.menuBorderOpacity ?? 10) / 100})` 
+             }}>
             <div className="text-[10px] text-white/40 px-2 py-1 uppercase tracking-wider font-semibold">Profiller</div>
             {shortcut.profiles!.map((profile) => (
               <button

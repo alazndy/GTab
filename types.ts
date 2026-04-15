@@ -110,4 +110,8 @@ export interface CardConfig {
   gridGapX?: number; // Yatay boşluk
   gridGapY?: number; // Dikey boşluk
   gridCols?: number; // Bir satırdaki kart sayısı
+  showCardBorder?: boolean;
+  cardBorderOpacity?: number;
+  menuOpacity?: number;
+  menuBorderOpacity?: number;
 }

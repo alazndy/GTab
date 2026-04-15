@@ -538,9 +538,63 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
 
                 <hr className="border-white/5" />
 
+                {/* Kart Çerçeve Ayarları */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                             <SectionLabel>Kart Çerçevesi</SectionLabel>
+                             <button 
+                                onClick={() => cardSet('showCardBorder', !localCard.showCardBorder)}
+                                className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold transition-colors ${localCard.showCardBorder !== false ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
+                             >
+                                {localCard.showCardBorder !== false ? 'Açık' : 'Kapalı'}
+                             </button>
+                        </div>
+                        <p className="text-[10px] text-white/30 mb-3">Her bir URL kartının etrafındaki ince çizgiyi yönetir.</p>
+                        {localCard.showCardBorder !== false && (
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="range" min={0} max={100} step={5}
+                                    value={localCard.cardBorderOpacity ?? 10}
+                                    onChange={e => cardSet('cardBorderOpacity', Number(e.target.value))}
+                                    className="flex-1 accent-white/80 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                />
+                                <span className="text-[10px] text-white/50 w-8 tabular-nums">{localCard.cardBorderOpacity ?? 10}%</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <SectionLabel>Profil Menüsü Opaklığı</SectionLabel>
+                        <p className="text-[10px] text-white/30 mb-3">Profil seçme listesinin saydamlığını ve çerçevesini ayarlar.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Arkaplan</span><span className="tabular-nums">{localCard.menuOpacity ?? 95}%</span></div>
+                                <input
+                                    type="range" min={20} max={100} step={5}
+                                    value={localCard.menuOpacity ?? 95}
+                                    onChange={e => cardSet('menuOpacity', Number(e.target.value))}
+                                    className="w-full accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Çerçeve</span><span className="tabular-nums">{localCard.menuBorderOpacity ?? 10}%</span></div>
+                                <input
+                                    type="range" min={0} max={100} step={5}
+                                    value={localCard.menuBorderOpacity ?? 10}
+                                    onChange={e => cardSet('menuBorderOpacity', Number(e.target.value))}
+                                    className="w-full accent-white/40 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr className="border-white/5" />
+
                 {/* Opaklık */}
                 <div>
-                  <SectionLabel>Kart Arkaplan Opaklığı</SectionLabel>
+                  <SectionLabel>Kart İçi Arkaplan Opaklığı</SectionLabel>
                   <div className="flex items-center gap-3">
                     <input
                       type="range" min={0} max={80} step={5}
