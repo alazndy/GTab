@@ -276,7 +276,7 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
       </div>
 
       {hasProfiles && !activeProfile && (
-        <div className="absolute top-[95%] left-0 w-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top z-40">
+        <div className="absolute top-[95%] left-1/2 -translate-x-1/2 min-w-[180px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top z-40">
           <div className="backdrop-blur-xl rounded-xl p-2 shadow-2xl flex flex-col gap-1" style={{ backgroundColor: 'var(--menu-bg, rgba(10,10,12,0.97))', border: '1px solid var(--menu-border, rgba(255,255,255,0.1))' }}>
             <div className="text-[10px] text-white/40 px-2 py-1 uppercase tracking-wider font-semibold">Profiller</div>
             {shortcut.profiles!.map((profile) => (

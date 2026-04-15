@@ -520,7 +520,7 @@ const App: React.FC = () => {
                  )}
                </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 w-full pb-24" style={{ gap: `${cardConfig.gridGap ?? 16}px` }}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 w-full pb-24" style={{ columnGap: `${cardConfig.gridGapX ?? 16}px`, rowGap: `${cardConfig.gridGapY ?? 16}px` }}>
                   {filteredShortcuts.map(shortcut => (
                       <ShortcutCard
                         key={shortcut.id}
@@ -673,6 +673,17 @@ const App: React.FC = () => {
                           </button>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); toggleWidgetVisibility(widget.id); }} onPointerDown={(e) => e.stopPropagation()} className={`absolute top-4 right-4 p-1.5 rounded-full z-20 transition-all border border-white/20 ${widget.visible ? 'bg-black/60 hover:bg-black/80 text-white/70' : 'bg-red-500/80 text-white shadow-[0_0_8px_rgba(239,68,68,0.5)] hover:bg-red-500'}`} title={widget.visible ? "Gizle" : "Göster"}>{widget.visible ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}</button>
+
+                        {widget.id === 'clock' && (
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); setIsClockModalOpen(true); }} 
+                             onPointerDown={(e) => e.stopPropagation()}
+                             className="absolute top-4 right-24 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white/70 border border-white/20 z-20 transition-all"
+                             title="Saat Detay Ayarları"
+                           >
+                             <Cog6ToothIcon className="w-4 h-4" />
+                           </button>
+                        )}
 
                         <div 
                            className="absolute bottom-1 right-1 w-6 h-6 cursor-nwse-resize opacity-50 hover:opacity-100 flex items-end justify-end p-1 z-30"

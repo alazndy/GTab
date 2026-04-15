@@ -45,8 +45,9 @@
 - `storageService.ts` üzerinden layout verisine default değerler (`width: 12`, `glassEffect: true`) tanımlandı.
 - `App.tsx` genel layout yapısı `flex flex-col` yerine 12 kolonlu CSS Grid sistemine geçirildi (`grid-cols-12`).
 - `App.tsx` Edit Mode içerisine her bir main widget için boyutlandırma (+/- butonları) ve cam/outline (Sparkles Icon) kapama/açma denetimleri eklendi.
-- **`README.md` v1.1.2 sürümü için modernize edildi ve güncellendi.**
-- **Tüm değişiklikler git'e gönderildi ve `v1.1.2` sürümü GitHub üzerinde release olarak yayınlandı.**
+- **`README.md` modernize edildi ve güncellendi.**
+- **Portal teması parlamaları artırıldı, dinamik ızgara boşluğu (grid gap) ve alan çerçevesi (border) kontrol ayarları eklendi.**
+- **Tüm değişiklikler git'e gönderildi, `v1.1.3` sürümü build alındı, ZIP oluşturuldu ve GitHub üzerinde release olarak yayınlandı.**
 ### Yapacakları
 - —
 ### Notlar
@@ -61,7 +62,7 @@
 - [x] CardConfig sistemi (opaklık, şekil, boyut, hizalama, font).
 - [x] Profil/URL import-export (JSON).
 - [x] **README.md güncelleme.**
-- [x] **v1.1.2 Release yayınlama.**
+- [x] **v1.1.3 Release yayınlama.**
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
@@ -78,3 +79,4 @@
 | 2026-04-14 | Antigravity | ZIP Oluşturuldu | gtab_v1.1.2.zip hazırlandı. |
 | 2026-04-14 | Antigravity | Widget boyut ve görünüm ayarı | Skeleton-First ile planlandı. Kullanıcının alan outline'ı kapatma ve boyut ayarlama isteğine karşılık Grid sisteme geçildi. |
 | 2026-04-15 | Antigravity | README & Release | v1.1.2 release ve detaylı dökümantasyon tamamlandı. |
+| 2026-04-15 | Antigravity | Portal & Config Update (v1.1.3) | Portal parlamaları, grid gap ve widget çerçeve ayarları eklendi, build ve release (v1.1.3) yapıldı. |

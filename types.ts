@@ -107,5 +107,6 @@ export interface CardConfig {
   iconSize: IconSize;
   cardWidth?: number;
   glowEnabled?: boolean;
-  gridGap?: number; // Space between cards
+  gridGapX?: number; // Yatay boşluk
+  gridGapY?: number; // Dikey boşluk
 }

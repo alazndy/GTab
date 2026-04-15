@@ -60,15 +60,7 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
 
   return (
     <div className="text-center mb-8 animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
-      {isEditMode && onOpenSettings && (
-        <button 
-          onClick={onOpenSettings}
-          className="absolute -right-2 top-0 p-2 rounded-full bg-white/10 hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-all"
-          title="Saat Ayarları"
-        >
-          <Cog6ToothIcon className="w-4 h-4 text-white" />
-        </button>
-      )}
+
       <div 
         className={`${clockStyle.sizeClass} font-thin tracking-tight drop-shadow-lg transition-all duration-700`}
         style={{ color: 'var(--theme-accent, white)' }}

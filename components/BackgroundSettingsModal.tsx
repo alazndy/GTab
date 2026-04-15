@@ -492,17 +492,29 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
                     </div>
 
                     {/* Kart Aralığı */}
-                    <div className="col-span-1 md:col-span-2">
-                        <div className="flex items-center justify-between mb-3">
-                            <SectionLabel>Kart Aralığı (Izgara Boşluğu)</SectionLabel>
-                            <span className="text-[10px] font-bold text-blue-400">{localCard.gridGap ?? 16}px</span>
-                        </div>
-                        <div className="flex items-center gap-3">
+                    <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <SectionLabel>Yatay Aralık</SectionLabel>
+                                <span className="text-[10px] font-bold text-blue-400">{localCard.gridGapX ?? 16}px</span>
+                            </div>
                             <input
-                                type="range" min={4} max={48} step={2}
-                                value={localCard.gridGap ?? 16}
-                                onChange={e => cardSet('gridGap', Number(e.target.value))}
-                                className="flex-1 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                type="range" min={0} max={64} step={2}
+                                value={localCard.gridGapX ?? 16}
+                                onChange={e => cardSet('gridGapX', Number(e.target.value))}
+                                className="w-full accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                            />
+                        </div>
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <SectionLabel>Dikey Aralık</SectionLabel>
+                                <span className="text-[10px] font-bold text-blue-400">{localCard.gridGapY ?? 16}px</span>
+                            </div>
+                            <input
+                                type="range" min={0} max={64} step={2}
+                                value={localCard.gridGapY ?? 16}
+                                onChange={e => cardSet('gridGapY', Number(e.target.value))}
+                                className="w-full accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                             />
                         </div>
                     </div>
