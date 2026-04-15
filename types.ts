@@ -57,13 +57,18 @@ export interface WidgetConfig {
   id: WidgetId;
   visible: boolean;
   order: number;
+  widthPx?: number;
+  heightPx?: number;
+  glassEffect?: boolean; // true = show border/glass, false = invisible container
 }
 
-export type BackgroundType = 'image' | 'color' | 'random';
+export type BackgroundType = 'image' | 'color' | 'random' | 'theme';
+
+export type ThemeId = 'default' | 'neon' | 'starship' | 'terminal' | 'portal';
 
 export interface BackgroundConfig {
   type: BackgroundType;
-  value: string; // URL for image, Hex/RGBA for color
+  value: string; // URL for image, Hex/RGBA for color, or ThemeId
 }
 
 export type TimeFormat = '12h' | '24h';
@@ -73,4 +78,19 @@ export interface ClockConfig {
   format: TimeFormat;
   showSeconds: boolean;
   showDate: boolean;
+}
+
+export type CardShape = 'sharp' | 'rounded' | 'pill';
+export type CardSize = 'sm' | 'md' | 'lg' | 'xl';
+export type CardAlignment = 'left' | 'center' | 'right';
+export type FontFamily = 'geist' | 'system' | 'mono' | 'serif';
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
+
+export interface CardConfig {
+  bgOpacity: number;
+  shape: CardShape;
+  size: CardSize;
+  alignment: CardAlignment;
+  font: FontFamily;
+  iconSize: IconSize;
 }

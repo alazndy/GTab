@@ -168,7 +168,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl bg-gray-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up text-white">
+      <div className="relative w-full max-w-2xl bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up text-white">
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <img 
@@ -226,7 +226,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                     onChange={e => setFormData({...formData, category: e.target.value as Category})}
                     className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-blue-500/50 focus:outline-none"
                   >
-                    {Object.values(Category).map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>)}
+                    {Object.values(Category).map(c => <option key={c} value={c} className="bg-black">{c}</option>)}
                   </select>
                 </div>
                 <div className="md:col-span-2">
@@ -347,7 +347,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                     </button>
 
                     {isColorPickerOpen && (
-                      <div className="absolute top-full right-0 mt-2 p-3 bg-gray-800 border border-white/10 rounded-xl shadow-2xl grid grid-cols-6 gap-2 w-[220px] z-50 animate-fade-in">
+                      <div className="absolute top-full right-0 mt-2 p-3 bg-black/70 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl grid grid-cols-6 gap-2 w-[220px] z-50 animate-fade-in">
                         {COLORS.map((c) => (
                           <button
                             key={c}
@@ -355,7 +355,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
                               setNewProfileColor(c);
                               setIsColorPickerOpen(false);
                             }}
-                            className={`w-6 h-6 rounded-full transition-all hover:scale-110 flex items-center justify-center ${c} ${newProfileColor === c ? 'ring-2 ring-white ring-offset-1 ring-offset-gray-800' : ''}`}
+                            className={`w-6 h-6 rounded-full transition-all hover:scale-110 flex items-center justify-center ${c} ${newProfileColor === c ? 'ring-2 ring-white ring-offset-1 ring-offset-black/70' : ''}`}
                           >
                             {newProfileColor === c && <CheckSolid className="w-3 h-3 text-white drop-shadow-md" />}
                           </button>

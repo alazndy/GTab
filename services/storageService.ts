@@ -1,5 +1,5 @@
 
-import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig } from '../types';
+import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig } from '../types';
 
 const STORAGE_KEY = 'gtab_shortcuts';
 const LAYOUT_KEY = 'gtab_layout';
@@ -7,6 +7,7 @@ const TASKS_KEY = 'gtab_tasks';
 const BG_KEY = 'gtab_bg_config';
 const VIEW_STATE_KEY = 'gtab_view_state';
 const CLOCK_CONFIG_KEY = 'gtab_clock_config';
+const CARD_CONFIG_KEY = 'gtab_card_config';
 
 export interface ViewState {
   category: Category | 'All';
@@ -71,11 +72,11 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
 ];
 
 const DEFAULT_LAYOUT: WidgetConfig[] = [
-  { id: 'clock', visible: true, order: 0 },
-  { id: 'search', visible: true, order: 1 },
-  { id: 'tasks', visible: true, order: 2 },
-  { id: 'categories', visible: true, order: 3 },
-  { id: 'shortcuts', visible: true, order: 4 },
+  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true },
+  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true },
+  { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true },
+  { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true },
+  { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true },
 ];
 
 const DEFAULT_CLOCK_CONFIG: ClockConfig = {
@@ -105,7 +106,10 @@ export const saveShortcuts = (shortcuts: Shortcut[]) => {
 export const getLayoutConfig = (): WidgetConfig[] => {
   try {
     const stored = localStorage.getItem(LAYOUT_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_LAYOUT;
+    if (!stored) return DEFAULT_LAYOUT;
+    const parsed = JSON.parse(stored) as WidgetConfig[];
+    // Migrate: ensure new fields exist on stored entries
+    return parsed.map(w => ({ opacity: 10, glassEffect: w.glassEffect ?? true, ...w }));
   } catch (e) {
     return DEFAULT_LAYOUT;
   }
@@ -185,4 +189,68 @@ export const saveClockConfig = (config: ClockConfig) => {
   } catch (e) {
     console.error("Failed to save clock config", e);
   }
+};
+
+export const DEFAULT_CARD_CONFIG: CardConfig = {
+  bgOpacity: 10,
+  shape: 'rounded',
+  size: 'md',
+  alignment: 'center',
+  font: 'geist',
+  iconSize: 'md',
+};
+
+export const getCardConfig = (): CardConfig => {
+  try {
+    const stored = localStorage.getItem(CARD_CONFIG_KEY);
+    return stored ? { ...DEFAULT_CARD_CONFIG, ...JSON.parse(stored) } : DEFAULT_CARD_CONFIG;
+  } catch {
+    return DEFAULT_CARD_CONFIG;
+  }
+};
+
+export const saveCardConfig = (config: CardConfig) => {
+  try {
+    localStorage.setItem(CARD_CONFIG_KEY, JSON.stringify(config));
+  } catch (e) {
+    console.error('Failed to save card config', e);
+  }
+};
+
+export const exportShortcutsToFile = (shortcuts: Shortcut[]) => {
+  const blob = new Blob([JSON.stringify(shortcuts, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gtab-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) { reject(new Error('Dosya seçilmedi')); return; }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target?.result as string);
+          if (Array.isArray(data)) resolve(data as Shortcut[]);
+          else reject(new Error('Geçersiz format'));
+        } catch {
+          reject(new Error('Dosya okunamadı'));
+        }
+      };
+      reader.readAsText(file);
+    };
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  });
 };

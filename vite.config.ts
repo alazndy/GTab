@@ -18,6 +18,14 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      build: {
+        rollupOptions: {
+          input: {
+            main: path.resolve(__dirname, 'index.html'),
+            popup: path.resolve(__dirname, 'popup.html'),
+          },
+        },
+      },
     };
 });

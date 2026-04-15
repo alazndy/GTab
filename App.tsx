@@ -1,16 +1,18 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { 
-  PlusIcon, 
-  FolderIcon, 
+import {
+  PlusIcon,
+  FolderIcon,
   Bars3Icon,
-  EyeIcon, 
-  EyeSlashIcon, 
-  PencilIcon, 
-  CheckIcon, 
-  ArrowPathIcon, 
-  UsersIcon, 
-  PhotoIcon 
+  EyeIcon,
+  EyeSlashIcon,
+  PencilIcon,
+  CheckIcon,
+  ArrowPathIcon,
+  UsersIcon,
+  PhotoIcon,
+  HeartIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import Clock from './components/Clock';
 import SearchBar from './components/SearchBar';
@@ -21,13 +23,14 @@ const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSett
 const BackgroundSettingsModal = React.lazy(() => import('./components/BackgroundSettingsModal'));
 const ClockSettingsModal = React.lazy(() => import('./components/ClockSettingsModal'));
 const FolderViewModal = React.lazy(() => import('./components/FolderViewModal'));
-import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig } from './types';
-import { 
-  getShortcuts, saveShortcuts, 
-  getLayoutConfig, saveLayoutConfig, 
+import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, ThemeId, CardConfig } from './types';
+import {
+  getShortcuts, saveShortcuts,
+  getLayoutConfig, saveLayoutConfig,
   getBackgroundConfig, saveBackgroundConfig, PRESET_BACKGROUNDS,
   getViewState, saveViewState,
-  getClockConfig, saveClockConfig
+  getClockConfig, saveClockConfig,
+  getCardConfig, saveCardConfig
 } from './services/storageService';
 
 const App: React.FC = () => {
@@ -36,12 +39,81 @@ const App: React.FC = () => {
   const [layout, setLayout] = useState<WidgetConfig[]>(() => getLayoutConfig());
   const [bgConfig, setBgConfig] = useState<BackgroundConfig>(() => getBackgroundConfig());
   const [clockConfig, setClockConfig] = useState<ClockConfig>(() => getClockConfig());
-  
+  const [cardConfig, setCardConfig] = useState<CardConfig>(() => getCardConfig());
+
+  const BUY_ME_COFFEE_URL = "https://buymeacoffee.com/alazndy";
+
+  // --- Theme Management ---
+  const activeTheme = useMemo(() => {
+    if (bgConfig.type === 'theme') return bgConfig.value as ThemeId;
+    return 'default';
+  }, [bgConfig]);
+
+  const themeStyles = useMemo(() => {
+    switch (activeTheme) {
+      case 'neon':
+        return {
+          wrapper: 'bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900',
+          overlay: 'bg-black/40 backdrop-blur-[2px]',
+          accent: 'text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]',
+          glass: 'border-pink-500/20 backdrop-blur-xl transition-all',
+          glassBgRgb: '255,255,255',
+          menuBg: 'rgba(28,10,55,0.97)',
+          menuBorder: 'rgba(236,72,153,0.25)',
+          accentColor: '#ec4899',
+        };
+      case 'starship':
+        return {
+          wrapper: 'bg-[#050505] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-900 via-black to-black',
+          overlay: 'bg-transparent',
+          accent: 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]',
+          glass: 'border-white/5 backdrop-blur-lg transition-all',
+          glassBgRgb: '255,255,255',
+          menuBg: 'rgba(3,6,24,0.97)',
+          menuBorder: 'rgba(96,165,250,0.2)',
+          accentColor: '#60a5fa',
+        };
+      case 'terminal':
+        return {
+          wrapper: 'bg-black',
+          overlay: 'bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]',
+          accent: 'text-green-500 font-mono drop-shadow-[0_0_5px_#22c55e]',
+          glass: 'border-green-500/30 font-mono hover:border-green-500/60 transition-all',
+          glassBgRgb: '0,0,0',
+          menuBg: 'rgba(0,8,2,0.97)',
+          menuBorder: 'rgba(34,197,94,0.3)',
+          accentColor: '#22c55e',
+        };
+      case 'portal':
+        return {
+          wrapper: 'bg-[#131313]',
+          overlay: 'bg-[radial-gradient(ellipse_65%_40%_at_8%_108%,rgba(255,153,0,0.2)_0%,transparent_65%),radial-gradient(ellipse_65%_40%_at_92%_108%,rgba(153,204,255,0.14)_0%,transparent_65%)]',
+          accent: 'text-[#FF9900] drop-shadow-[0_0_12px_rgba(255,153,0,0.85)]',
+          glass: 'border-[#FF9900]/20 backdrop-blur-xl hover:border-[#FF9900]/40 transition-all',
+          glassBgRgb: '42,42,42',
+          menuBg: 'rgba(14,14,14,0.98)',
+          menuBorder: 'rgba(255,153,0,0.28)',
+          accentColor: '#FF9900',
+        };
+      default:
+        return {
+          wrapper: 'bg-black',
+          overlay: 'bg-black/30',
+          accent: 'text-blue-400',
+          glass: 'border-white/10 backdrop-blur-md',
+          glassBgRgb: '255,255,255',
+          menuBg: 'rgba(10,10,12,0.97)',
+          menuBorder: 'rgba(255,255,255,0.1)',
+          accentColor: '#60a5fa',
+        };
+    }
+  }, [activeTheme]);
+
   // View State
   const [viewState] = useState(() => getViewState());
   const [filterCategory, setFilterCategory] = useState<Category | 'All'>(viewState.category);
   const [filterProfile, setFilterProfile] = useState<string | 'All'>(viewState.profile);
-  
+
   // Folder State
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
 
@@ -54,15 +126,16 @@ const App: React.FC = () => {
     }
     return '';
   });
-  
+
   const [isBgImageLoaded, setIsBgImageLoaded] = useState(true);
-  
+
   // UI State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [isClockModalOpen, setIsClockModalOpen] = useState(false);
-  
+  const [pendingUrl, setPendingUrl] = useState<string>('');
+
   // Settings Modal State
   const [editingShortcut, setEditingShortcut] = useState<Shortcut | null>(null);
 
@@ -119,7 +192,7 @@ const App: React.FC = () => {
           newShortcuts.splice(targetIndex, 0, draggedShortcut);
           return newShortcuts;
       });
-      
+
       shortcutDragItem.current = null;
       shortcutDragOverItem.current = null;
   }, []);
@@ -150,16 +223,38 @@ const App: React.FC = () => {
     });
   }, [shortcuts, filterCategory, filterProfile]);
 
+  const groups = useMemo(() => shortcuts.filter(s => s.isFolder), [shortcuts]);
   const tasksConfig = useMemo(() => layout.find(w => w.id === 'tasks'), [layout]);
   const mainWidgets = useMemo(() => layout.filter(w => w.id !== 'tasks'), [layout]);
   const isColorBg = useMemo(() => bgConfig.type === 'color', [bgConfig.type]);
+  const isThemeBg = useMemo(() => bgConfig.type === 'theme', [bgConfig.type]);
   const activeFolder = useMemo(() => shortcuts.find(s => s.id === activeFolderId), [shortcuts, activeFolderId]);
+
+  const fontStyle = useMemo((): React.CSSProperties => {
+    const map: Record<string, string> = {
+      geist: '"Geist Sans", system-ui, sans-serif',
+      system: 'system-ui, sans-serif',
+      mono: '"Geist Mono", "Courier New", monospace',
+      serif: 'Georgia, serif',
+    };
+    return { fontFamily: map[cardConfig.font] ?? map.geist };
+  }, [cardConfig.font]);
+
+  const mainAlignClass = useMemo(() => {
+    const map: Record<string, string> = {
+      left: 'mr-auto ml-0',
+      center: 'mx-auto',
+      right: 'ml-auto mr-0',
+    };
+    return map[cardConfig.alignment] ?? 'mx-auto';
+  }, [cardConfig.alignment]);
 
   // Persistence Effects
   useEffect(() => { saveShortcuts(shortcuts); }, [shortcuts]);
   useEffect(() => { saveLayoutConfig(layout); }, [layout]);
   useEffect(() => { saveBackgroundConfig(bgConfig); }, [bgConfig]);
   useEffect(() => { saveClockConfig(clockConfig); }, [clockConfig]);
+  useEffect(() => { saveCardConfig(cardConfig); }, [cardConfig]);
   useEffect(() => { saveViewState({ category: filterCategory, profile: filterProfile }); }, [filterCategory, filterProfile]);
 
   useEffect(() => {
@@ -167,7 +262,7 @@ const App: React.FC = () => {
       isFirstRun.current = false;
       return;
     }
-    if (bgConfig.type === 'color') {
+    if (bgConfig.type === 'color' || bgConfig.type === 'theme') {
       setActiveBgUrl('');
       setIsBgImageLoaded(true);
       return;
@@ -195,26 +290,62 @@ const App: React.FC = () => {
     img.onerror = () => setIsBgImageLoaded(true);
   }, [bgConfig]);
 
+  // --- Popup localStorage sync ---
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'gtab_shortcuts' && e.newValue) {
+        try { setShortcuts(JSON.parse(e.newValue)); } catch { /* noop */ }
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // --- Context Menu Pending URL ---
+  useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.storage) return;
+
+    const consume = (url: string) => {
+      if (!url) return;
+      chrome.storage.local.remove('gtab_pending_url');
+      setActiveFolderId(null);
+      setPendingUrl(url);
+      setIsModalOpen(true);
+    };
+
+    chrome.storage.local.get('gtab_pending_url', (result) => {
+      if (result.gtab_pending_url) consume(result.gtab_pending_url as string);
+    });
+
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes.gtab_pending_url?.newValue) {
+        consume(changes.gtab_pending_url.newValue as string);
+      }
+    };
+
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
+
   // --- Actions ---
 
-  const addShortcuts = useCallback((items: ShortcutPayload[]) => {
+  const addShortcuts = useCallback((items: ShortcutPayload[], targetGroupId?: string) => {
     const newShortcuts: Shortcut[] = items.map(item => ({
       ...item,
       id: crypto.randomUUID()
     }));
 
-    if (activeFolderId) {
-        setShortcuts(prev => prev.map(s => {
-            if (s.id === activeFolderId && s.isFolder) {
-                return {
-                    ...s,
-                    children: [...(s.children || []), ...newShortcuts]
-                };
-            }
-            return s;
-        }));
+    const effectiveGroupId = targetGroupId ?? activeFolderId;
+
+    if (effectiveGroupId) {
+      setShortcuts(prev => prev.map(s => {
+        if (s.id === effectiveGroupId && s.isFolder) {
+          return { ...s, children: [...(s.children || []), ...newShortcuts] };
+        }
+        return s;
+      }));
     } else {
-        setShortcuts(prev => [...prev, ...newShortcuts]);
+      setShortcuts(prev => [...prev, ...newShortcuts]);
     }
   }, [activeFolderId]);
 
@@ -224,7 +355,7 @@ const App: React.FC = () => {
         if (rootExists) {
             return prev.filter(s => s.id !== id);
         }
-        
+
         return prev.map(s => {
             if (s.isFolder && s.children) {
                 return {
@@ -263,6 +394,42 @@ const App: React.FC = () => {
     setLayout(prev => prev.map(item => 
       item.id === id ? { ...item, visible: !item.visible } : item
     ));
+  };
+
+  const updateWidgetConfig = (id: WidgetId, updates: Partial<WidgetConfig>) => {
+    setLayout(prev => prev.map(item => 
+      item.id === id ? { ...item, ...updates } : item
+    ));
+  };
+
+  const handleResizePointerDown = (e: React.PointerEvent, id: WidgetId) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const widgetEl = e.currentTarget.parentElement as HTMLElement;
+    const startWidth = widgetEl.offsetWidth;
+    const startHeight = widgetEl.offsetHeight;
+
+    const oldTransition = widgetEl.style.transition;
+    widgetEl.style.transition = 'none';
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const newWidth = Math.max(200, startWidth + (moveEvent.clientX - startX));
+      const newHeight = Math.max(100, startHeight + (moveEvent.clientY - startY));
+      widgetEl.style.width = `${newWidth}px`;
+      widgetEl.style.height = `${newHeight}px`;
+    };
+
+    const onPointerUp = () => {
+      widgetEl.style.transition = oldTransition;
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      updateWidgetConfig(id, { widthPx: widgetEl.offsetWidth, heightPx: widgetEl.offsetHeight });
+    };
+
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
   };
 
   const resetLayout = () => {
@@ -355,13 +522,14 @@ const App: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 gap-y-8 w-full pb-24">
                   {filteredShortcuts.map(shortcut => (
-                      <ShortcutCard 
-                        key={shortcut.id} 
+                      <ShortcutCard
+                        key={shortcut.id}
                         shortcut={shortcut}
                         activeProfileFilter={filterProfile}
                         onDelete={deleteShortcut}
                         onEdit={handleEditShortcut}
                         onFolderClick={handleFolderClick}
+                        cardConfig={cardConfig}
                         draggable={true}
                         onDragStart={handleShortcutDragStart}
                         onDragOver={handleShortcutDragOver}
@@ -396,10 +564,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white">
-      <div className="fixed inset-0 z-0 bg-black pointer-events-none select-none">
+    <div
+      className={`min-h-screen w-full relative overflow-y-auto overflow-x-hidden flex flex-col text-white transition-colors duration-700 ${isThemeBg ? themeStyles.wrapper : ''}`}
+      style={{
+        '--theme-accent': themeStyles.accentColor,
+        '--menu-bg': themeStyles.menuBg,
+        '--menu-border': themeStyles.menuBorder,
+        ...fontStyle,
+      } as React.CSSProperties}
+    >
+      <div className={`fixed inset-0 z-0 bg-black pointer-events-none select-none ${isThemeBg ? themeStyles.overlay : ''}`}>
           {isColorBg ? (
              <div className="absolute inset-0 transition-colors duration-700" style={{ backgroundColor: bgConfig.value }} />
+          ) : isThemeBg ? (
+             <div className="absolute inset-0" />
           ) : (
              <img 
                 src={activeBgUrl}
@@ -425,24 +603,49 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <div className="relative z-10 flex-1 flex flex-col p-4 md:p-8 lg:p-16 h-full w-full">
         <header className="flex justify-end mb-6 space-x-2 sticky top-4 z-50">
            {isEditMode ? (
              <>
-                <button onClick={() => setIsBgModalOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/80 hover:bg-blue-500 border border-blue-400/30 backdrop-blur-md transition-colors text-white text-sm font-medium"><PhotoIcon className="w-4 h-4" /><span className="hidden sm:inline">Arkaplan</span></button>
+                <button onClick={() => setIsBgModalOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md transition-colors text-white text-sm font-medium" style={{ backgroundColor: 'var(--theme-accent, #2563eb)' }}><PhotoIcon className="w-4 h-4" /><span className="hidden sm:inline">Görünüm</span></button>
                 <button onClick={resetLayout} className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/30 hover:bg-red-500/40 backdrop-blur-md transition-colors text-white/90 text-sm font-medium"><ArrowPathIcon className="w-4 h-4" /><span className="hidden sm:inline">Sıfırla</span></button>
                 <button onClick={() => setIsEditMode(false)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-600 hover:bg-green-500 shadow-lg shadow-green-900/20 backdrop-blur-md transition-all text-white text-sm font-medium animate-fade-in"><CheckIcon className="w-4 h-4" /><span>Bitti</span></button>
              </>
            ) : (
-             <button onClick={() => setIsEditMode(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-all text-white/90 text-sm font-medium"><PencilIcon className="w-4 h-4" /><span className="hidden sm:inline">Düzenle</span></button>
+             <>
+                <a
+                  href={BUY_ME_COFFEE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 backdrop-blur-md transition-all text-yellow-200 hover:text-yellow-100 text-sm font-medium group"
+                >
+                  <HeartIcon className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline">Kahve Ismarla</span>
+                </a>
+                <button onClick={() => setIsEditMode(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-all text-white/90 text-sm font-medium"><PencilIcon className="w-4 h-4" /><span className="hidden sm:inline">Düzenle</span></button>
+             </>
            )}
         </header>
 
-        <main className="flex-1 flex flex-col items-center max-w-7xl mx-auto w-full transition-all">
-          <div className="w-full flex flex-col gap-6">
+        <main className={`flex-1 flex flex-col items-center max-w-7xl w-full transition-all ${mainAlignClass}`}>
+          <div className="w-full flex flex-row flex-wrap justify-center gap-6 items-start">
             {mainWidgets.map((widget, index) => {
               if (!widget.visible && !isEditMode) return null;
+              
+              const containerPadding = 'p-4 md:p-6';
+              const glassStyle = widget.glassEffect !== false 
+                  ? `border-2 border-transparent ${themeStyles.glass} shadow-2xl shadow-black/20` 
+                  : 'border-2 border-transparent bg-transparent shadow-none';
+                  
+              const editStyle = isEditMode ? 'border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5' : glassStyle;
+
+              const dynamicStyle: React.CSSProperties = {
+                 width: widget.widthPx ? `${widget.widthPx}px` : '100%',
+                 height: widget.heightPx ? `${widget.heightPx}px` : 'auto',
+                 backgroundColor: (!isEditMode && widget.glassEffect !== false) ? `rgba(${themeStyles.glassBgRgb || '255,255,255'}, ${(widget.opacity ?? 10) / 100})` : undefined
+              };
+
               return (
                 <div
                   key={widget.id}
@@ -451,15 +654,29 @@ const App: React.FC = () => {
                   onDragEnter={(e) => handleDragEnter(e, index)}
                   onDragOver={handleDragOver}
                   onDragEnd={handleDragEnd}
-                  className={`relative w-full transition-all duration-200 rounded-2xl ${isEditMode ? 'bg-white/5 border-2 border-dashed border-white/20 p-4 cursor-move hover:bg-white/10 hover:border-white/40' : 'border-2 border-transparent'} ${!widget.visible && isEditMode ? 'opacity-50 grayscale' : 'opacity-100'}`}
+                  className={`relative transition-all duration-300 rounded-2xl ${containerPadding} ${editStyle} ${!widget.visible && isEditMode ? 'opacity-50 grayscale' : 'opacity-100'} ${isEditMode ? 'cursor-move' : ''}`}
+                  style={dynamicStyle}
                 >
                   {isEditMode && (
                     <>
-                        <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-2 z-20"><Bars3Icon className="w-3 h-3" />{getWidgetLabel(widget.id)}</div>
-                        <button onClick={() => toggleWidgetVisibility(widget.id)} className={`absolute top-4 right-4 p-2 rounded-full z-20 transition-colors ${widget.visible ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-red-500/20 text-red-300 hover:bg-red-500/40'}`} title={widget.visible ? "Gizle" : "Göster"}>{widget.visible ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}</button>
+                        <div className="absolute -top-3 left-4 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-2 z-20" style={{ backgroundColor: 'var(--theme-accent, #2563eb)' }}><Bars3Icon className="w-3 h-3" />{getWidgetLabel(widget.id)}</div>
+                        <div className="absolute top-4 right-14 flex items-center gap-2 z-20" onPointerDown={(e) => e.stopPropagation()}>
+                          <button onClick={(e) => { e.preventDefault(); updateWidgetConfig(widget.id, { glassEffect: widget.glassEffect === false ? true : false }) }} className={`p-1.5 rounded-full transition-all border border-white/20 ${widget.glassEffect === false ? 'bg-indigo-500/80 text-white shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-black/60 hover:bg-black/80 text-white/70'}`} title="Cam Efekti (Saydam/Açık)">
+                             <SparklesIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); toggleWidgetVisibility(widget.id); }} onPointerDown={(e) => e.stopPropagation()} className={`absolute top-4 right-4 p-1.5 rounded-full z-20 transition-all border border-white/20 ${widget.visible ? 'bg-black/60 hover:bg-black/80 text-white/70' : 'bg-red-500/80 text-white shadow-[0_0_8px_rgba(239,68,68,0.5)] hover:bg-red-500'}`} title={widget.visible ? "Gizle" : "Göster"}>{widget.visible ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}</button>
+
+                        <div 
+                           className="absolute bottom-1 right-1 w-6 h-6 cursor-nwse-resize opacity-50 hover:opacity-100 flex items-end justify-end p-1 z-30"
+                           onPointerDown={(e) => handleResizePointerDown(e, widget.id)}
+                           title="Boyutlandır"
+                        >
+                           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 stroke-white stroke-2"><path d="M21 15L15 21M21 9L9 21"/></svg>
+                        </div>
                     </>
                   )}
-                  <div className={`w-full ${isEditMode ? '' : ''}`}>
+                  <div className={`w-full h-full ${activeTheme === 'terminal' ? 'font-mono' : ''}`}>
                      {renderWidgetContent(widget.id)}
                   </div>
                 </div>
@@ -468,15 +685,9 @@ const App: React.FC = () => {
           </div>
         </main>
       </div>
-
       <React.Suspense fallback={null}>
-        <AddModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addShortcuts} />
-        <ShortcutSettingsModal isOpen={!!editingShortcut} shortcut={editingShortcut} allShortcuts={shortcuts} onClose={() => setEditingShortcut(null)} onSave={updateShortcut} />
-        <BackgroundSettingsModal isOpen={isBgModalOpen} currentConfig={bgConfig} onClose={() => setIsBgModalOpen(false)} onSave={setBgConfig} />
-        <ClockSettingsModal isOpen={isClockModalOpen} config={clockConfig} onClose={() => setIsClockModalOpen(false)} onSave={setClockConfig} />
-        
         {activeFolder && (
-            <FolderViewModal 
+            <FolderViewModal
               folder={activeFolder}
               isOpen={true}
               onClose={() => setActiveFolderId(null)}
@@ -485,6 +696,28 @@ const App: React.FC = () => {
               onAddItem={() => setIsModalOpen(true)}
             />
         )}
+        <AddModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setPendingUrl(''); }}
+          onAdd={addShortcuts}
+          groups={groups}
+          isInsideGroup={activeFolderId !== null}
+          initialUrl={pendingUrl}
+        />
+        <ShortcutSettingsModal isOpen={!!editingShortcut} shortcut={editingShortcut} allShortcuts={shortcuts} onClose={() => setEditingShortcut(null)} onSave={updateShortcut} />
+        <BackgroundSettingsModal
+          isOpen={isBgModalOpen}
+          currentConfig={bgConfig}
+          onClose={() => setIsBgModalOpen(false)}
+          onSave={setBgConfig}
+          cardConfig={cardConfig}
+          onSaveCard={setCardConfig}
+          shortcuts={shortcuts}
+          onImportShortcuts={setShortcuts}
+          layout={layout}
+          onSaveLayout={setLayout}
+        />
+        <ClockSettingsModal isOpen={isClockModalOpen} config={clockConfig} onClose={() => setIsClockModalOpen(false)} onSave={setClockConfig} />
       </React.Suspense>
     </div>
   );

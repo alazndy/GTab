@@ -79,7 +79,8 @@ const TasksWidget: React.FC = () => {
             disabled={!newTaskText.trim()}
             title="Görev Ekle"
             aria-label="Görev Ekle"
-            className="bg-blue-600/80 hover:bg-blue-500 text-white p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-white p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--theme-accent, #2563eb)' }}
           >
             <PlusIcon className="w-3.5 h-3.5" />
           </button>

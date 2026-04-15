@@ -1,189 +1,574 @@
 
 import React, { useState } from 'react';
-import { XMarkIcon, CheckIcon, PhotoIcon, SwatchIcon, ArrowPathIcon, LinkIcon } from '@heroicons/react/24/outline';
-import { BackgroundConfig, BackgroundType } from '../types';
-import { PRESET_BACKGROUNDS } from '../services/storageService';
+import {
+  XMarkIcon, CheckIcon, PhotoIcon, ArrowPathIcon, LinkIcon,
+  SparklesIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, PaintBrushIcon,
+  Squares2X2Icon, ServerStackIcon, AdjustmentsHorizontalIcon
+} from '@heroicons/react/24/outline';
+import {
+  BackgroundConfig, BackgroundType, CardConfig,
+  CardShape, CardSize, CardAlignment, FontFamily, IconSize, Shortcut,
+  WidgetConfig, WidgetId
+} from '../types';
+import { PRESET_BACKGROUNDS, exportShortcutsToFile, importShortcutsFromFile } from '../services/storageService';
 
 interface BackgroundSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentConfig: BackgroundConfig;
   onSave: (config: BackgroundConfig) => void;
+  cardConfig: CardConfig;
+  onSaveCard: (config: CardConfig) => void;
+  shortcuts: Shortcut[];
+  onImportShortcuts: (shortcuts: Shortcut[]) => void;
+  layout: WidgetConfig[];
+  onSaveLayout: (layout: WidgetConfig[]) => void;
 }
 
-const SOLID_COLORS = [
-  { name: 'Tam Siyah', value: '#000000' },
-  { name: 'Koyu Gri', value: '#121212' },
-  { name: 'Gece Mavisi', value: '#0f172a' },
-  { name: 'Derin Mor', value: '#1e1b4b' },
-  { name: 'Orman Yeşili', value: '#022c22' },
-  { name: 'Koyu Bordo', value: '#450a0a' },
+// ── Sabitler ──────────────────────────────────────────────
+
+const THEMES = [
+  { id: 'default', name: 'Varsayılan', desc: 'Klasik glassmorphism.', gradient: 'from-slate-800 to-slate-900' },
+  { id: 'neon',    name: 'Neon Cyber', desc: 'Mor-pembe neon geçişi.', gradient: 'from-indigo-900 via-purple-900 to-pink-900' },
+  { id: 'starship',name: 'Starship',   desc: 'Derin uzay, mavi aksan.', gradient: 'from-gray-950 to-blue-950' },
+  { id: 'terminal',name: 'Terminal',   desc: 'Retro yeşil-siyah.', gradient: 'from-black to-green-950' },
+  { id: 'portal',  name: 'Aperture',   desc: '#FF9900 turuncu · #99CCFF mavi portal.', gradient: 'from-[#131313] via-[#1a1a1a] to-[#2A2A2A]' },
 ];
 
-const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({ isOpen, onClose, currentConfig, onSave }) => {
-  const [activeTab, setActiveTab] = useState<'presets' | 'color' | 'custom'>('presets');
-  const [customUrl, setCustomUrl] = useState('');
+const SOLID_COLORS = [
+  { name: 'Siyah',       value: '#000000' },
+  { name: 'Koyu Gri',    value: '#121212' },
+  { name: 'Gece Mavisi', value: '#0f172a' },
+  { name: 'Derin Mor',   value: '#1e1b4b' },
+  { name: 'Orman',       value: '#022c22' },
+  { name: 'Bordo',       value: '#450a0a' },
+];
+
+const SHAPES: { id: CardShape; label: string; radius: number }[] = [
+  { id: 'sharp',   label: 'Keskin',  radius: 0  },
+  { id: 'rounded', label: 'Yuvarlak', radius: 12 },
+  { id: 'pill',    label: 'Kapsül',  radius: 24 },
+];
+
+const SIZES: { id: CardSize; label: string; bars: number }[] = [
+  { id: 'sm', label: 'Küçük',     bars: 1 },
+  { id: 'md', label: 'Orta',      bars: 2 },
+  { id: 'lg', label: 'Büyük',     bars: 3 },
+  { id: 'xl', label: 'Çok Büyük', bars: 4 },
+];
+
+const ALIGNMENTS: { id: CardAlignment; label: string; bars: [boolean, boolean, boolean] }[] = [
+  { id: 'left',   label: 'Sol',    bars: [true,  false, false] },
+  { id: 'center', label: 'Merkez', bars: [false, true,  false] },
+  { id: 'right',  label: 'Sağ',    bars: [false, false, true]  },
+];
+
+const FONTS: { id: FontFamily; label: string; style: React.CSSProperties }[] = [
+  { id: 'geist',  label: 'Geist Sans',  style: { fontFamily: '"Geist Sans", system-ui, sans-serif' } },
+  { id: 'system', label: 'Sistem',      style: { fontFamily: 'system-ui, sans-serif' } },
+  { id: 'mono',   label: 'Monospace',   style: { fontFamily: '"Geist Mono", monospace' } },
+  { id: 'serif',  label: 'Serif',       style: { fontFamily: 'Georgia, serif' } },
+];
+
+const ICON_SIZES: { id: IconSize; label: string; px: number }[] = [
+  { id: 'xs', label: 'Çok Küçük', px: 16 },
+  { id: 'sm', label: 'Küçük',     px: 24 },
+  { id: 'md', label: 'Orta',      px: 32 },
+  { id: 'lg', label: 'Büyük',     px: 44 },
+];
+
+const WIDGET_LABELS: Record<WidgetId, string> = {
+  clock:      'Saat & Tarih',
+  search:     'Arama Çubuğu',
+  tasks:      'Görevler',
+  categories: 'Kategori & Profil',
+  shortcuts:  'Kısayollar',
+};
+
+// ── Alt bileşenler ───────────────────────────────────────
+
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-3">{children}</p>
+);
+
+const OptionBtn: React.FC<{
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}> = ({ active, onClick, children, className = '' }) => (
+  <button
+    onClick={onClick}
+    className={`transition-all text-left ${active
+      ? 'bg-white/10 border-white/30 text-white'
+      : 'bg-white/5 border-white/8 text-white/60 hover:bg-white/8 hover:text-white/80'
+    } border rounded-xl ${className}`}
+  >
+    {children}
+  </button>
+);
+
+// ── Ana bileşen ──────────────────────────────────────────
+
+type Section = 'background' | 'cards' | 'widgets' | 'data';
+type BgMode  = 'themes' | 'presets' | 'color' | 'custom';
+
+const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
+  isOpen, onClose, currentConfig, onSave, cardConfig, onSaveCard, shortcuts, onImportShortcuts, layout, onSaveLayout
+}) => {
+  const [section, setSection]         = useState<Section>('background');
+  const [bgMode, setBgMode]           = useState<BgMode>('themes');
+  const [customUrl, setCustomUrl]     = useState('');
+  const [localCard, setLocalCard]     = useState<CardConfig>(cardConfig);
+  const [localLayout, setLocalLayout] = useState<WidgetConfig[]>(layout);
+  const [importStatus, setImportStatus] = useState<'idle' | 'ok' | 'err'>('idle');
+  const [importError, setImportError] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSave = (type: BackgroundType, value: string) => {
-    onSave({ type, value });
-    onClose();
+  const applyBg  = (type: BackgroundType, value: string) => { onSave({ type, value }); onClose(); };
+  const cardSet  = <K extends keyof CardConfig>(k: K, v: CardConfig[K]) => {
+    const next = { ...localCard, [k]: v };
+    setLocalCard(next);
+    onSaveCard(next);
   };
+
+  const widgetSet = (id: WidgetId, opacity: number) => {
+    const next = localLayout.map(w => w.id === id ? { ...w, opacity } : w);
+    setLocalLayout(next);
+    onSaveLayout(next);
+  };
+
+  const doExport = () => exportShortcutsToFile(shortcuts);
+  const doImport = async () => {
+    setImportStatus('idle');
+    try {
+      const data = await importShortcutsFromFile();
+      onImportShortcuts(data);
+      setImportStatus('ok');
+    } catch (e) {
+      setImportStatus('err');
+      setImportError(e instanceof Error ? e.message : 'Bilinmeyen hata');
+    }
+  };
+
+  const NAV: { id: Section; icon: React.ReactNode; label: string }[] = [
+    { id: 'background', icon: <PhotoIcon className="w-5 h-5" />,                      label: 'Arkaplan'  },
+    { id: 'cards',      icon: <Squares2X2Icon className="w-5 h-5" />,                 label: 'Kart & Yazı' },
+    { id: 'widgets',    icon: <AdjustmentsHorizontalIcon className="w-5 h-5" />,      label: 'Alanlar'   },
+    { id: 'data',       icon: <ServerStackIcon className="w-5 h-5" />,                label: 'Veri'      },
+  ];
+
+  const BG_MODES: { id: BgMode; label: string }[] = [
+    { id: 'themes',  label: 'Tema'    },
+    { id: 'presets', label: 'Fotoğraf' },
+    { id: 'color',   label: 'Renk'   },
+    { id: 'custom',  label: 'Özel URL' },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      
-      <div className="relative w-full max-w-3xl bg-gray-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden animate-slide-up text-white">
-        
-        <div className="flex items-center justify-between p-5 border-b border-white/10 bg-black/20">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <PhotoIcon className="w-5 h-5 text-blue-400" />
-            Arka Plan Ayarları
+
+      <div className="relative w-full max-w-3xl bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-slide-up text-white">
+
+        {/* ── Başlık ── */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <PaintBrushIcon className="w-4 h-4 text-white/50" />
+            Görünüm Ayarları
           </h2>
-          <button onClick={onClose} title="Kapat" className="text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex border-b border-white/10">
-          <button
-            onClick={() => setActiveTab('presets')}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'presets' ? 'bg-white/5 text-blue-400 border-b-2 border-blue-400' : 'text-white/60 hover:bg-white/5'
-            }`}
-          >
-            Hazır Temalar
-          </button>
-          <button
-            onClick={() => setActiveTab('color')}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'color' ? 'bg-white/5 text-purple-400 border-b-2 border-purple-400' : 'text-white/60 hover:bg-white/5'
-            }`}
-          >
-            Düz Renk
-          </button>
-          <button
-            onClick={() => setActiveTab('custom')}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'custom' ? 'bg-white/5 text-emerald-400 border-b-2 border-emerald-400' : 'text-white/60 hover:bg-white/5'
-            }`}
-          >
-            Özel Resim
-          </button>
-        </div>
+        {/* ── Gövde: sidebar + içerik ── */}
+        <div className="flex flex-1 min-h-0">
 
-        <div className="flex-1 overflow-y-auto p-6 bg-black/20">
-          
-          {activeTab === 'presets' && (
-            <div className="space-y-6">
-              <button 
-                onClick={() => handleSave('random', '')}
-                className={`w-full p-4 rounded-xl border transition-all flex items-center justify-center gap-3 mb-4 group
-                  ${currentConfig.type === 'random' 
-                    ? 'bg-blue-500/20 border-blue-500' 
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
+          {/* Sidebar */}
+          <nav className="w-36 flex-shrink-0 flex flex-col gap-1 p-3 border-r border-white/8">
+            {NAV.map(n => (
+              <button
+                key={n.id}
+                onClick={() => setSection(n.id)}
+                className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-medium transition-all ${
+                  section === n.id
+                    ? 'bg-white/10 text-white border border-white/15'
+                    : 'text-white/40 hover:bg-white/5 hover:text-white/70'
+                }`}
               >
-                <ArrowPathIcon className={`w-5 h-5 ${currentConfig.type === 'random' ? 'text-blue-400' : 'text-white/60'}`} />
-                <div className="text-left">
-                   <div className="text-sm font-medium text-white">Rastgele Değiştir</div>
-                   <div className="text-xs text-white/50">Her açılışta farklı bir soyut tema gösterir.</div>
-                </div>
-                {currentConfig.type === 'random' && <CheckIcon className="w-5 h-5 ml-auto text-blue-400" />}
+                {n.icon}
+                {n.label}
               </button>
+            ))}
+          </nav>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {PRESET_BACKGROUNDS.map((url, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSave('image', url)}
-                    className={`relative aspect-video rounded-lg overflow-hidden group border-2 transition-all
-                      ${currentConfig.value === url && currentConfig.type === 'image' 
-                        ? 'border-blue-500 scale-95 shadow-lg shadow-blue-500/20' 
-                        : 'border-transparent hover:border-white/30'
+          {/* İçerik */}
+          <div className="flex-1 overflow-y-auto p-5 min-h-0">
+
+            {/* ═══ ARKAPLAN ═══ */}
+            {section === 'background' && (
+              <div className="flex flex-col gap-5">
+
+                {/* Mod seçici chips */}
+                <div className="flex gap-2 flex-wrap">
+                  {BG_MODES.map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setBgMode(m.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                        bgMode === m.id
+                          ? 'bg-white/15 border-white/30 text-white'
+                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
                       }`}
-                  >
-                    <img src={url} alt={`Preset ${index}`} className="w-full h-full object-cover" />
-                    {(currentConfig.value === url && currentConfig.type === 'image') && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <CheckIcon className="w-6 h-6 text-white drop-shadow-md" />
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Tema */}
+                {bgMode === 'themes' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {THEMES.map(t => {
+                      const active = currentConfig.type === 'theme' && currentConfig.value === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => applyBg('theme', t.id)}
+                          className={`p-4 rounded-xl border transition-all text-left relative overflow-hidden group ${
+                            active
+                              ? 'border-white/40 ring-1 ring-white/20'
+                              : 'border-white/8 hover:border-white/20'
+                          }`}
+                        >
+                          {/* Gradient preview strip */}
+                          <div className={`absolute inset-0 bg-gradient-to-br ${t.gradient} opacity-40 group-hover:opacity-60 transition-opacity`} />
+                          <div className="relative flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-semibold">{t.name}</div>
+                              <div className="text-xs text-white/50 mt-0.5">{t.desc}</div>
+                            </div>
+                            {active && <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Fotoğraf */}
+                {bgMode === 'presets' && (
+                  <div className="flex flex-col gap-4">
+                    <button
+                      onClick={() => applyBg('random', '')}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        currentConfig.type === 'random'
+                          ? 'bg-white/10 border-white/30'
+                          : 'bg-white/5 border-white/10 hover:bg-white/8'
+                      }`}
+                    >
+                      <ArrowPathIcon className="w-4 h-4 text-white/60 flex-shrink-0" />
+                      <div className="text-left">
+                        <div className="text-sm font-medium">Rastgele</div>
+                        <div className="text-xs text-white/40">Her açılışta farklı bir fotoğraf</div>
+                      </div>
+                      {currentConfig.type === 'random' && <CheckIcon className="w-4 h-4 ml-auto text-white" />}
+                    </button>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {PRESET_BACKGROUNDS.map((url, i) => {
+                        const active = currentConfig.type === 'image' && currentConfig.value === url;
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => applyBg('image', url)}
+                            className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                              active ? 'border-white/60 scale-95' : 'border-transparent hover:border-white/20'
+                            }`}
+                          >
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            {active && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <CheckIcon className="w-5 h-5 text-white drop-shadow" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Renk */}
+                {bgMode === 'color' && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {SOLID_COLORS.map(c => {
+                      const active = currentConfig.type === 'color' && currentConfig.value === c.value;
+                      return (
+                        <button
+                          key={c.value}
+                          onClick={() => applyBg('color', c.value)}
+                          className={`rounded-xl border overflow-hidden transition-all ${
+                            active ? 'border-white/50 scale-95' : 'border-white/8 hover:border-white/25'
+                          }`}
+                        >
+                          <div className="h-16" style={{ backgroundColor: c.value }} />
+                          <div className={`px-3 py-2 text-xs font-medium text-center ${active ? 'text-white' : 'text-white/60'}`}>
+                            {c.name}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Özel URL */}
+                {bgMode === 'custom' && (
+                  <div className="flex flex-col gap-4">
+                    <p className="text-xs text-white/50 leading-relaxed">
+                      Herhangi bir resim veya GIF URL'sini yapıştır.
+                    </p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" />
+                        <input
+                          type="text"
+                          value={customUrl}
+                          onChange={e => setCustomUrl(e.target.value)}
+                          placeholder="https://example.com/bg.jpg"
+                          className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/20 focus:border-white/30 focus:outline-none"
+                        />
+                      </div>
+                      <button
+                        onClick={() => customUrl.trim() && applyBg('image', customUrl)}
+                        disabled={!customUrl.trim()}
+                        className="px-5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+                      >
+                        Uygula
+                      </button>
+                    </div>
+                    {currentConfig.type === 'image' && currentConfig.value && (
+                      <div className="rounded-xl overflow-hidden border border-white/10 h-36">
+                        <img src={currentConfig.value} className="w-full h-full object-cover opacity-60" alt="Önizleme" />
                       </div>
                     )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'color' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {SOLID_COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => handleSave('color', color.value)}
-                  className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-3 hover:scale-105
-                    ${currentConfig.value === color.value && currentConfig.type === 'color'
-                      ? 'bg-white/10 border-blue-500' 
-                      : 'bg-white/5 border-transparent hover:bg-white/10'
-                    }`}
-                >
-                  <div 
-                    className="w-full h-24 rounded-lg shadow-inner border border-white/5" 
-                    style={{ backgroundColor: color.value }} 
-                  />
-                  <span className="text-sm font-medium text-white/90">{color.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'custom' && (
-            <div className="flex flex-col gap-4">
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
-                <p className="text-sm text-emerald-200">
-                  İnternetten beğendiğiniz bir resmin veya GIF'in bağlantısını (URL) buraya yapıştırın.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-2">Resim Bağlantısı (URL)</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
-                    <input 
-                      type="text" 
-                      value={customUrl}
-                      onChange={(e) => setCustomUrl(e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full bg-black/40 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white text-sm focus:border-emerald-500/50 focus:outline-none"
-                    />
                   </div>
-                  <button 
-                    onClick={() => {
-                        if(customUrl.trim()) handleSave('image', customUrl);
-                    }}
-                    disabled={!customUrl.trim()}
-                    className="px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Uygula
-                  </button>
-                </div>
+                )}
               </div>
+            )}
 
-              {currentConfig.type === 'image' && (
-                <div className="mt-4">
-                   <p className="text-xs text-white/50 mb-2">Şu anki arkaplan:</p>
-                   <div className="w-full h-48 rounded-xl overflow-hidden border border-white/10 bg-black/50 relative">
-                     <img src={currentConfig.value || PRESET_BACKGROUNDS[0]} className="w-full h-full object-cover opacity-50" alt="Preview" />
-                   </div>
+            {/* ═══ KART & YAZI ═══ */}
+            {section === 'cards' && (
+              <div className="flex flex-col gap-7">
+
+                {/* Opaklık */}
+                <div>
+                  <SectionLabel>Kart Arkaplan Opaklığı</SectionLabel>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range" min={0} max={80} step={5}
+                      value={localCard.bgOpacity}
+                      onChange={e => cardSet('bgOpacity', Number(e.target.value))}
+                      className="flex-1 accent-white/80"
+                    />
+                    <span className="text-xs text-white/50 w-8 text-right tabular-nums">{localCard.bgOpacity}%</span>
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
 
+                {/* Şekil */}
+                <div>
+                  <SectionLabel>Köşe Şekli</SectionLabel>
+                  <div className="grid grid-cols-3 gap-2">
+                    {SHAPES.map(s => (
+                      <OptionBtn
+                        key={s.id}
+                        active={localCard.shape === s.id}
+                        onClick={() => cardSet('shape', s.id)}
+                        className="p-3 flex flex-col items-center gap-2"
+                      >
+                        <div
+                          className="w-10 h-6 bg-white/20"
+                          style={{ borderRadius: s.radius }}
+                        />
+                        <span className="text-xs">{s.label}</span>
+                      </OptionBtn>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Boyut */}
+                <div>
+                  <SectionLabel>Kart Boyutu</SectionLabel>
+                  <div className="grid grid-cols-4 gap-2">
+                    {SIZES.map(s => (
+                      <OptionBtn
+                        key={s.id}
+                        active={localCard.size === s.id}
+                        onClick={() => cardSet('size', s.id)}
+                        className="p-3 flex flex-col items-center gap-2"
+                      >
+                        <div className="flex flex-col gap-0.5 w-full items-center">
+                          {Array.from({ length: s.bars }).map((_, i) => (
+                            <div key={i} className="w-6 h-1.5 bg-white/30 rounded-sm" />
+                          ))}
+                        </div>
+                        <span className="text-xs">{s.label}</span>
+                      </OptionBtn>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hizalama */}
+                <div>
+                  <SectionLabel>Sayfa Hizalaması</SectionLabel>
+                  <div className="grid grid-cols-3 gap-2">
+                    {ALIGNMENTS.map(a => (
+                      <OptionBtn
+                        key={a.id}
+                        active={localCard.alignment === a.id}
+                        onClick={() => cardSet('alignment', a.id)}
+                        className="p-3 flex flex-col items-center gap-2"
+                      >
+                        <div className="flex gap-1 items-end h-4">
+                          {a.bars.map((filled, i) => (
+                            <div
+                              key={i}
+                              className={`w-2 h-3 rounded-sm ${filled ? 'bg-white/70' : 'bg-white/15'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs">{a.label}</span>
+                      </OptionBtn>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Font */}
+                <div>
+                  <SectionLabel>Yazı Tipi</SectionLabel>
+                  <div className="grid grid-cols-2 gap-2">
+                    {FONTS.map(f => (
+                      <OptionBtn
+                        key={f.id}
+                        active={localCard.font === f.id}
+                        onClick={() => cardSet('font', f.id)}
+                        className="px-4 py-3 flex items-center justify-between"
+                      >
+                        <span className="text-base" style={f.style}>Aa</span>
+                        <span className="text-xs">{f.label}</span>
+                      </OptionBtn>
+                    ))}
+                  </div>
+                </div>
+
+                {/* İkon Boyutu */}
+                <div>
+                  <SectionLabel>İkon Boyutu</SectionLabel>
+                  <div className="grid grid-cols-4 gap-2">
+                    {ICON_SIZES.map(s => (
+                      <OptionBtn
+                        key={s.id}
+                        active={localCard.iconSize === s.id}
+                        onClick={() => cardSet('iconSize', s.id)}
+                        className="p-3 flex flex-col items-center gap-2"
+                      >
+                        <div
+                          className="rounded-md bg-white/20 flex-shrink-0"
+                          style={{ width: s.px / 2, height: s.px / 2 }}
+                        />
+                        <span className="text-xs">{s.label}</span>
+                      </OptionBtn>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* ═══ ALANLAR ═══ */}
+            {section === 'widgets' && (
+              <div className="flex flex-col gap-6">
+                <p className="text-xs text-white/40 leading-relaxed">
+                  Her ana alanın arkaplan opaklığını bağımsız ayarla. 0% tamamen şeffaf, 100% tam dolu.
+                </p>
+                {localLayout
+                  .filter(w => w.id !== 'tasks')
+                  .sort((a, b) => a.order - b.order)
+                  .map(w => (
+                    <div key={w.id}>
+                      <div className="flex items-center justify-between mb-2">
+                        <SectionLabel>{WIDGET_LABELS[w.id]}</SectionLabel>
+                        <span className="text-xs text-white/50 tabular-nums">{w.opacity ?? 10}%</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded flex-shrink-0 border border-white/10"
+                          style={{ backgroundColor: `rgba(255,255,255,${(w.opacity ?? 10) / 100})` }}
+                        />
+                        <input
+                          type="range" min={0} max={100} step={5}
+                          value={w.opacity ?? 10}
+                          onChange={e => widgetSet(w.id, Number(e.target.value))}
+                          className="flex-1 accent-white/80"
+                        />
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            )}
+
+            {/* ═══ VERİ ═══ */}
+            {section === 'data' && (
+              <div className="flex flex-col gap-4">
+                <p className="text-xs text-white/40 leading-relaxed">
+                  Tüm kısayolları ve profilleri JSON dosyası olarak yedekle veya başka cihazdan aktar.
+                </p>
+
+                <button
+                  onClick={doExport}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center flex-shrink-0">
+                    <ArrowDownTrayIcon className="w-5 h-5 text-white/60" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Dışa Aktar</div>
+                    <div className="text-xs text-white/40 mt-0.5">{shortcuts.length} kısayol · JSON indir</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={doImport}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center flex-shrink-0">
+                    <ArrowUpTrayIcon className="w-5 h-5 text-white/60" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">İçe Aktar</div>
+                    <div className="text-xs text-white/40 mt-0.5">JSON dosyasından yükle · mevcut liste değişir</div>
+                  </div>
+                </button>
+
+                {importStatus === 'ok' && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/15 text-white/80 text-sm">
+                    <CheckIcon className="w-4 h-4 flex-shrink-0" />
+                    Kısayollar başarıyla yüklendi.
+                  </div>
+                )}
+                {importStatus === 'err' && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+                    <XMarkIcon className="w-4 h-4 flex-shrink-0" />
+                    {importError}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        </div>
       </div>
     </div>
   );

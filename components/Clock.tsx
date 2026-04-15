@@ -48,7 +48,10 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
           <Cog6ToothIcon className="w-4 h-4 text-white" />
         </button>
       )}
-      <div className="text-7xl md:text-8xl font-thin tracking-tight text-white drop-shadow-lg">
+      <div 
+        className="text-7xl md:text-8xl font-thin tracking-tight drop-shadow-lg transition-colors duration-700"
+        style={{ color: 'var(--theme-accent, white)' }}
+      >
         {formatTime()}
       </div>
       {config.showDate && (

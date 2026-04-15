@@ -30,7 +30,7 @@ const SearchBar: React.FC = () => {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Web'de ara..."
           autoComplete="off"
-          className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-lg placeholder-white/60 py-4 pl-14 pr-6 outline-none focus:bg-white/20 focus:border-white/40 transition-all shadow-lg rounded-full"
+          className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-lg placeholder-white/60 py-4 pl-14 pr-6 outline-none focus:bg-white/20 focus:border-[var(--theme-accent,white)] transition-all shadow-lg rounded-full"
         />
       </form>
     </div>
