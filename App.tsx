@@ -12,7 +12,8 @@ import {
   UsersIcon,
   PhotoIcon,
   HeartIcon,
-  SparklesIcon
+  SparklesIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import Clock from './components/Clock';
 import SearchBar from './components/SearchBar';
