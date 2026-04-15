@@ -86,13 +86,13 @@ const App: React.FC = () => {
         };
       case 'portal':
         return {
-          wrapper: 'bg-[#131313]',
-          overlay: 'bg-[radial-gradient(ellipse_65%_40%_at_8%_108%,rgba(255,153,0,0.2)_0%,transparent_65%),radial-gradient(ellipse_65%_40%_at_92%_108%,rgba(153,204,255,0.14)_0%,transparent_65%)]',
-          accent: 'text-[#FF9900] drop-shadow-[0_0_12px_rgba(255,153,0,0.85)]',
-          glass: 'border-[#FF9900]/20 backdrop-blur-xl hover:border-[#FF9900]/40 transition-all',
-          glassBgRgb: '42,42,42',
-          menuBg: 'rgba(14,14,14,0.98)',
-          menuBorder: 'rgba(255,153,0,0.28)',
+          wrapper: 'bg-[#0a0a0a]',
+          overlay: 'bg-[radial-gradient(ellipse_100%_80%_at_0%_100%,rgba(255,153,0,0.55)_0%,transparent_70%),radial-gradient(ellipse_100%_80%_at_100%_100%,rgba(153,204,255,0.45)_0%,transparent_70%)]',
+          accent: 'text-[#FF9900] drop-shadow-[0_0_15px_rgba(255,153,0,0.9)]',
+          glass: 'border-[#FF9900]/40 backdrop-blur-3xl hover:border-[#FF9900]/60 transition-all',
+          glassBgRgb: '20,20,20',
+          menuBg: 'rgba(10,10,10,0.98)',
+          menuBorder: 'rgba(255,153,0,0.4)',
           accentColor: '#FF9900',
         };
       default:
@@ -520,7 +520,7 @@ const App: React.FC = () => {
                  )}
                </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 gap-y-8 w-full pb-24">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 w-full pb-24" style={{ gap: `${cardConfig.gridGap ?? 16}px` }}>
                   {filteredShortcuts.map(shortcut => (
                       <ShortcutCard
                         key={shortcut.id}
@@ -634,16 +634,23 @@ const App: React.FC = () => {
               if (!widget.visible && !isEditMode) return null;
               
               const containerPadding = 'p-4 md:p-6';
-              const glassStyle = widget.glassEffect !== false 
-                  ? `border-2 border-transparent ${themeStyles.glass} shadow-2xl shadow-black/20` 
-                  : 'border-2 border-transparent bg-transparent shadow-none';
+              const isGlass = widget.glassEffect !== false;
+              const showBorder = isGlass && widget.showBorder !== false;
+              
+              const glassStyle = isGlass 
+                  ? `${activeTheme === 'custom' ? themeStyles.glass : themeStyles.glass} shadow-2xl shadow-black/20` 
+                  : 'bg-transparent shadow-none border-transparent';
                   
-              const editStyle = isEditMode ? 'border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5' : glassStyle;
+              const editStyle = isEditMode ? 'border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5' : `${glassStyle} ${showBorder ? 'border-2' : 'border-0'}`;
 
               const dynamicStyle: React.CSSProperties = {
                  width: widget.widthPx ? `${widget.widthPx}px` : '100%',
                  height: widget.heightPx ? `${widget.heightPx}px` : 'auto',
-                 backgroundColor: (!isEditMode && widget.glassEffect !== false) ? `rgba(${themeStyles.glassBgRgb || '255,255,255'}, ${(widget.opacity ?? 10) / 100})` : undefined
+                 backgroundColor: (!isEditMode && isGlass && activeTheme !== 'custom') ? 
+                    `rgba(${themeStyles.glassBgRgb || '255,255,255'}, ${(widget.opacity ?? 10) / 100})` : undefined,
+                 borderColor: (!isEditMode && showBorder && activeTheme !== 'custom') ? 
+                    `rgba(${themeStyles.glassBgRgb || '255,255,255'}, ${(widget.borderOpacity ?? 20) / 100})` : undefined,
+                 ...(activeTheme === 'custom' && !isEditMode && isGlass ? (themeStyles as any).glassStyle : {})
               };
 
               return (

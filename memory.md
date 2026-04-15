@@ -45,6 +45,8 @@
 - `storageService.ts` üzerinden layout verisine default değerler (`width: 12`, `glassEffect: true`) tanımlandı.
 - `App.tsx` genel layout yapısı `flex flex-col` yerine 12 kolonlu CSS Grid sistemine geçirildi (`grid-cols-12`).
 - `App.tsx` Edit Mode içerisine her bir main widget için boyutlandırma (+/- butonları) ve cam/outline (Sparkles Icon) kapama/açma denetimleri eklendi.
+- **`README.md` v1.1.2 sürümü için modernize edildi ve güncellendi.**
+- **Tüm değişiklikler git'e gönderildi ve `v1.1.2` sürümü GitHub üzerinde release olarak yayınlandı.**
 ### Yapacakları
 - —
 ### Notlar
@@ -58,6 +60,8 @@
 - [x] Donate butonu kaldırma, BMC URL güncelleme.
 - [x] CardConfig sistemi (opaklık, şekil, boyut, hizalama, font).
 - [x] Profil/URL import-export (JSON).
+- [x] **README.md güncelleme.**
+- [x] **v1.1.2 Release yayınlama.**
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
@@ -73,3 +77,4 @@
 | 2026-04-14 | Antigravity | v1.1.2 Versiyon Güncelleme | release hazırlandı. |
 | 2026-04-14 | Antigravity | ZIP Oluşturuldu | gtab_v1.1.2.zip hazırlandı. |
 | 2026-04-14 | Antigravity | Widget boyut ve görünüm ayarı | Skeleton-First ile planlandı. Kullanıcının alan outline'ı kapatma ve boyut ayarlama isteğine karşılık Grid sisteme geçildi. |
+| 2026-04-15 | Antigravity | README & Release | v1.1.2 release ve detaylı dökümantasyon tamamlandı. |

@@ -13,9 +13,9 @@ export type IconType = 'favicon' | 'lucide' | 'image';
 
 export interface ShortcutProfile {
   id: string;
-  name: string; // e.g. "Personal", "Work"
-  url?: string; // Optional override URL (e.g. mail.google.com/u/1/)
-  avatarColor?: string; // Tailwind color class
+  name: string;
+  url?: string;
+  avatarColor?: string;
 }
 
 export interface Shortcut {
@@ -23,15 +23,10 @@ export interface Shortcut {
   title: string;
   url: string;
   category: Category;
-  
-  // Customization
   iconType?: IconType;
-  iconValue?: string; // URL for image, or Icon Name for Lucide
-  
-  // Profiles
+  iconValue?: string;
   profiles?: ShortcutProfile[];
-  defaultProfileId?: string; // ID of the default profile to use on main click
-  
+  defaultProfileId?: string;
   isFolder?: boolean;
   children?: Shortcut[];
 }
@@ -59,16 +54,31 @@ export interface WidgetConfig {
   order: number;
   widthPx?: number;
   heightPx?: number;
-  glassEffect?: boolean; // true = show border/glass, false = invisible container
+  glassEffect?: boolean;
+  opacity?: number; // Background opacity
+  borderOpacity?: number; // Area frame opacity
+  showBorder?: boolean; // Toggle area frame
 }
 
 export type BackgroundType = 'image' | 'color' | 'random' | 'theme';
 
-export type ThemeId = 'default' | 'neon' | 'starship' | 'terminal' | 'portal';
+export type ThemeId = 'default' | 'neon' | 'starship' | 'terminal' | 'portal' | 'custom';
+
+export interface CustomThemeConfig {
+  wrapperBg: string;
+  overlayBg: string;
+  accentColor: string;
+  glassBorder: string;
+  glassBg: string;
+  menuBg: string;
+  menuBorder: string;
+  textColor: string;
+}
 
 export interface BackgroundConfig {
   type: BackgroundType;
-  value: string; // URL for image, Hex/RGBA for color, or ThemeId
+  value: string;
+  customTheme?: CustomThemeConfig;
 }
 
 export type TimeFormat = '12h' | '24h';
@@ -78,6 +88,8 @@ export interface ClockConfig {
   format: TimeFormat;
   showSeconds: boolean;
   showDate: boolean;
+  fontFamily?: FontFamily;
+  fontSize?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export type CardShape = 'sharp' | 'rounded' | 'pill';
@@ -93,4 +105,7 @@ export interface CardConfig {
   alignment: CardAlignment;
   font: FontFamily;
   iconSize: IconSize;
+  cardWidth?: number;
+  glowEnabled?: boolean;
+  gridGap?: number; // Space between cards
 }

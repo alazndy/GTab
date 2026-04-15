@@ -6,12 +6,8 @@ import { Task } from '../types';
 import { getTasks, saveTasks } from '../services/storageService';
 
 const TasksWidget: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => getTasks());
   const [newTaskText, setNewTaskText] = useState('');
-
-  useEffect(() => {
-    setTasks(getTasks());
-  }, []);
 
   useEffect(() => {
     saveTasks(tasks);

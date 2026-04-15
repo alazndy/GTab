@@ -2,6 +2,7 @@
 import React, { memo } from 'react';
 import { Shortcut, ShortcutProfile, CardConfig, IconSize } from '../types';
 import { XMarkIcon, Cog6ToothIcon, ArrowTopRightOnSquareIcon, UserIcon, FolderIcon, BoltIcon } from '@heroicons/react/24/outline';
+import { getFavicon, resolveTargetUrl } from './utils/shortcutUtils';
 
 interface ShortcutCardProps {
   shortcut: Shortcut;
@@ -16,43 +17,6 @@ interface ShortcutCardProps {
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent, targetId: string) => void;
 }
-
-const ensureProtocol = (url: string | undefined) => {
-  if (!url) return '';
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) {
-    return trimmed;
-  }
-  return `https://${trimmed}`;
-};
-
-// Cache for favicon URLs to prevent expensive URL parsing on every render
-const faviconCache = new Map<string, string>();
-
-const resolveTargetUrl = (shortcut: Shortcut, profile?: ShortcutProfile) => {
-  const mainUrl = ensureProtocol(shortcut.url);
-  if (!profile) return mainUrl;
-  const pUrl = profile.url?.trim();
-  if (!pUrl) return mainUrl;
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  if (emailRegex.test(pUrl)) {
-     if (mainUrl.includes('google.com') || mainUrl.includes('youtube.com')) {
-        try {
-            const urlObj = new URL(mainUrl);
-            urlObj.searchParams.set('authuser', pUrl);
-            return urlObj.toString();
-        } catch {
-            const separator = mainUrl.includes('?') ? '&' : '?';
-            return `${mainUrl}${separator}authuser=${pUrl}`;
-        }
-     }
-     return `mailto:${pUrl}`;
-  }
-  return ensureProtocol(pUrl);
-};
 
 const SHAPE_CLASS: Record<string, string> = {
   sharp: 'rounded-none',
@@ -129,51 +93,18 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
   const displayProfile = activeProfile || defaultProfile;
   const targetUrl = resolveTargetUrl(shortcut, displayProfile);
 
-  const getFavicon = (url: string) => {
-    const cacheKey = `${url}|${shortcut.url}`;
-    if (faviconCache.has(cacheKey)) {
-        return faviconCache.get(cacheKey)!;
-    }
-
-    let result: string;
-    try {
-        const fullUrl = ensureProtocol(url);
-        if (fullUrl.startsWith('mailto:')) {
-            result = getFavicon(shortcut.url);
-        } else {
-            const domain = new URL(fullUrl).hostname;
-            result = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-        }
-    } catch {
-        result = 'https://picsum.photos/64/64';
-    }
-
-    faviconCache.set(cacheKey, result);
-    return result;
-  };
-
   const renderIconContent = (s: Shortcut, iconSz = "w-10 h-10", mb = "mb-3") => {
-    if (s.iconType === 'image' && s.iconValue) {
-      return (
-        <img
-          src={s.iconValue}
-          alt={s.title}
-          loading="lazy"
-          decoding="async"
-          className={`${iconSz} ${mb} rounded-md shadow-md object-contain bg-white/10 flex-shrink-0`}
-          onError={(e) => (e.target as HTMLImageElement).src = getFavicon(s.url)}
-        />
-      );
-    }
+    const iconUrl = s.iconType === 'image' && s.iconValue ? s.iconValue : getFavicon(s.url, shortcut.url);
+    
     return (
       <img
-        src={getFavicon(s.url)}
+        src={iconUrl}
         alt={s.title}
         loading="lazy"
         decoding="async"
-        className={`${iconSz} ${mb} rounded-md shadow-md object-contain flex-shrink-0`}
+        className={`${iconSz} ${mb} rounded-md shadow-md object-contain ${s.iconType === 'image' ? 'bg-white/10' : ''} flex-shrink-0`}
         onError={(e) => {
-          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=?';
+          (e.target as HTMLImageElement).src = getFavicon(s.url, shortcut.url);
         }}
       />
     );
@@ -204,6 +135,9 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
     link.click();
   };
 
+  const cardWidthStyle = cardConfig?.cardWidth ? { width: `${cardConfig.cardWidth}%` } : undefined;
+  const glowClass = cardConfig?.glowEnabled ? 'hover:shadow-[0_0_20px_var(--theme-accent,rgba(59,130,246,0.5))]' : 'hover:shadow-xl';
+
   if (isFolder) {
       const children = shortcut.children || [];
       const previewItems = children.slice(0, 4);
@@ -215,10 +149,11 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
             onDragStart={(e) => onDragStart?.(e, shortcut.id)}
             onDragOver={onDragOver}
             onDrop={(e) => onDrop?.(e, shortcut.id)}
+            style={cardWidthStyle}
         >
             <div
                 onClick={handleMainClick}
-                className={`relative backdrop-blur-md border border-white/10 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:shadow-xl w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass}`}
+                className={`relative backdrop-blur-md border border-white/10 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass}`}
                 style={{ backgroundColor: `rgba(255,255,255,${bgOpacity / 100})` }}
             >
                 <div className={`grid grid-cols-2 gap-1 p-1 bg-black/20 rounded-lg flex-shrink-0 ${isSmall ? 'w-9 h-9 mb-1' : 'w-[52px] h-[52px] mb-2'}`}>
@@ -281,15 +216,16 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
         onDragStart={(e) => onDragStart?.(e, shortcut.id)}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop?.(e, shortcut.id)}
+        style={cardWidthStyle}
     >
       <div
-        className={`relative backdrop-blur-md border flex flex-col items-center justify-center transition-all duration-200 cursor-pointer hover:-translate-y-1 shadow-sm hover:shadow-xl w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${
+        className={`relative backdrop-blur-md border flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-sm w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${
           activeProfile
             ? 'border-blue-500/30 shadow-blue-500/10'
             : defaultProfile
             ? 'border-white/20 shadow-white/5'
             : 'border-white/10'
-        }`}
+        } ${glowClass}`}
         style={{
           backgroundColor: activeProfile
             ? 'rgba(59,130,246,0.2)'

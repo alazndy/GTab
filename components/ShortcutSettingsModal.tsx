@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { XMarkIcon, PlusIcon, TrashIcon, CheckIcon, StarIcon, PencilIcon, ArrowPathIcon, ChevronDownIcon, MagnifyingGlassIcon, Squares2X2Icon, UsersIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid, CheckIcon as CheckSolid } from '@heroicons/react/24/solid';
 import { Shortcut, ShortcutProfile, IconType, Category } from '../types';
+import { getFavicon } from './utils/shortcutUtils';
 
 interface ShortcutSettingsModalProps {
   isOpen: boolean;
@@ -155,15 +156,6 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     });
   };
 
-  const getFavicon = () => {
-    try {
-      if (formData.url.startsWith('http')) {
-        return `https://www.google.com/s2/favicons?domain=${new URL(formData.url).hostname}&sz=64`;
-      }
-    } catch {}
-    return 'https://via.placeholder.com/24';
-  };
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -172,7 +164,7 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <img 
-              src={formData.iconType === 'image' && formData.iconValue ? formData.iconValue : getFavicon()}
+              src={formData.iconType === 'image' && formData.iconValue ? formData.iconValue : getFavicon(formData.url)}
               className="w-6 h-6 rounded-sm" 
               onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/24'}
               alt=""

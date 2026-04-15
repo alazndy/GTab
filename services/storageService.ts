@@ -1,5 +1,5 @@
 
-import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig } from '../types';
+import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig, CustomThemeConfig } from '../types';
 
 const STORAGE_KEY = 'gtab_shortcuts';
 const LAYOUT_KEY = 'gtab_layout';
@@ -72,17 +72,42 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
 ];
 
 const DEFAULT_LAYOUT: WidgetConfig[] = [
-  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true },
-  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true },
-  { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true },
-  { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true },
-  { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true },
+  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
 ];
 
-const DEFAULT_CLOCK_CONFIG: ClockConfig = {
+export const DEFAULT_CLOCK_CONFIG: ClockConfig = {
   format: '24h',
   showSeconds: false,
-  showDate: true
+  showDate: true,
+  fontFamily: 'geist',
+  fontSize: 'xl'
+};
+
+export const DEFAULT_CUSTOM_THEME: CustomThemeConfig = {
+  wrapperBg: '#0f172a',
+  overlayBg: 'rgba(0,0,0,0.3)',
+  accentColor: '#3b82f6',
+  glassBorder: 'rgba(255,255,255,0.1)',
+  glassBg: 'rgba(255,255,255,0.05)',
+  menuBg: 'rgba(15,23,42,0.95)',
+  menuBorder: 'rgba(255,255,255,0.1)',
+  textColor: '#ffffff'
+};
+
+export const DEFAULT_CARD_CONFIG: CardConfig = {
+  bgOpacity: 10,
+  shape: 'rounded',
+  size: 'md',
+  alignment: 'center',
+  font: 'geist',
+  iconSize: 'md',
+  cardWidth: 100,
+  glowEnabled: true,
+  gridGap: 16
 };
 
 export const getShortcuts = (): Shortcut[] => {
@@ -108,8 +133,13 @@ export const getLayoutConfig = (): WidgetConfig[] => {
     const stored = localStorage.getItem(LAYOUT_KEY);
     if (!stored) return DEFAULT_LAYOUT;
     const parsed = JSON.parse(stored) as WidgetConfig[];
-    // Migrate: ensure new fields exist on stored entries
-    return parsed.map(w => ({ opacity: 10, glassEffect: w.glassEffect ?? true, ...w }));
+    return parsed.map(w => ({ 
+      opacity: 10, 
+      glassEffect: w.glassEffect ?? true, 
+      showBorder: w.showBorder ?? true, 
+      borderOpacity: w.borderOpacity ?? 20, 
+      ...w 
+    }));
   } catch (e) {
     return DEFAULT_LAYOUT;
   }
@@ -177,7 +207,7 @@ export const saveViewState = (state: ViewState) => {
 export const getClockConfig = (): ClockConfig => {
   try {
     const stored = localStorage.getItem(CLOCK_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_CLOCK_CONFIG;
+    return stored ? { ...DEFAULT_CLOCK_CONFIG, ...JSON.parse(stored) } : DEFAULT_CLOCK_CONFIG;
   } catch (e) {
     return DEFAULT_CLOCK_CONFIG;
   }
@@ -189,15 +219,6 @@ export const saveClockConfig = (config: ClockConfig) => {
   } catch (e) {
     console.error("Failed to save clock config", e);
   }
-};
-
-export const DEFAULT_CARD_CONFIG: CardConfig = {
-  bgOpacity: 10,
-  shape: 'rounded',
-  size: 'md',
-  alignment: 'center',
-  font: 'geist',
-  iconSize: 'md',
 };
 
 export const getCardConfig = (): CardConfig => {

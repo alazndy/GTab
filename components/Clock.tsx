@@ -17,6 +17,27 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
     return () => clearInterval(timer);
   }, []);
 
+  const clockStyle = React.useMemo(() => {
+    const fonts: Record<string, string> = {
+      geist: '"Geist Sans", system-ui, sans-serif',
+      system: 'system-ui, sans-serif',
+      mono: '"Geist Mono", monospace',
+      serif: 'Georgia, serif',
+    };
+    
+    const sizes: Record<string, string> = {
+      sm: 'text-4xl md:text-5xl',
+      md: 'text-5xl md:text-6xl',
+      lg: 'text-6xl md:text-8xl',
+      xl: 'text-7xl md:text-9xl',
+    };
+
+    return {
+      fontFamily: fonts[config.fontFamily || 'geist'],
+      sizeClass: sizes[config.fontSize || 'xl']
+    };
+  }, [config.fontFamily, config.fontSize]);
+
   const formatTime = () => {
     const options: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
@@ -38,7 +59,7 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
   };
 
   return (
-    <div className="text-center mb-8 animate-fade-in relative group">
+    <div className="text-center mb-8 animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
       {isEditMode && onOpenSettings && (
         <button 
           onClick={onOpenSettings}
@@ -49,7 +70,7 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
         </button>
       )}
       <div 
-        className="text-7xl md:text-8xl font-thin tracking-tight drop-shadow-lg transition-colors duration-700"
+        className={`${clockStyle.sizeClass} font-thin tracking-tight drop-shadow-lg transition-all duration-700`}
         style={{ color: 'var(--theme-accent, white)' }}
       >
         {formatTime()}

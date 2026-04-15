@@ -1,16 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   XMarkIcon, CheckIcon, PhotoIcon, ArrowPathIcon, LinkIcon,
   SparklesIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, PaintBrushIcon,
-  Squares2X2Icon, ServerStackIcon, AdjustmentsHorizontalIcon
+  Squares2X2Icon, ServerStackIcon, AdjustmentsHorizontalIcon,
+  SwatchIcon, EyeIcon, DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline';
 import {
   BackgroundConfig, BackgroundType, CardConfig,
   CardShape, CardSize, CardAlignment, FontFamily, IconSize, Shortcut,
-  WidgetConfig, WidgetId
+  WidgetConfig, WidgetId, CustomThemeConfig
 } from '../types';
-import { PRESET_BACKGROUNDS, exportShortcutsToFile, importShortcutsFromFile } from '../services/storageService';
+import { PRESET_BACKGROUNDS, exportShortcutsToFile, importShortcutsFromFile, DEFAULT_CUSTOM_THEME } from '../services/storageService';
 
 interface BackgroundSettingsModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ const THEMES = [
   { id: 'starship',name: 'Starship',   desc: 'Derin uzay, mavi aksan.', gradient: 'from-gray-950 to-blue-950' },
   { id: 'terminal',name: 'Terminal',   desc: 'Retro yeşil-siyah.', gradient: 'from-black to-green-950' },
   { id: 'portal',  name: 'Aperture',   desc: '#FF9900 turuncu · #99CCFF mavi portal.', gradient: 'from-[#131313] via-[#1a1a1a] to-[#2A2A2A]' },
+  { id: 'custom',  name: 'Özel Tema',  desc: 'Kendi renklerini belirle.', gradient: 'from-blue-600 via-purple-600 to-pink-600' },
 ];
 
 const SOLID_COLORS = [
@@ -110,7 +112,7 @@ const OptionBtn: React.FC<{
 
 // ── Ana bileşen ──────────────────────────────────────────
 
-type Section = 'background' | 'cards' | 'widgets' | 'data';
+type Section = 'background' | 'cards' | 'widgets' | 'data' | 'theme-editor';
 type BgMode  = 'themes' | 'presets' | 'color' | 'custom';
 
 const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
@@ -124,9 +126,25 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
   const [importStatus, setImportStatus] = useState<'idle' | 'ok' | 'err'>('idle');
   const [importError, setImportError] = useState('');
 
+  // Custom Theme State
+  const [customTheme, setCustomTheme] = useState<CustomThemeConfig>(currentConfig.customTheme || DEFAULT_CUSTOM_THEME);
+
+  useEffect(() => {
+    if (isOpen) {
+        setLocalCard(cardConfig);
+        setLocalLayout(layout);
+        if (currentConfig.customTheme) setCustomTheme(currentConfig.customTheme);
+    }
+  }, [isOpen, cardConfig, layout, currentConfig.customTheme]);
+
   if (!isOpen) return null;
 
-  const applyBg  = (type: BackgroundType, value: string) => { onSave({ type, value }); onClose(); };
+  const applyBg  = (type: BackgroundType, value: string) => { 
+    onSave({ type, value, customTheme: value === 'custom' ? customTheme : undefined }); 
+    if (value !== 'custom') onClose(); 
+    else setSection('theme-editor');
+  };
+
   const cardSet  = <K extends keyof CardConfig>(k: K, v: CardConfig[K]) => {
     const next = { ...localCard, [k]: v };
     setLocalCard(next);
@@ -137,6 +155,12 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
     const next = localLayout.map(w => w.id === id ? { ...w, opacity } : w);
     setLocalLayout(next);
     onSaveLayout(next);
+  };
+
+  const updateCustomTheme = (updates: Partial<CustomThemeConfig>) => {
+    const next = { ...customTheme, ...updates };
+    setCustomTheme(next);
+    onSave({ ...currentConfig, customTheme: next });
   };
 
   const doExport = () => exportShortcutsToFile(shortcuts);
@@ -159,6 +183,10 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
     { id: 'data',       icon: <ServerStackIcon className="w-5 h-5" />,                label: 'Veri'      },
   ];
 
+  if (currentConfig.type === 'theme' && currentConfig.value === 'custom') {
+    NAV.splice(1, 0, { id: 'theme-editor', icon: <PaintBrushIcon className="w-5 h-5" />, label: 'Tema Editörü' });
+  }
+
   const BG_MODES: { id: BgMode; label: string }[] = [
     { id: 'themes',  label: 'Tema'    },
     { id: 'presets', label: 'Fotoğraf' },
@@ -170,10 +198,10 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-3xl bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-slide-up text-white">
+      <div className="relative w-full max-w-4xl bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up text-white">
 
         {/* ── Başlık ── */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-black/20">
           <h2 className="text-base font-semibold flex items-center gap-2">
             <PaintBrushIcon className="w-4 h-4 text-white/50" />
             Görünüm Ayarları
@@ -187,7 +215,7 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
         <div className="flex flex-1 min-h-0">
 
           {/* Sidebar */}
-          <nav className="w-36 flex-shrink-0 flex flex-col gap-1 p-3 border-r border-white/8">
+          <nav className="w-36 flex-shrink-0 flex flex-col gap-1 p-3 border-r border-white/8 bg-black/10">
             {NAV.map(n => (
               <button
                 key={n.id}
@@ -205,11 +233,11 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
           </nav>
 
           {/* İçerik */}
-          <div className="flex-1 overflow-y-auto p-5 min-h-0">
+          <div className="flex-1 overflow-y-auto p-6 min-h-0 bg-black/5">
 
             {/* ═══ ARKAPLAN ═══ */}
             {section === 'background' && (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-6">
 
                 {/* Mod seçici chips */}
                 <div className="flex gap-2 flex-wrap">
@@ -219,7 +247,7 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
                       onClick={() => setBgMode(m.id)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                         bgMode === m.id
-                          ? 'bg-white/15 border-white/30 text-white'
+                          ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
                           : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
                       }`}
                     >
@@ -239,18 +267,17 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
                           onClick={() => applyBg('theme', t.id)}
                           className={`p-4 rounded-xl border transition-all text-left relative overflow-hidden group ${
                             active
-                              ? 'border-white/40 ring-1 ring-white/20'
+                              ? 'border-blue-500/50 ring-1 ring-blue-500/20'
                               : 'border-white/8 hover:border-white/20'
                           }`}
                         >
-                          {/* Gradient preview strip */}
-                          <div className={`absolute inset-0 bg-gradient-to-br ${t.gradient} opacity-40 group-hover:opacity-60 transition-opacity`} />
+                          <div className={`absolute inset-0 bg-gradient-to-br ${t.gradient} opacity-20 group-hover:opacity-40 transition-opacity`} />
                           <div className="relative flex items-center justify-between">
                             <div>
-                              <div className="text-sm font-semibold">{t.name}</div>
+                              <div className="text-sm font-semibold text-white">{t.name}</div>
                               <div className="text-xs text-white/50 mt-0.5">{t.desc}</div>
                             </div>
-                            {active && <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />}
+                            {active && <CheckIcon className="w-4 h-4 text-blue-400 flex-shrink-0" />}
                           </div>
                         </button>
                       );
@@ -359,9 +386,129 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
               </div>
             )}
 
+            {/* ═══ TEMA EDİTÖRÜ ═══ */}
+            {section === 'theme-editor' && (
+                <div className="flex flex-col gap-6 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <SectionLabel>Temel Renkler</SectionLabel>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Arkaplan Rengi</span>
+                                    <input type="color" value={customTheme.wrapperBg} onChange={e => updateCustomTheme({ wrapperBg: e.target.value })} className="w-8 h-8 rounded-lg bg-transparent border-none cursor-pointer" />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Aksan Rengi (Neon)</span>
+                                    <input type="color" value={customTheme.accentColor} onChange={e => updateCustomTheme({ accentColor: e.target.value })} className="w-8 h-8 rounded-lg bg-transparent border-none cursor-pointer" />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Yazı Rengi</span>
+                                    <input type="color" value={customTheme.textColor} onChange={e => updateCustomTheme({ textColor: e.target.value })} className="w-8 h-8 rounded-lg bg-transparent border-none cursor-pointer" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <SectionLabel>Cam (Glass) Efekti</SectionLabel>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Cam Rengi (RGBA)</span>
+                                    <input type="text" value={customTheme.glassBg} onChange={e => updateCustomTheme({ glassBg: e.target.value })} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] w-32 focus:outline-none" />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Cam Çerçeve (RGBA)</span>
+                                    <input type="text" value={customTheme.glassBorder} onChange={e => updateCustomTheme({ glassBorder: e.target.value })} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] w-32 focus:outline-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <SectionLabel>Menüler</SectionLabel>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Menü Arkaplan</span>
+                                    <input type="text" value={customTheme.menuBg} onChange={e => updateCustomTheme({ menuBg: e.target.value })} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] w-32 focus:outline-none" />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-white/60">Menü Çerçeve</span>
+                                    <input type="text" value={customTheme.menuBorder} onChange={e => updateCustomTheme({ menuBorder: e.target.value })} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] w-32 focus:outline-none" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        onClick={() => updateCustomTheme(DEFAULT_CUSTOM_THEME)}
+                        className="text-[10px] text-white/30 hover:text-white transition-colors w-fit flex items-center gap-1"
+                    >
+                        <ArrowPathIcon className="w-3 h-3" /> Varsayılana Dön
+                    </button>
+                </div>
+            )}
+
             {/* ═══ KART & YAZI ═══ */}
             {section === 'cards' && (
-              <div className="flex flex-col gap-7">
+              <div className="flex flex-col gap-8">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Genişlik */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <SectionLabel>Kart Genişliği (%)</SectionLabel>
+                            <span className="text-[10px] font-bold text-blue-400">{localCard.cardWidth ?? 100}%</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <DevicePhoneMobileIcon className="w-4 h-4 text-white/20" />
+                            <input
+                                type="range" min={20} max={100} step={1}
+                                value={localCard.cardWidth ?? 100}
+                                onChange={e => cardSet('cardWidth', Number(e.target.value))}
+                                className="flex-1 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Parlama Efekti */}
+                    <div>
+                        <SectionLabel>Kart Parlama (Glow)</SectionLabel>
+                        <button 
+                            onClick={() => cardSet('glowEnabled', !localCard.glowEnabled)}
+                            className={`flex items-center gap-3 w-full p-3 rounded-xl border transition-all ${
+                                localCard.glowEnabled 
+                                    ? 'bg-blue-500/10 border-blue-500/50 text-white' 
+                                    : 'bg-white/5 border-white/10 text-white/40'
+                            }`}
+                        >
+                            <div className={`p-1.5 rounded-lg transition-colors ${localCard.glowEnabled ? 'bg-blue-500 text-white' : 'bg-white/10'}`}>
+                                <SparklesIcon className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-medium">Hover Parlama Efekti</span>
+                            <div className="ml-auto">
+                                <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${localCard.glowEnabled ? 'bg-blue-500' : 'bg-white/20'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full transition-transform ${localCard.glowEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Kart Aralığı */}
+                    <div className="col-span-1 md:col-span-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <SectionLabel>Kart Aralığı (Izgara Boşluğu)</SectionLabel>
+                            <span className="text-[10px] font-bold text-blue-400">{localCard.gridGap ?? 16}px</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="range" min={4} max={48} step={2}
+                                value={localCard.gridGap ?? 16}
+                                onChange={e => cardSet('gridGap', Number(e.target.value))}
+                                className="flex-1 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <hr className="border-white/5" />
 
                 {/* Opaklık */}
                 <div>
@@ -491,27 +638,61 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
             {section === 'widgets' && (
               <div className="flex flex-col gap-6">
                 <p className="text-xs text-white/40 leading-relaxed">
-                  Her ana alanın arkaplan opaklığını bağımsız ayarla. 0% tamamen şeffaf, 100% tam dolu.
+                  Her ana alanın(widget) arkaplan opaklığını ve çerçeve görünümünü bağımsız ayarlayabilirsiniz.
                 </p>
                 {localLayout
                   .filter(w => w.id !== 'tasks')
                   .sort((a, b) => a.order - b.order)
                   .map(w => (
-                    <div key={w.id}>
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={w.id} className="border border-white/5 rounded-xl p-4 bg-white/5">
+                      <div className="flex items-center justify-between mb-4">
                         <SectionLabel>{WIDGET_LABELS[w.id]}</SectionLabel>
-                        <span className="text-xs text-white/50 tabular-nums">{w.opacity ?? 10}%</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-white/50">Çerçeve:</span>
+                          <button 
+                             onClick={() => {
+                               const next = localLayout.map(item => item.id === w.id ? { ...item, showBorder: item.showBorder === false ? true : false } : item);
+                               setLocalLayout(next); onSaveLayout(next);
+                             }}
+                             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold transition-colors ${w.showBorder !== false ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
+                          >
+                            {w.showBorder !== false ? 'Açık' : 'Kapalı'}
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded flex-shrink-0 border border-white/10"
-                          style={{ backgroundColor: `rgba(255,255,255,${(w.opacity ?? 10) / 100})` }}
-                        />
-                        <input
-                          type="range" min={0} max={100} step={5}
-                          value={w.opacity ?? 10}
-                          onChange={e => widgetSet(w.id, Number(e.target.value))}
-                          className="flex-1 accent-white/80"
-                        />
+                      
+                      <div className="flex flex-col gap-4">
+                        <div>
+                          <div className="flex justify-between mb-1 text-xs text-white/40"><span>Arkaplan Opaklığı</span><span className="tabular-nums">{w.opacity ?? 10}%</span></div>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range" min={0} max={100} step={5}
+                              value={w.opacity ?? 10}
+                              onChange={e => {
+                                 const next = localLayout.map(item => item.id === w.id ? { ...item, opacity: Number(e.target.value) } : item);
+                                 setLocalLayout(next); onSaveLayout(next);
+                              }}
+                              className="flex-1 accent-white/80 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        {w.showBorder !== false && (
+                          <div>
+                            <div className="flex justify-between mb-1 text-xs text-white/40"><span>Çerçeve Opaklığı</span><span className="tabular-nums">{w.borderOpacity ?? 20}%</span></div>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range" min={0} max={100} step={5}
+                                value={w.borderOpacity ?? 20}
+                                onChange={e => {
+                                   const next = localLayout.map(item => item.id === w.id ? { ...item, borderOpacity: Number(e.target.value) } : item);
+                                   setLocalLayout(next); onSaveLayout(next);
+                                }}
+                                className="flex-1 accent-blue-400 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))

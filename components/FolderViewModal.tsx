@@ -2,6 +2,7 @@
 import React from 'react';
 import { Shortcut, ShortcutProfile } from '../types';
 import { XMarkIcon, PlusIcon, FolderOpenIcon, TrashIcon, Cog6ToothIcon, BoltIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { ensureProtocol, getFavicon, resolveTargetUrl as resolveUrl } from './utils/shortcutUtils';
 
 interface FolderViewModalProps {
   folder: Shortcut;
@@ -11,47 +12,6 @@ interface FolderViewModalProps {
   onDeleteItem: (id: string) => void;
   onAddItem: () => void;
 }
-
-const ensureProtocol = (url: string | undefined) => {
-  if (!url) return '';
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) return trimmed;
-  return `https://${trimmed}`;
-};
-
-const getFavicon = (url: string) => {
-  try {
-    const fullUrl = ensureProtocol(url);
-    if (fullUrl.startsWith('mailto:')) return 'https://picsum.photos/64/64';
-    const domain = new URL(fullUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-  } catch {
-    return 'https://picsum.photos/64/64';
-  }
-};
-
-const resolveUrl = (shortcut: Shortcut, profile?: ShortcutProfile): string => {
-  const mainUrl = ensureProtocol(shortcut.url);
-  if (!profile) return mainUrl;
-  const pUrl = profile.url?.trim();
-  if (!pUrl) return mainUrl;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (emailRegex.test(pUrl)) {
-    if (mainUrl.includes('google.com') || mainUrl.includes('youtube.com')) {
-      try {
-        const u = new URL(mainUrl);
-        u.searchParams.set('authuser', pUrl);
-        return u.toString();
-      } catch {
-        const sep = mainUrl.includes('?') ? '&' : '?';
-        return `${mainUrl}${sep}authuser=${pUrl}`;
-      }
-    }
-    return `mailto:${pUrl}`;
-  }
-  return ensureProtocol(pUrl);
-};
 
 const openUrl = (url: string) => {
   const a = document.createElement('a');

@@ -1,7 +1,8 @@
+
 import React from 'react';
-import { XMarkIcon, ClockIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ClockIcon, CalendarIcon, SwatchIcon, VariableIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { ClockConfig, DateFormat } from '../types';
+import { ClockConfig, FontFamily } from '../types';
 
 interface ClockSettingsModalProps {
   isOpen: boolean;
@@ -24,11 +25,25 @@ const ClockSettingsModal: React.FC<ClockSettingsModalProps> = ({ isOpen, onClose
     onClose();
   };
 
+  const fonts: { id: FontFamily; label: string }[] = [
+    { id: 'geist', label: 'Geist Sans' },
+    { id: 'system', label: 'Sistem' },
+    { id: 'mono', label: 'Mono' },
+    { id: 'serif', label: 'Serif' },
+  ];
+
+  const sizes: { id: 'sm' | 'md' | 'lg' | 'xl'; label: string }[] = [
+    { id: 'sm', label: 'Küçük' },
+    { id: 'md', label: 'Orta' },
+    { id: 'lg', label: 'Büyük' },
+    { id: 'xl', label: 'Ekstra' },
+  ];
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative w-full max-w-md bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col animate-slide-up text-white overflow-hidden">
+      <div className="relative w-full max-w-md bg-black/50 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col animate-slide-up text-white overflow-hidden max-h-[90vh]">
         
         <div className="flex items-center justify-between p-5 border-b border-white/10 bg-black/20">
           <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -40,7 +55,7 @@ const ClockSettingsModal: React.FC<ClockSettingsModalProps> = ({ isOpen, onClose
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto">
           
           <div>
             <h3 className="text-sm font-medium text-white/60 mb-3 flex items-center gap-2">
@@ -72,15 +87,65 @@ const ClockSettingsModal: React.FC<ClockSettingsModalProps> = ({ isOpen, onClose
               </button>
             </div>
             <div className="mt-4">
-               <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors">
+               <button 
+                 onClick={() => setTempConfig({ ...tempConfig, showSeconds: !tempConfig.showSeconds })}
+                 className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors w-full text-left"
+               >
                  <div 
                    className={`w-10 h-5 rounded-full p-0.5 transition-colors ${tempConfig.showSeconds ? 'bg-blue-500' : 'bg-white/20'}`}
-                   onClick={() => setTempConfig({ ...tempConfig, showSeconds: !tempConfig.showSeconds })}
                  >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${tempConfig.showSeconds ? 'translate-x-5' : 'translate-x-0'}`} />
                  </div>
                  <span className="text-sm text-white/80">Saniyeyi Göster</span>
-               </label>
+               </button>
+            </div>
+          </div>
+
+          <hr className="border-white/10" />
+
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-white/60 mb-3 flex items-center gap-2">
+                <VariableIcon className="w-3.5 h-3.5" />
+                Yazı Tipi (Font)
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {fonts.map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setTempConfig({ ...tempConfig, fontFamily: f.id })}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+                      tempConfig.fontFamily === f.id 
+                        ? 'bg-blue-500/20 border-blue-500 text-blue-400' 
+                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-white/60 mb-3 flex items-center gap-2">
+                <SwatchIcon className="w-3.5 h-3.5" />
+                Boyut
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {sizes.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setTempConfig({ ...tempConfig, fontSize: s.id })}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+                      tempConfig.fontSize === s.id 
+                        ? 'bg-blue-500/20 border-blue-500 text-blue-400' 
+                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -93,10 +158,7 @@ const ClockSettingsModal: React.FC<ClockSettingsModalProps> = ({ isOpen, onClose
             </h3>
             <div className="space-y-2">
               {[
-                { id: 'full', label: 'Tam', example: '19 Kasım Çarşamba' },
-                { id: 'long', label: 'Uzun', example: '19 Kasım 2024' },
-                { id: 'medium', label: 'Orta', example: '19 Kas Çar' },
-                { id: 'short', label: 'Kısa', example: '19.11.2024' },
+                { id: 'full', label: 'Görünür', example: '19 Kasım Çarşamba' },
                 { id: 'hidden', label: 'Gizli', example: '(Tarih gösterilmez)' },
               ].map((opt) => (
                 <button
@@ -117,7 +179,7 @@ const ClockSettingsModal: React.FC<ClockSettingsModalProps> = ({ isOpen, onClose
 
         </div>
 
-        <div className="p-4 border-t border-white/10 flex justify-end gap-3 bg-black/20">
+        <div className="p-4 border-t border-white/10 flex justify-end gap-3 bg-black/20 mt-auto">
           <button 
             onClick={onClose}
             className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
