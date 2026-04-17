@@ -38,25 +38,25 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
     };
   }, [config.fontFamily, config.fontSize]);
 
-  const formatTime = () => {
+  const timeFormatter = React.useMemo(() => {
     const options: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
       minute: '2-digit',
       second: config.showSeconds ? '2-digit' : undefined,
       hour12: config.format === '12h'
     };
-    return time.toLocaleTimeString('tr-TR', options);
-  };
+    return new Intl.DateTimeFormat('tr-TR', options);
+  }, [config.showSeconds, config.format]);
 
-  const formatDate = () => {
+  const dateFormatter = React.useMemo(() => {
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     };
-    return time.toLocaleDateString('tr-TR', options);
-  };
+    return new Intl.DateTimeFormat('tr-TR', options);
+  }, []);
 
   return (
     <div className="text-center mb-8 animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
@@ -65,11 +65,11 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
         className={`${clockStyle.sizeClass} font-thin tracking-tight drop-shadow-lg transition-all duration-700`}
         style={{ color: 'var(--theme-accent, white)' }}
       >
-        {formatTime()}
+        {timeFormatter.format(time)}
       </div>
       {config.showDate && (
         <div className="text-lg md:text-xl text-white/70 mt-2 font-light capitalize">
-          {formatDate()}
+          {dateFormatter.format(time)}
         </div>
       )}
     </div>
