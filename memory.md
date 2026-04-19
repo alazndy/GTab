@@ -1,9 +1,9 @@
 # GTab Memory
 
 ## Son Durum
-- Tarih: 2026-04-14
-- Aktif agent: Claude
-- Versiyon: **1.1.2** (store ZIP: `gtab_v1.1.2.zip`)
+- Tarih: 2026-04-19
+- Aktif agent: Antigravity
+- Versiyon: **2.0.0** (store ZIP: `gtab_v2.0.0.zip`)
 
 ## Claude
 ### Yaptıkları
@@ -37,32 +37,27 @@
 ### Yaptıkları
 - Proje dosyaları incelendi.
 - `package.json`, `App.tsx` ve `README.md` dosyaları okundu.
-- v1.0.3 sürümünün store'da olduğu bilgisi teyit edildi.
-- `package.json` ve `manifest.json` versiyonları 1.1.2'ye güncellendi.
-- `pnpm build` çalıştırılarak `dist` klasörü oluşturuldu.
-- `gtab_v1.1.2.zip` dosyası hazırlandı.
-- `types.ts` içerisine `WidgetConfig` için `width` ve `glassEffect` alanları eklendi.
-- `storageService.ts` üzerinden layout verisine default değerler (`width: 12`, `glassEffect: true`) tanımlandı.
-- `App.tsx` genel layout yapısı `flex flex-col` yerine 12 kolonlu CSS Grid sistemine geçirildi (`grid-cols-12`).
-- `App.tsx` Edit Mode içerisine her bir main widget için boyutlandırma (+/- butonları) ve cam/outline (Sparkles Icon) kapama/açma denetimleri eklendi.
-- **`README.md` modernize edildi ve güncellendi.**
-- **Portal teması parlamaları artırıldı, dinamik ızgara boşluğu (grid gap) ve alan çerçevesi (border) kontrol ayarları eklendi.**
-- **Tüm değişiklikler git'e gönderildi, `v1.1.3` sürümü build alındı, ZIP oluşturuldu ve GitHub üzerinde release olarak yayınlandı.**
+- `package.json` ve `manifest.json` versiyonları sırasıyla 1.1.2 -> 1.1.9'a güncellendi.
+- **Portal teması parlamaları artırıldı (v1.1.8).**
+- **Dinamik ızgara kontrolü:** Yatay/Dikey aralık ve 2-12 arası kolon sayısı ayarları eklendi.
+- **Profil Menüsü:** Kart genişliğinden bağımsız okunabilir sabit genişlik ve özelleştirilebilir opaklık/çerçeve.
+- **"Yeni Ekle" Kartı:** Daha transparan ve minimal bir tasarıma geçirildi.
+- **Ayarlar Ekranı (v1.1.9):** Tamamen yeniden tasarlandı. Sidebar yenilendi, ayarlar kategorize edildi (Düzen, Görünüm, Tipografi), Glassmorphism detayları artırıldı.
+- **Build & Release (v2.0.0):** Versiyon 2.0.0'a yükseltildi, `pnpm build` alındı ve Store için `gtab_v2.0.0.zip` oluşturuldu.
 ### Yapacakları
 - —
 ### Notlar
-- Proje modern bir React 19 + Vite projesi.
-- Glassmorphism ve performans odaklı bir mimarisi var.
+- Ayarlar ekranı artık daha fazla dikey içerik barındırdığı için kategori bazlı scroll ve kart yapısı kullanıyor.
+- `gh` CLI sürümü check edildi ve release asset yüklemesi için kullanıldı.
 
 ## Plan
 ### Tamamlananlar
 - [x] Proje keşfi ve analiz.
 - [x] `memory.md` oluşturma.
-- [x] Donate butonu kaldırma, BMC URL güncelleme.
-- [x] CardConfig sistemi (opaklık, şekil, boyut, hizalama, font).
-- [x] Profil/URL import-export (JSON).
-- [x] **README.md güncelleme.**
-- [x] **v1.1.3 Release yayınlama.**
+- [x] **v1.1.3 - v1.1.8 Release yayınlama (Portal iyileştirmeleri, Grid Kontrolü).**
+- [x] **v1.1.9 Release yayınlama (Ayarlar Ekranı Redesign).**
+- [x] **v2.0.0 Store ZIP hazırlığı.**
+- [x] **GitHub & Dist güncellemeleri.**
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
@@ -72,11 +67,7 @@
 | Tarih | Agent | Karar | Neden |
 |-------|-------|-------|-------|
 | 2026-04-14 | Antigravity | `memory.md` oluşturuldu | MASTER.md kuralları gereği zorunlu. |
-| 2026-04-14 | Claude | Donate butonu kaldırıldı | Kullanıcı talebi. |
-| 2026-04-14 | Claude | CardConfig sistemi eklendi | Görünüm ayarları genişletildi. |
-| 2026-04-14 | Claude | Import/Export eklendi | Profil ve URL taşınabilirliği. |
-| 2026-04-14 | Antigravity | v1.1.2 Versiyon Güncelleme | release hazırlandı. |
-| 2026-04-14 | Antigravity | ZIP Oluşturuldu | gtab_v1.1.2.zip hazırlandı. |
-| 2026-04-14 | Antigravity | Widget boyut ve görünüm ayarı | Skeleton-First ile planlandı. Kullanıcının alan outline'ı kapatma ve boyut ayarlama isteğine karşılık Grid sisteme geçildi. |
-| 2026-04-15 | Antigravity | README & Release | v1.1.2 release ve detaylı dökümantasyon tamamlandı. |
-| 2026-04-15 | Antigravity | Portal & Config Update (v1.1.3) | Portal parlamaları, grid gap ve widget çerçeve ayarları eklendi, build ve release (v1.1.3) yapıldı. |
+| 2026-04-15 | Antigravity | Grid Gap & Cols Kontrolü | URL kartları üzerinde daha fazla esneklik sağlamak için (v1.1.8). |
+| 2026-04-15 | Antigravity | Settings Modal Redesign (v1.1.9) | Karmaşıklaşan ayar listesini kullanıcı talebi üzerine düzenlemek ve daha premium bir his vermek için. |
+| 2026-04-15 | Antigravity | `tar` ile ZIPleme | `Compress-Archive` powershell komutundaki kilitlenme problemlerini aşmak için daha stabil olan `tar` kullanıldı. |
+| 2026-04-19 | Antigravity | v2.0.0 Release | Kullanıcı talebi üzerine majör versiyon artırımı ve store paketlemesi yapıldı. |
