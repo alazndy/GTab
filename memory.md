@@ -27,7 +27,9 @@
 
 ## Gemini
 ### Yaptıkları
-- —
+- `README.md` v2.0.0 majör sürüm özelliklerine göre güncellendi.
+- `STORE_DESCRIPTION.md` v2.0.0 yenilikleri ve detaylı özellikler ile güncellendi.
+- Versiyon 2.0.0 için dokümantasyon tamamlandı.
 ### Yapacakları
 - —
 ### Notlar

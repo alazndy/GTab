@@ -11,18 +11,19 @@
 
 ---
 
-## 🌟 What's New in v1.1.2
+## 🚀 What's New in v2.0.0 (Major Release)
 
-- **📐 Smart Grid System:** Transitioned to a 12-column dynamic CSS Grid layout.
-- **🖼️ Widget Customization:** Adjust individual widget widths and toggle "Glass Effect" or "Glowing Outlines" instantly.
-- **🖱️ Context Menu Magic:** Right-click any page and select "Add to GTab" to save links instantly via the new background service worker.
+- **🎨 Settings Redesign:** Completely overhauled settings interface with a sidebar, categorized navigation (Layout, Appearance, Typography), and enhanced glassmorphic details.
+- **📐 Dynamic Grid Control:** Precision control over your dashboard layout with adjustable horizontal/vertical gaps and 2-12 column grid density.
+- **👤 Elite Profile Menu:** Fixed-width, readable profile menu independent of card sizes, featuring customizable opacity and border styling.
+- **✨ Portal Theme 2.0:** Enhanced sci-fi aesthetics with improved glow effects and refined animations.
+- **➕ Minimalist Add Card:** Redesigned "Add New" card with a more transparent, non-intrusive aesthetic.
+- **🖱️ Context Menu Magic:** Right-click any page to instantly save links to GTab via the background service worker.
 - **🎛️ Extension Popup:** Quickly add the current tab, toggle dashboard visibility, or navigate to your profiles directly from the extension bar.
-- **✨ CardConfig Engine:** Granular control over shortcut cards: size, shape, opacity, alignment, and icon scale.
-- **📂 Profile Portability:** Integrated JSON-based Import/Export system for backups and multi-device sync.
 
 ---
 
-## 🚀 Core Features
+## 🌟 Core Features
 
 ### 🧩 Pro Widget Suite
 *   **Dynamic Clock:** Ultra-customizable glassmorphic time/date display with precision layout controls.
@@ -37,7 +38,7 @@
 *   **Dynamic Filtering:** Find what you need instantly with a real-time, fuzzy-search filter bar.
 
 ### 🎨 Design & Personalization (Glassmorphism First)
-*   **Aperture (Portal) Theme:** New premium theme inspired by modern sci-fi aesthetics.
+*   **Aperture (Portal) Theme:** Premium theme inspired by modern sci-fi aesthetics.
 *   **Dynamic Backgrounds:** High-resolution presets, solid minimalist colors, or daily random high-fidelity imagery.
 *   **Premium Typography:** Utilizing Geist Sans and modern font stacks for maximum readability.
 *   **Interactive Micro-Animations:** Fluid transitions and hover effects powered by Framer Motion.

@@ -1,49 +1,41 @@
-# GTAB - Kişiselleştirilebilir Yeni Sekme Sayfası
+# GTAB - Kişiselleştirilebilir Başlangıç Sayfası (v2.0.0)
 
-🚀 **Hızlı, minimal ve tamamen kişiselleştirilebilir yeni sekme deneyimi!**
+🚀 **Hızlı, premium ve tamamen kişiselleştirilebilir yeni sekme deneyimi!**
 
-## ✨ Özellikler
+GTab, hıza, estetiğe ve dijital çalışma alanınız üzerinde tam kontrole önem veren güç kullanıcıları için tasarlanmış, yüksek performanslı bir "Yeni Sekme" tarayıcı eklentisidir.
 
-### 🕐 Şık Saat Widget'ı
+## ✨ v2.0.0 Yenilikleri
 
-- Büyük, okunaklı dijital saat
-- Türkçe tarih gösterimi
-- 12/24 saat formatı desteği
+- 🎨 **Yenilenen Ayarlar Paneli:** Kategori bazlı gezinme ve gelişmiş glassmorphism detayları ile tamamen modern bir arayüz.
+- 📐 **Dinamik Izgara Kontrolü:** Yatay ve dikey boşluk ayarları ile 2'den 12'ye kadar değişebilen kolon yoğunluğu.
+- 👤 **Gelişmiş Profil Menüsü:** Kart boyutundan bağımsız, sabit genişlikte ve okunabilir profil yönetim alanı.
+- ✨ **Portal Teması 2.0:** Daha etkileyici parlama efektleri ve akıcı animasyonlar.
+- ➕ **Minimalist "Yeni Ekle" Kartı:** Daha şeffaf ve dikkat dağıtmayan modern tasarım.
 
-### 🔍 Hızlı Arama
+## 🌟 Öne Çıkan Özellikler
 
-- Google ile anında arama
-- Temiz, minimal tasarım
+### 🧩 Profesyonel Widget Seti
+- **Dinamik Saat:** Özelleştirilebilir glassmorphic saat ve tarih gösterimi.
+- **Görev Listesi:** Hızlı ve minimalist yapılacaklar listesi.
+- **Evrensel Arama:** Google desteği ve anında erişim.
+- **Esnek Yerleşim:** Sürükle-bırak ile widgetları yeniden düzenleme.
 
-### 📌 Akıllı Kısayollar
+### 🔗 Gelişmiş Kısayol Yönetimi
+- **Akıllı Gruplandırma:** Klasörler ve görsel kategoriler ile düzeninizi koruyun.
+- **Multi-Profil Desteği:** İş ve kişisel hesaplar için profil bazlı URL yönetimi.
+- **Hızlı Erişim:** Gerçek zamanlı filtreleme ve hızlı arama çubuğu.
 
-- Favori sitelerinize tek tıkla erişin
-- Kategorilere göre filtreleme
-- Klasörler ile organize edin
-- Sürükle-bırak ile sıralama
-- Multi-profil desteği (İş/Kişisel hesaplar)
+### 🎨 Tasarım ve Kişiselleştirme
+- **Glassmorphism:** Modern ve premium cam efekti tasarımı.
+- **Aperture (Portal) Teması:** Bilim kurgu estetiğinden ilham alan özel tema.
+- **Özel Arka Planlar:** Yüksek çözünürlüklü ön tanımlı görseller veya özel URL desteği.
+- **Premium Tipografi:** Geist Sans ve modern yazı tipi ailesi.
 
-### ✅ Görev Listesi
-
-- Basit ve etkili yapılacaklar listesi
-- Görevleri hızlıca ekleyin ve tamamlayın
-
-### 🎨 Kişiselleştirme
-
-- Hazır arka plan temaları
-- Düz renk seçenekleri
-- Özel resim URL desteği
-
-## 🔒 Gizlilik
-
-- Tüm veriler yerel olarak saklanır
-- Hiçbir veri sunucuya gönderilmez
-- Reklam yok, izleme yok
-
-## 🌐 Dil
-
-- Türkçe arayüz
+## 🔒 Gizlilik ve Performans
+- **Yerel Saklama:** Tüm verileriniz tarayıcınızda kalır, hiçbir yere gönderilmez.
+- **Sıfır Gecikme:** Binlerce öğeyi bile milisaniyeler içinde yükleyen optimize edilmiş yapı.
+- **Reklamsız:** Tamamen açık kaynak ve kullanıcı odaklı.
 
 ---
 
-**GTAB** ile tarayıcınızı kendinize özel bir başlangıç noktasına dönüştürün!
+**GTAB** ile tarayıcınızı kendinize özel, premium bir başlangıç noktasına dönüştürün!
