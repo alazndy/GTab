@@ -38,25 +38,27 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
     };
   }, [config.fontFamily, config.fontSize]);
 
-  const formatTime = () => {
-    const options: Intl.DateTimeFormatOptions = {
+  // Cache Intl.DateTimeFormat instances to avoid expensive recreations on every 1000ms render tick
+  const timeFormatter = React.useMemo(() => {
+    return new Intl.DateTimeFormat('tr-TR', {
       hour: '2-digit',
       minute: '2-digit',
       second: config.showSeconds ? '2-digit' : undefined,
       hour12: config.format === '12h'
-    };
-    return time.toLocaleTimeString('tr-TR', options);
-  };
+    });
+  }, [config.showSeconds, config.format]);
 
-  const formatDate = () => {
-    const options: Intl.DateTimeFormatOptions = {
+  const dateFormatter = React.useMemo(() => {
+    return new Intl.DateTimeFormat('tr-TR', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    };
-    return time.toLocaleDateString('tr-TR', options);
-  };
+    });
+  }, []);
+
+  const formatTime = () => timeFormatter.format(time);
+  const formatDate = () => dateFormatter.format(time);
 
   return (
     <div className="text-center mb-8 animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
