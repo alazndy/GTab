@@ -29,9 +29,13 @@ const TasksWidget: React.FC = () => {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => 
-      t.id === id ? { ...t, completed: !t.completed } : t
-    ));
+    setTasks(prev => {
+      const idx = prev.findIndex(t => t.id === id);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], completed: !next[idx].completed };
+      return next;
+    });
   };
 
   const deleteTask = (id: string) => {
