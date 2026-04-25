@@ -402,15 +402,23 @@ const App: React.FC = () => {
   }, []);
 
   const toggleWidgetVisibility = (id: WidgetId) => {
-    setLayout(prev => prev.map(item => 
-      item.id === id ? { ...item, visible: !item.visible } : item
-    ));
+    setLayout(prev => {
+        const idx = prev.findIndex(item => item.id === id);
+        if (idx === -1) return prev;
+        const newLayout = [...prev];
+        newLayout[idx] = { ...newLayout[idx], visible: !newLayout[idx].visible };
+        return newLayout;
+    });
   };
 
   const updateWidgetConfig = (id: WidgetId, updates: Partial<WidgetConfig>) => {
-    setLayout(prev => prev.map(item => 
-      item.id === id ? { ...item, ...updates } : item
-    ));
+    setLayout(prev => {
+        const idx = prev.findIndex(item => item.id === id);
+        if (idx === -1) return prev;
+        const newLayout = [...prev];
+        newLayout[idx] = { ...newLayout[idx], ...updates };
+        return newLayout;
+    });
   };
 
   const handleResizePointerDown = (e: React.PointerEvent, id: WidgetId) => {
