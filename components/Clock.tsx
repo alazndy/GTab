@@ -10,12 +10,22 @@ interface ClockProps {
 }
 
 const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => {
-  const [time, setTime] = React.useState(new Date());
+  const [time, setTime] = React.useState(() => new Date());
 
   React.useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      setTime(prev => {
+        const now = new Date();
+        // If we don't show seconds, we only need to update the state when the minute changes.
+        // This avoids 59 unnecessary re-renders per minute.
+        if (!config.showSeconds && now.getMinutes() === prev.getMinutes() && now.getHours() === prev.getHours()) {
+          return prev;
+        }
+        return now;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [config.showSeconds]);
 
   const clockStyle = React.useMemo(() => {
     const fonts: Record<string, string> = {
