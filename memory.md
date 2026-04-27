@@ -38,10 +38,11 @@
   - GitHub Workflows dosyalarına API key kontrolü eklendi.
   - `.jules/bolt.md` güncellendi.
 - **v2.0.1 Release:** Versiyon 2.0.1'e yükseltildi, `pnpm build` alındı ve `gtab_v2.0.1.zip` oluşturulup GitHub Release olarak yayınlandı.
+- **Task 2 - Manifest Güncellemesi:** GTab v3.0 Widget mimarisi için `public/manifest.json` dosyasına `identity` izni, host izinleri ve OAuth2 yapılandırması eklendi.
 ### Yapacakları
 - —
 ### Notlar
-- —
+- OAuth2 client_id diğer GTab eklentisinden temin edildi.
 
 ## Antigravity
 ### Yaptıkları
@@ -69,10 +70,11 @@
 - [x] **v2.0.0 Store ZIP hazırlığı.**
 - [x] **v2.0.1 Release (Performance Optimizations).**
 - [x] **GitHub & Dist güncellemeleri.**
+- [x] **Task 2: Chrome Extension Manifest Update.**
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
-- [ ] Kullanıcının taleplerine göre geliştirmeler.
+- [ ] GTab v3.0 Widget Mimarisi Uygulama Planı'ndaki diğer görevler.
 
 ## Karar Günlüğü
 | Tarih | Agent | Karar | Neden |
