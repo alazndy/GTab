@@ -142,7 +142,17 @@ export const getLayoutConfig = (): WidgetConfig[] => {
   try {
     const stored = localStorage.getItem(LAYOUT_KEY);
     if (!stored) return DEFAULT_LAYOUT;
-    const parsed = JSON.parse(stored) as WidgetConfig[];
+    
+    let parsed = JSON.parse(stored) as WidgetConfig[];
+    
+    // Ensure all widgets from DEFAULT_LAYOUT exist in parsed
+    DEFAULT_LAYOUT.forEach(defaultWidget => {
+      const exists = parsed.some(w => w.id === defaultWidget.id);
+      if (!exists) {
+        parsed.push({ ...defaultWidget });
+      }
+    });
+
     return parsed.map(w => ({ 
       opacity: 10, 
       glassEffect: w.glassEffect ?? true, 

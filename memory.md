@@ -74,10 +74,13 @@
 - [x] **GitHub & Dist güncellemeleri.**
 - [x] **Task 2: Chrome Extension Manifest Update.**
 - [x] **Task 3: Create Authentication & API Services.**
+- [x] **Task 4: Quality Fixes.** Hardcoded widths (w-64) removed from Gmail, Calendar, and Stocks widgets to support dynamic grid layout. Icon consistency verified.
+- [x] Task 5: Integrate Widgets into App Layout. Verified App.tsx integration, imports, and reset layout functionality. Updated `getLayoutConfig` in `storageService.ts` to ensure automatic migration of new widgets (Gmail, Calendar, Stocks) for existing users.
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
 - [ ] GTab v3.0 Widget Mimarisi Uygulama Planı'ndaki diğer görevler.
+- [ ] Test verification for Gmail/Calendar/Stocks auth flows.
 
 ## Karar Günlüğü
 | Tarih | Agent | Karar | Neden |
