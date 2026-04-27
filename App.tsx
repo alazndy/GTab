@@ -381,36 +381,49 @@ const App: React.FC = () => {
 
   const updateShortcut = useCallback((updated: Shortcut) => {
     setShortcuts(prev => {
-        const rootExists = prev.find(s => s.id === updated.id);
-        if (rootExists) {
-            return prev.map(s => s.id === updated.id ? updated : s);
+        const rootIdx = prev.findIndex(s => s.id === updated.id);
+        if (rootIdx !== -1) {
+            const next = [...prev];
+            next[rootIdx] = updated;
+            return next;
         }
 
-        return prev.map(s => {
-            if (s.isFolder && s.children) {
-                const childExists = s.children.find(c => c.id === updated.id);
-                if (childExists) {
-                    return {
-                        ...s,
-                        children: s.children.map(c => c.id === updated.id ? updated : c)
-                    };
+        const folderIdx = prev.findIndex(s => s.isFolder && s.children && s.children.some(c => c.id === updated.id));
+        if (folderIdx !== -1) {
+            const next = [...prev];
+            const folder = next[folderIdx];
+            if (folder.children) {
+                const childIdx = folder.children.findIndex(c => c.id === updated.id);
+                if (childIdx !== -1) {
+                    const nextChildren = [...folder.children];
+                    nextChildren[childIdx] = updated;
+                    next[folderIdx] = { ...folder, children: nextChildren };
+                    return next;
                 }
             }
-            return s;
-        });
+        }
+        return prev;
     });
   }, []);
 
   const toggleWidgetVisibility = (id: WidgetId) => {
-    setLayout(prev => prev.map(item => 
-      item.id === id ? { ...item, visible: !item.visible } : item
-    ));
+    setLayout(prev => {
+      const idx = prev.findIndex(item => item.id === id);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], visible: !next[idx].visible };
+      return next;
+    });
   };
 
   const updateWidgetConfig = (id: WidgetId, updates: Partial<WidgetConfig>) => {
-    setLayout(prev => prev.map(item => 
-      item.id === id ? { ...item, ...updates } : item
-    ));
+    setLayout(prev => {
+      const idx = prev.findIndex(item => item.id === id);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...updates };
+      return next;
+    });
   };
 
   const handleResizePointerDown = (e: React.PointerEvent, id: WidgetId) => {

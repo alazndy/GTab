@@ -30,6 +30,8 @@
 - `README.md` v2.0.0 majör sürüm özelliklerine göre güncellendi.
 - `STORE_DESCRIPTION.md` v2.0.0 yenilikleri ve detaylı özellikler ile güncellendi.
 - Versiyon 2.0.0 için dokümantasyon tamamlandı.
+- **v2.0.0 Release** (`gh release create`) gerçekleştirildi ve `gtab_v2.0.0.zip` yüklendi.
+- **Jules PR & Branch Temizliği:** Jules'un 31 adet performansa dayalı PR'ı incelendi. Değerli olanlar (özellikle Clock rendering cache) ana koda dahil edildi, diğerlerinin zaten uygulanmış olduğu doğrulandı. Tüm PR'lar kapatıldı ve dallar temizlendi.
 ### Yapacakları
 - —
 ### Notlar
