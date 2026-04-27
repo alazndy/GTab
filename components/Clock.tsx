@@ -12,10 +12,30 @@ interface ClockProps {
 const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => {
   const [time, setTime] = React.useState(new Date());
 
+  // Cache Intl.DateTimeFormat instances to avoid expensive recreations on every 1000ms render tick
+  const timeFormatter = React.useMemo(() => {
+    return new Intl.DateTimeFormat('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: config.showSeconds ? '2-digit' : undefined,
+      hour12: config.format === '12h'
+    });
+  }, [config.showSeconds, config.format]);
+
   React.useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      setTime(prev => {
+        const now = new Date();
+        // If the formatted string is the same, return the previous state reference
+        // to avoid triggering an unnecessary React re-render.
+        if (timeFormatter.format(now) === timeFormatter.format(prev)) {
+          return prev;
+        }
+        return now;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [timeFormatter]);
 
   const clockStyle = React.useMemo(() => {
     const fonts: Record<string, string> = {
@@ -37,16 +57,6 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
       sizeClass: sizes[config.fontSize || 'xl']
     };
   }, [config.fontFamily, config.fontSize]);
-
-  // Cache Intl.DateTimeFormat instances to avoid expensive recreations on every 1000ms render tick
-  const timeFormatter = React.useMemo(() => {
-    return new Intl.DateTimeFormat('tr-TR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: config.showSeconds ? '2-digit' : undefined,
-      hour12: config.format === '12h'
-    });
-  }, [config.showSeconds, config.format]);
 
   const dateFormatter = React.useMemo(() => {
     return new Intl.DateTimeFormat('tr-TR', {
