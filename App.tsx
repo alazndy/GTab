@@ -19,6 +19,9 @@ import Clock from './components/Clock';
 import SearchBar from './components/SearchBar';
 import ShortcutCard from './components/ShortcutCard';
 import TasksWidget from './components/TasksWidget';
+import GmailWidget from './components/GmailWidget';
+import CalendarWidget from './components/CalendarWidget';
+import StocksWidget from './components/StocksWidget';
 const AddModal = React.lazy(() => import('./components/AddModal'));
 const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSettingsModal'));
 const BackgroundSettingsModal = React.lazy(() => import('./components/BackgroundSettingsModal'));
@@ -578,8 +581,12 @@ const App: React.FC = () => {
           </div>
         );
       case 'gmail':
+        return <GmailWidget />;
       case 'calendar':
+        return <CalendarWidget />;
       case 'stocks':
+        return <StocksWidget />;
+      default:
         return null;
     }
   };

@@ -65,6 +65,43 @@ export interface StocksConfig {
   symbols: string[];
 }
 
+export interface GmailMessage {
+  id: string;
+  threadId: string;
+}
+
+export interface GmailListResponse {
+  messages?: GmailMessage[];
+  resultSizeEstimate: number;
+}
+
+export interface CalendarEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  location?: string;
+  start: { dateTime?: string; date?: string };
+  end: { dateTime?: string; date?: string };
+  htmlLink?: string;
+}
+
+export interface CalendarListResponse {
+  items: CalendarEvent[];
+  summary: string;
+  timeZone: string;
+}
+
+export interface StockQuote {
+  c: number; // Current price
+  d: number; // Change
+  dp: number; // Percent change
+  h: number; // High price of the day
+  l: number; // Low price of the day
+  o: number; // Open price of the day
+  pc: number; // Previous close price
+  t: number; // Timestamp
+}
+
 export type BackgroundType = 'image' | 'color' | 'random' | 'theme';
 
 export type ThemeId = 'default' | 'neon' | 'starship' | 'terminal' | 'portal' | 'custom';
