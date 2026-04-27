@@ -671,7 +671,7 @@ const App: React.FC = () => {
            )}
         </header>
 
-        <main className={`flex-1 flex flex-col items-center max-w-7xl w-full transition-all ${mainAlignClass}`}>
+        <main className={`flex-1 flex flex-col items-center w-full transition-all ${mainAlignClass}`}>
           <div className="w-full flex flex-row flex-wrap justify-center gap-6 items-start">
             {mainWidgets.map((widget, index) => {
               if (!widget.visible && !isEditMode) return null;
