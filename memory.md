@@ -39,10 +39,12 @@
   - `.jules/bolt.md` güncellendi.
 - **v2.0.1 Release:** Versiyon 2.0.1'e yükseltildi, `pnpm build` alındı ve `gtab_v2.0.1.zip` oluşturulup GitHub Release olarak yayınlandı.
 - **Task 2 - Manifest Güncellemesi:** GTab v3.0 Widget mimarisi için `public/manifest.json` dosyasına `identity` izni, host izinleri ve OAuth2 yapılandırması eklendi.
+- **Task 3 - Auth & API Servisleri:** `services/googleAuthService.ts` ve `services/finnhubService.ts` oluşturuldu. Google Auth servisi için TypeScript tip hatası (`GetAuthTokenResult`) giderildi.
 ### Yapacakları
 - —
 ### Notlar
 - OAuth2 client_id diğer GTab eklentisinden temin edildi.
+- `chrome.identity.getAuthToken` callback'i bazı @types/chrome sürümlerinde string yerine obje dönebildiği için `googleAuthService.ts` içerisinde tip kontrolü eklendi.
 
 ## Antigravity
 ### Yaptıkları
@@ -71,6 +73,7 @@
 - [x] **v2.0.1 Release (Performance Optimizations).**
 - [x] **GitHub & Dist güncellemeleri.**
 - [x] **Task 2: Chrome Extension Manifest Update.**
+- [x] **Task 3: Create Authentication & API Services.**
 ### Devam Edenler
 - [ ] —
 ### Sıradakiler
