@@ -27,7 +27,7 @@ const FolderViewModal = React.lazy(() => import('./components/FolderViewModal'))
 import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, ThemeId, CardConfig } from './types';
 import {
   getShortcuts, saveShortcuts,
-  getLayoutConfig, saveLayoutConfig,
+  getLayoutConfig, saveLayoutConfig, DEFAULT_LAYOUT,
   getBackgroundConfig, saveBackgroundConfig, PRESET_BACKGROUNDS,
   getViewState, saveViewState,
   getClockConfig, saveClockConfig,
@@ -457,16 +457,7 @@ const App: React.FC = () => {
   };
 
   const resetLayout = () => {
-    setLayout([
-      { id: 'clock', visible: true, order: 0 },
-      { id: 'search', visible: true, order: 1 },
-      { id: 'tasks', visible: true, order: 2 },
-      { id: 'categories', visible: true, order: 3 },
-      { id: 'shortcuts', visible: true, order: 4 },
-      { id: 'gmail', visible: false, order: 5 },
-      { id: 'calendar', visible: false, order: 6 },
-      { id: 'stocks', visible: false, order: 7 },
-    ]);
+    setLayout(DEFAULT_LAYOUT);
   };
 
   // --- Widget DnD ---

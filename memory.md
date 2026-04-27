@@ -1,9 +1,9 @@
 # GTab Memory
 
 ## Son Durum
-- Tarih: 2026-04-19
-- Aktif agent: Antigravity
-- Versiyon: **2.0.0** (store ZIP: `gtab_v2.0.0.zip`)
+- Tarih: 2026-04-27
+- Aktif agent: Gemini
+- Versiyon: **2.0.1** (store ZIP: `gtab_v2.0.1.zip`)
 
 ## Claude
 ### Yaptıkları
@@ -31,7 +31,13 @@
 - `STORE_DESCRIPTION.md` v2.0.0 yenilikleri ve detaylı özellikler ile güncellendi.
 - Versiyon 2.0.0 için dokümantasyon tamamlandı.
 - **v2.0.0 Release** (`gh release create`) gerçekleştirildi ve `gtab_v2.0.0.zip` yüklendi.
-- **Jules PR & Branch Temizliği:** Jules'un 31 adet performansa dayalı PR'ı incelendi. Değerli olanlar (özellikle Clock rendering cache) ana koda dahil edildi, diğerlerinin zaten uygulanmış olduğu doğrulandı. Tüm PR'lar kapatıldı ve dallar temizlendi.
+- **Jules PR & Branch Temizliği:** Jules'un 35 adet performansa dayalı PR'ı incelendi.
+  - PR #35 (Clock & Workflow optimization) merge edildi.
+  - PR #32 (State point updates) manuel olarak `App.tsx` ve `TasksWidget.tsx` dosyalarına uygulandı.
+  - Redundant olan PR #34 ve #33 kapatıldı.
+  - GitHub Workflows dosyalarına API key kontrolü eklendi.
+  - `.jules/bolt.md` güncellendi.
+- **v2.0.1 Release:** Versiyon 2.0.1'e yükseltildi, `pnpm build` alındı ve `gtab_v2.0.1.zip` oluşturulup GitHub Release olarak yayınlandı.
 ### Yapacakları
 - —
 ### Notlar
@@ -61,6 +67,7 @@
 - [x] **v1.1.3 - v1.1.8 Release yayınlama (Portal iyileştirmeleri, Grid Kontrolü).**
 - [x] **v1.1.9 Release yayınlama (Ayarlar Ekranı Redesign).**
 - [x] **v2.0.0 Store ZIP hazırlığı.**
+- [x] **v2.0.1 Release (Performance Optimizations).**
 - [x] **GitHub & Dist güncellemeleri.**
 ### Devam Edenler
 - [ ] —
@@ -75,3 +82,4 @@
 | 2026-04-15 | Antigravity | Settings Modal Redesign (v1.1.9) | Karmaşıklaşan ayar listesini kullanıcı talebi üzerine düzenlemek ve daha premium bir his vermek için. |
 | 2026-04-15 | Antigravity | `tar` ile ZIPleme | `Compress-Archive` powershell komutundaki kilitlenme problemlerini aşmak için daha stabil olan `tar` kullanıldı. |
 | 2026-04-19 | Antigravity | v2.0.0 Release | Kullanıcı talebi üzerine majör versiyon artırımı ve store paketlemesi yapıldı. |
+| 2026-04-27 | Gemini | v2.0.1 Release | Jules'un performans optimizasyonlarını içeren patch sürümü. |

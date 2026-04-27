@@ -72,7 +72,7 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   }
 ];
 
-const DEFAULT_LAYOUT: WidgetConfig[] = [
+export const DEFAULT_LAYOUT: WidgetConfig[] = [
   { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
