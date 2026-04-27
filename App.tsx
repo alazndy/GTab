@@ -463,6 +463,9 @@ const App: React.FC = () => {
       { id: 'tasks', visible: true, order: 2 },
       { id: 'categories', visible: true, order: 3 },
       { id: 'shortcuts', visible: true, order: 4 },
+      { id: 'gmail', visible: false, order: 5 },
+      { id: 'calendar', visible: false, order: 6 },
+      { id: 'stocks', visible: false, order: 7 },
     ]);
   };
 
@@ -583,6 +586,10 @@ const App: React.FC = () => {
             )}
           </div>
         );
+      case 'gmail':
+      case 'calendar':
+      case 'stocks':
+        return null;
     }
   };
 
@@ -593,6 +600,9 @@ const App: React.FC = () => {
       case 'tasks': return 'Görevler';
       case 'categories': return 'Kategori & Profil Filtreleri';
       case 'shortcuts': return 'Kısayol Izgarası';
+      case 'gmail': return 'Gmail';
+      case 'calendar': return 'Takvim';
+      case 'stocks': return 'Borsa';
     }
   };
 

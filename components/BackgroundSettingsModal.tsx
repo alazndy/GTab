@@ -85,6 +85,9 @@ const WIDGET_LABELS: Record<WidgetId, string> = {
   tasks:      'Görevler',
   categories: 'Kategori & Profil',
   shortcuts:  'Kısayollar',
+  gmail:      'Gmail',
+  calendar:   'Takvim',
+  stocks:     'Borsa',
 };
 
 // ── Alt bileşenler ───────────────────────────────────────

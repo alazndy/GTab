@@ -46,7 +46,7 @@ export interface WeatherData {
 
 export type ShortcutPayload = Omit<Shortcut, 'id'>;
 
-export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks';
+export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks' | 'gmail' | 'calendar' | 'stocks';
 
 export interface WidgetConfig {
   id: WidgetId;
@@ -58,6 +58,11 @@ export interface WidgetConfig {
   opacity?: number; // Background opacity
   borderOpacity?: number; // Area frame opacity
   showBorder?: boolean; // Toggle area frame
+}
+
+export interface StocksConfig {
+  apiKey: string;
+  symbols: string[];
 }
 
 export type BackgroundType = 'image' | 'color' | 'random' | 'theme';

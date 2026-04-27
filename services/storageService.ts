@@ -1,5 +1,5 @@
 
-import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig, CustomThemeConfig } from '../types';
+import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig, CustomThemeConfig, StocksConfig } from '../types';
 
 const STORAGE_KEY = 'gtab_shortcuts';
 const LAYOUT_KEY = 'gtab_layout';
@@ -8,6 +8,7 @@ const BG_KEY = 'gtab_bg_config';
 const VIEW_STATE_KEY = 'gtab_view_state';
 const CLOCK_CONFIG_KEY = 'gtab_clock_config';
 const CARD_CONFIG_KEY = 'gtab_card_config';
+const STOCKS_CONFIG_KEY = 'gtab_stocks';
 
 export interface ViewState {
   category: Category | 'All';
@@ -77,6 +78,9 @@ const DEFAULT_LAYOUT: WidgetConfig[] = [
   { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'gmail',      visible: false, order: 5, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'calendar',   visible: false, order: 6, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'stocks',     visible: false, order: 7, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
 ];
 
 export const DEFAULT_CLOCK_CONFIG: ClockConfig = {
@@ -241,6 +245,23 @@ export const saveCardConfig = (config: CardConfig) => {
     localStorage.setItem(CARD_CONFIG_KEY, JSON.stringify(config));
   } catch (e) {
     console.error('Failed to save card config', e);
+  }
+};
+
+export const getStocksConfig = (): StocksConfig => {
+  try {
+    const stored = localStorage.getItem(STOCKS_CONFIG_KEY);
+    return stored ? JSON.parse(stored) : { apiKey: '', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+  } catch (e) {
+    return { apiKey: '', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+  }
+};
+
+export const saveStocksConfig = (config: StocksConfig) => {
+  try {
+    localStorage.setItem(STOCKS_CONFIG_KEY, JSON.stringify(config));
+  } catch (e) {
+    console.error('Failed to save stocks config', e);
   }
 };
 
