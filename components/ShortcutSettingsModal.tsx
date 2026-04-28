@@ -93,19 +93,18 @@ const ShortcutSettingsModal: React.FC<ShortcutSettingsModalProps> = ({ isOpen, o
     if (!newProfileName.trim()) return;
 
     if (editingProfileId) {
-      const updatedProfiles = formData.profiles?.map(p => {
-        if (p.id === editingProfileId) {
-          return {
-            ...p,
-            name: newProfileName,
-            url: newProfileUrl.trim() || undefined,
-            avatarColor: newProfileColor
-          };
-        }
-        return p;
-      });
-      
-      setFormData({ ...formData, profiles: updatedProfiles });
+      const profiles = formData.profiles || [];
+      const idx = profiles.findIndex(p => p.id === editingProfileId);
+      if (idx !== -1) {
+        const nextProfiles = [...profiles];
+        nextProfiles[idx] = {
+          ...nextProfiles[idx],
+          name: newProfileName,
+          url: newProfileUrl.trim() || undefined,
+          avatarColor: newProfileColor
+        };
+        setFormData({ ...formData, profiles: nextProfiles });
+      }
     } else {
       const newProfile: ShortcutProfile = {
         id: crypto.randomUUID(),
