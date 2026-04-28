@@ -349,12 +349,13 @@ const App: React.FC = () => {
     const effectiveGroupId = targetGroupId ?? activeFolderId;
 
     if (effectiveGroupId) {
-      setShortcuts(prev => prev.map(s => {
-        if (s.id === effectiveGroupId && s.isFolder) {
-          return { ...s, children: [...(s.children || []), ...newShortcuts] };
-        }
-        return s;
-      }));
+      setShortcuts(prev => {
+        const idx = prev.findIndex(s => s.id === effectiveGroupId && s.isFolder);
+        if (idx === -1) return prev;
+        const next = [...prev];
+        next[idx] = { ...next[idx], children: [...(next[idx].children || []), ...newShortcuts] };
+        return next;
+      });
     } else {
       setShortcuts(prev => [...prev, ...newShortcuts]);
     }
@@ -367,15 +368,20 @@ const App: React.FC = () => {
             return prev.filter(s => s.id !== id);
         }
 
-        return prev.map(s => {
-            if (s.isFolder && s.children) {
-                return {
-                    ...s,
-                    children: s.children.filter(child => child.id !== id)
+        const folderIdx = prev.findIndex(s => s.isFolder && s.children && s.children.some(c => c.id === id));
+        if (folderIdx !== -1) {
+            const next = [...prev];
+            const folder = next[folderIdx];
+            if (folder.children) {
+                next[folderIdx] = {
+                    ...folder,
+                    children: folder.children.filter(child => child.id !== id)
                 };
             }
-            return s;
-        });
+            return next;
+        }
+
+        return prev;
     });
   }, []);
 
