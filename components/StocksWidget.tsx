@@ -11,20 +11,18 @@ const StocksWidget: React.FC = () => {
   const { apiKey, symbols } = getStocksConfig();
 
   const loadQuotes = async () => {
-    if (!apiKey) {
-      setError('Finnhub API anahtarı eksik.');
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
       const results: Record<string, StockQuote> = {};
       await Promise.all(
         symbols.map(async (symbol) => {
-          const quote = await fetchStockQuote(symbol, apiKey);
-          results[symbol] = quote;
+          try {
+            const quote = await fetchStockQuote(symbol, apiKey);
+            results[symbol] = quote;
+          } catch (e) {
+            console.error(`Failed to fetch ${symbol}`, e);
+          }
         })
       );
       setQuotes(results);
@@ -38,10 +36,10 @@ const StocksWidget: React.FC = () => {
 
   useEffect(() => {
     loadQuotes();
-    // Refresh every 5 minutes
-    const interval = setInterval(loadQuotes, 5 * 60 * 1000);
+    // Refresh every 30 minutes (Alpha Vantage limit is 25 per day)
+    const interval = setInterval(loadQuotes, 30 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [apiKey, symbols.join(',')]);
+  }, [symbols.join(','), apiKey]);
 
   return (
     <div className="w-full h-full animate-slide-up">
@@ -89,7 +87,7 @@ const StocksWidget: React.FC = () => {
                 >
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-white/90">{symbol}</span>
-                    <span className="text-[10px] text-white/40">Finnhub</span>
+                    <span className="text-[10px] text-white/40">Yahoo Finance</span>
                   </div>
 
                   <div className="flex flex-col items-end">

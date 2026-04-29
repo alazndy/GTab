@@ -81,6 +81,11 @@ export const DEFAULT_LAYOUT: WidgetConfig[] = [
   { id: 'gmail',      visible: false, order: 5, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'calendar',   visible: false, order: 6, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'stocks',     visible: false, order: 7, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'google-tasks', visible: false, order: 8,  opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 350, heightPx: 500 },
+  { id: 'google-keep',  visible: false, order: 9,  opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 400, heightPx: 600 },
+  { id: 'weather',      visible: false, order: 10, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 320 },
+  { id: 'pomodoro',     visible: false, order: 11, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 380 },
+  { id: 'spotify',      visible: false, order: 12, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 400 },
 ];
 
 export const DEFAULT_CLOCK_CONFIG: ClockConfig = {
@@ -261,9 +266,9 @@ export const saveCardConfig = (config: CardConfig) => {
 export const getStocksConfig = (): StocksConfig => {
   try {
     const stored = localStorage.getItem(STOCKS_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : { apiKey: '', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+    return stored ? JSON.parse(stored) : { apiKey: '4QO8AQO0Y6B6NIPI', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
   } catch (e) {
-    return { apiKey: '', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+    return { apiKey: '4QO8AQO0Y6B6NIPI', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
   }
 };
 

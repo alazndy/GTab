@@ -1,11 +1,12 @@
 {
   "name": "gtab",
   "private": true,
-  "version": "3.0.0",
+  "version": "4.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:store": "node scripts/build-store.js",
     "preview": "vite preview"
   },
   "dependencies": {

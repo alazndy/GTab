@@ -46,7 +46,7 @@ export interface WeatherData {
 
 export type ShortcutPayload = Omit<Shortcut, 'id'>;
 
-export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks' | 'gmail' | 'calendar' | 'stocks';
+export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks' | 'gmail' | 'calendar' | 'stocks' | 'google-tasks' | 'google-keep' | 'weather' | 'pomodoro' | 'spotify';
 
 export interface WidgetConfig {
   id: WidgetId;
@@ -54,6 +54,8 @@ export interface WidgetConfig {
   order: number;
   widthPx?: number;
   heightPx?: number;
+  x?: number;
+  y?: number;
   glassEffect?: boolean;
   opacity?: number; // Background opacity
   borderOpacity?: number; // Area frame opacity
@@ -121,6 +123,7 @@ export interface BackgroundConfig {
   type: BackgroundType;
   value: string;
   customTheme?: CustomThemeConfig;
+  isFreeLayout?: boolean; // Toggle for freeform vs auto-align widget layout
 }
 
 export type TimeFormat = '12h' | '24h';

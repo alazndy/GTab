@@ -1,66 +1,95 @@
 # GTab Memory
 
 ## Son Durum
-- Tarih: 2026-04-27
-- Aktif agent: Gemini
-- Versiyon: **3.0.0** (store ZIP: `gtab_v3.0.0.zip`)
+- Tarih: 2026-04-29
+- Aktif agent: Claude
+- Versiyon: **4.3.0**
+- Build sistemi: **İki edition** — `pnpm build` (personal) / `pnpm build:store` (store)
 
 ## Claude
 ### Yaptıkları
-- Donate butonu kaldırıldı, BMC URL güncellendi.
-- `CardConfig` (bgOpacity, shape, size, alignment, font, **iconSize**) sistemi eklendi.
-- `BackgroundSettingsModal.tsx` sidebar+içerik mimarisine yeniden yazıldı.
-- `ShortcutCard.tsx` dinamik kart/ikon boyutu, şekli, opaklığı.
-- Profil/URL import-export (JSON) eklendi.
-- Grup mekaniği yeniden yazıldı (3-adım modal, FolderViewModal, profil-aware URL çözümlemesi).
-- Tüm modaller glassmorphism temaya uyarlandı.
-- **Sağ tık → "GTab'a ekle"** context menu (background.js service worker).
-- **Eklenti popup'u** (popup.html): mevcut sekme ekleme, görünürlük toggle, profil seçerek ekleme, hızlı nav.
-- **Tema rengi profil menüsüne** yansıtıldı (`--menu-bg`, `--menu-border` CSS değişkenleri).
-- **Aperture (Portal) teması** eklendi.
-- v1.1.0 build + store ZIP oluşturuldu.
+- **v4.3.0 — Yeni Widget'lar + Store Hazırlığı:**
+  - **Weather Widget:** Open-Meteo API (API key gereksiz), Nominatim reverse geocoding, 30dk cache, sıcaklık/nem/rüzgar/hissedilen gösterimi.
+  - **Pomodoro Widget:** 25/5/15dk fazları, SVG ring animasyonu, session sayacı, tarayıcı bildirimi.
+  - **Spotify Widget:** OAuth implicit flow (chrome.identity), now playing, play/pause/next/prev kontrolleri, client ID kurulum ekranı.
+  - **manifest.json:** tasks.googleapis.com, Open-Meteo, Nominatim, Spotify host permissions eklendi. Tasks OAuth scope eklendi.
+  - **WidgetId:** weather, pomodoro, spotify tipleri eklendi. DEFAULT_LAYOUT'a eklendi.
+
+- **v4.2.5 — OAuth & Google Tasks Fixes:**
+  - **Google Tasks Widget:** iframe → Tasks REST API'ye geçiş (Gmail gibi). REAUTH_REQUIRED, API_NOT_ENABLED hata tespiti. forceConsent=true mekanizması.
+  - **Google Keep Widget:** iframe → Local "Hızlı Notlar" widget (localStorage, Keep'in public API'si yok).
+  - **googleAuthService.ts:** `prompt=none` (non-interactive) / `prompt=consent` (force re-auth) / `prompt=select_account` (normal interactive). abortOnLoadForNonInteractive: true.
+
+- **Store Edition Altyapısı:**
+  - `pnpm build` → `dist/` — Personal edition (gmail.readonly + snippet görünür)
+  - `pnpm build:store` → `dist-store/` — Store edition (gmail.metadata, snippet gizli)
+  - `scripts/build-store.js`: manifest'i geçici olarak değiştirip build alır, sonra restore eder.
+  - `GmailWidget.tsx`: `import.meta.env.VITE_EDITION === 'store'` ile snippet koşullu gizlenir.
+  - `googleAuthService.ts`: Store modda `format=metadata` ile header-only fetch.
+
+- **Privacy Policy:** `docs/privacy-policy.html` oluşturuldu (GitHub Pages için). URL: `https://alazndy.github.io/GTab/privacy-policy.html`
+
 ### Yapacakları
-- —
+- Google Cloud Console → OAuth Consent Screen'e privacy policy URL'sini ekle
+- Calendar + Tasks sensitive scope verification başvurusu yap
+- GitHub Pages'i aktif et (Settings → Pages → /docs)
+- Store'a `dist-store/` klasörünü yükle
+
 ### Notlar
-- CardConfig ayarları anlık uygulanır, modal kapanmaya gerek yok.
-- Popup hidden IDs: `gtab_popup_hidden` localStorage key.
+- **Scope özeti:** `gmail.metadata` (sensitive) = gönderen+konu. `gmail.readonly` (restricted) = snippet dahil tam okuma. Personal'da readonly kullanılıyor.
+- **Spotify:** Her kullanıcı kendi Spotify Developer App'ini kuruyor (developer.spotify.com → app oluştur → redirect URI ekle → client ID gir). Extended Quota başvurusu yapılırsa hardcode edilebilir.
+- **Google Tasks 403:** REAUTH_REQUIRED → setToken(null) → login butonu. API_NOT_ENABLED → GCP'de Tasks API aktif edilmeli.
+- `dist/` = personal (gmail.readonly), `dist-store/` = store (gmail.metadata)
 
 ## Gemini
 ### Yaptıkları
-- **v3.0.0 "Smart Widget" Mimarisi:** Gmail, Google Takvim ve Borsa widget'ları sisteme entegre edildi.
-  - **Google Auth:** Chrome Identity API ile OAuth2 entegrasyonu sağlandı. Fixed: `manifest.json` dosyasına sabit extension ID sağlayan "key" property eklendi.
-  - **Gmail Widget:** Okunmamış e-postaları konu ve özetle listeleme özelliği eklendi.
-  - **Takvim Widget:** Yaklaşan etkinlikleri zamanlarıyla gösterme özelliği eklendi.
-  - **Borsa Widget:** Finnhub API entegrasyonu ile gerçek zamanlı hisse takibi eklendi.
-  - **Ayarlar:** `BackgroundSettingsModal` içine Finnhub API Key ve sembol yönetimi eklendi.
-  - **Layout:** Yeni widget'lar mevcut kullanıcıların düzenine otomatik enjekte edilecek şekilde ayarlandı.
-- **Jules PR & Branch Temizliği:** Jules'un 35 adet performansa dayalı PR'ı incelendi ve değerli olanlar (Clock cache, point updates) v3'e dahil edildi.
-- **v3.0.0 Release:** Versiyon 3.0.0'a yükseltildi, `pnpm build` alındı ve `gtab_v3.0.0.zip` hazırlandı.
-- **Layout Fix:** `App.tsx` içerisindeki `max-w-7xl` kısıtlaması kaldırılarak tam genişlik (full width) desteği sağlandı.
+- **v4.2.4 Aesthetic Controls & Version Fix**
+- **v4.2.3 Comprehensive Quick Settings**
+- **v4.2.2 Control Center Quick Settings**
+- **v4.2.1 Workspace Cleanup & Build**
+- **v4.2.0 Live Shuffle DnD & Settings Navigation**
 ### Yapacakları
-- —
+- **v4.3.0+:** Dosya yapısını parçalamaya devam.
 ### Notlar
-- Google API'ları için `manifest.json` içindeki `client_id` ve `key` test edildi.
-- Borsa verileri için Finnhub.io üzerinden ücretsiz API key gereklidir.
+- `hooks/useWidgetDnD.ts` artık `liveLayout` state'i ile anlık sürükleme tepkileri veriyor.
 
 ## Antigravity
-...
+### Yaptıkları
+- Component Decomposition (CategoryFilterWidget, ShortcutGridWidget, WidgetQuickSettings, ShortcutProfileDropdown)
+- Freeform Layout + Collision Detection (useFreeLayoutDrag.ts)
+- Animated Glow Orbs (Portal tema)
+- Tasks Widget Refactor (yer değiştirilebilir widget)
+- Google Tasks + Google Keep iframe tabanlı widget'lar (sonradan Claude tarafından yeniden yazıldı)
+### Yapacakları
+- UI Bütünlüğü Kontrolü (margin/padding uyumsuzlukları)
+### Notlar
+- `App.tsx` artık neredeyse tamamen state yönetimi ve ana layout sarmalayıcısı.
+
 ## Plan
 ### Tamamlananlar
-- [x] Proje keşfi ve analiz.
-- [x] `memory.md` oluşturma.
-- [x] **v2.0.0 Store ZIP hazırlığı.**
-- [x] **v3.0.0 Smart Widget Mimarisi (Gmail, Calendar, Stocks).**
-- [x] **v3.0.0 Store ZIP ve Release hazırlığı.**
-- [x] **Google Auth Fix (Extension Key added).**
+- [x] v4.0.0 Phase 1: Context API Migration
+- [x] v4.1.0 Phase 2: Advanced Widget Mechanics
+- [x] v4.2.0 Phase 3: Live Shuffle DnD & Settings Navigation
+- [x] v4.2.5 Google Tasks API + Keep (local notes) + OAuth fixes
+- [x] v4.3.0 Weather / Pomodoro / Spotify widget'ları
+- [x] Store Edition build sistemi (gmail.metadata vs gmail.readonly)
+- [x] Privacy Policy sayfası
+
 ### Devam Edenler
-- [ ] —
+- [ ] Google OAuth Consent Screen branding + verification başvurusu
+- [ ] GitHub Pages aktif etme
+
 ### Sıradakiler
-- [ ] Kullanıcının taleplerine göre geliştirmeler.
+- [ ] Chrome Web Store yayını (dist-store/)
+- [ ] Spotify Extended Quota başvurusu (opsiyonel)
+- [ ] RSS/Haber widget (Tier 2)
+- [ ] GitHub Activity widget (Tier 2)
 
 ## Karar Günlüğü
 | Tarih | Agent | Karar | Neden |
 |-------|-------|-------|-------|
-| 2026-04-19 | Antigravity | v2.0.0 Release | Kullanıcı talebi üzerine majör versiyon artırımı ve store paketlemesi yapıldı. |
-| 2026-04-27 | Gemini | Smart Widget Mimarisi | GTab'ı tam kapsamlı bir üretkenlik paneline dönüştürmek için Gmail, Takvim ve Borsa entegrasyonları yapıldı. |
-| 2026-04-27 | Gemini | v3.0.0 Release | Yeni widget mimarisi ile birlikte majör sürüm geçişi yapıldı. |
+| 2026-04-28 | Gemini | v4.2.0 Release | Live Shuffle DnD ve ayar erişim iyileştirmeleri tamamlandı. |
+| 2026-04-29 | Claude | gmail.readonly → store'da gmail.metadata | Restricted scope security assessment çok pahalı; metadata sensitive scope, verification ücretsiz. |
+| 2026-04-29 | Claude | İki build edition | Personal (dist/) tam özellikli, store (dist-store/) verification-ready. |
+| 2026-04-29 | Claude | Google Keep → local notes | Keep'in public API'si yok, iframe X-Frame-Options ile bloklu. |
+| 2026-04-29 | Claude | Spotify user-setup | Her kullanıcı kendi app'ini kuruyor; Extended Quota başvurusu gelecekte yapılabilir. |
