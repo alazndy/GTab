@@ -5,21 +5,36 @@
 [![Release](https://img.shields.io/github/v/release/alazndy/GTab?color=blue&style=for-the-badge)](https://github.com/alazndy/GTab/releases)
 [![Tech](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Performance](https://img.shields.io/badge/Performance-Elite-blueviolet?style=for-the-badge)](https://github.com/alazndy/GTab)
-[![Design](https://img.shields.io/badge/Design-Glassmorphism-purple?style=for-the-badge)](https://github.com/alazndy/GTab)
+[![Design](https://img.shields.io/badge/Design-Glassmorphism-purple?style=for-the-badge)](https://github.com/alazndy/GTab)  
 
 **GTab** is a premium, high-performance "New Tab" browser extension designed for power users who demand speed, aesthetics, and total control over their digital workspace.
 
 ---
 
-## 🚀 What's New in v2.0.0 (Major Release)
+## 🚀 What's New in v4.3.0 (The Widget Era)
 
-- **🎨 Settings Redesign:** Completely overhauled settings interface with a sidebar, categorized navigation (Layout, Appearance, Typography), and enhanced glassmorphic details.
-- **📐 Dynamic Grid Control:** Precision control over your dashboard layout with adjustable horizontal/vertical gaps and 2-12 column grid density.
-- **👤 Elite Profile Menu:** Fixed-width, readable profile menu independent of card sizes, featuring customizable opacity and border styling.
-- **✨ Portal Theme 2.0:** Enhanced sci-fi aesthetics with improved glow effects and refined animations.
-- **➕ Minimalist Add Card:** Redesigned "Add New" card with a more transparent, non-intrusive aesthetic.
-- **🖱️ Context Menu Magic:** Right-click any page to instantly save links to GTab via the background service worker.
-- **🎛️ Extension Popup:** Quickly add the current tab, toggle dashboard visibility, or navigate to your profiles directly from the extension bar.
+- **🌦️ Weather Widget:** Real-time weather data via Open-Meteo API. Automatic location detection with 30-minute caching.
+- **⏱️ Pomodoro Widget:** Stay focused with 25/5/15 minute sessions, visual SVG progress ring, and browser notifications.
+- **🎵 Spotify Widget:** Control your music directly from the dashboard. OAuth integration for playback and "Now Playing" status.
+- **✅ Google Tasks API:** Completely rewritten Tasks integration using the official REST API for better reliability and real-time sync.
+- **📝 Quick Notes:** A lightweight local notes widget replacing the iframe-restricted Google Keep.
+- **📦 Dual-Edition Build System:** We now offer separate builds for Personal use and Chrome Web Store compliance.
+
+---
+
+## 🏗️ Release Editions
+
+To maintain power-user features while complying with Chrome Web Store's strict privacy policies, GTab is now built in two editions:
+
+### 🌟 Personal Edition (Unpacked)
+- **Built for:** Maximum power and features.
+- **Permissions:** `gmail.readonly` (Full email snippets and content reading).
+- **How to use:** `pnpm build` -> Load `dist/` folder manually in Developer Mode.
+
+### 🏪 Store Edition (Production)
+- **Built for:** Chrome Web Store compliance and security.
+- **Permissions:** `gmail.metadata` (Header-only access for privacy).
+- **How to use:** `pnpm build:store` -> Load `dist-store/` folder or download from the store.
 
 ---
 
