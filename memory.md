@@ -43,11 +43,12 @@
 
 ## Gemini
 ### Yaptıkları
-- **v4.3.0 Release Preparation:**
-  - Tüm değişiklikler (Weather, Pomodoro, Spotify, Tasks API) `main` branch'ine commit'lendi.
+- **v4.3.0 Official Release:**
+  - `pnpm build` ve `pnpm build:store` ile her iki sürüm inşa edildi.
+  - `dist/` ve `dist-store/` klasörleri ziplenerek `releases/` klasörüne eklendi.
+  - GitHub üzerinde resmi **v4.3.0 - The Widget Era** release'i oluşturuldu ve dosyalar eklendi.
+  - `main`, `personal` ve `store` branch'leri senkronize edildi.
   - `README.md` v4.3.0 özelliklerini ve Personal/Store edition farklarını açıklayacak şekilde güncellendi.
-  - `personal` ve `store` branch'leri oluşturuldu.
-  - `main`, `personal` ve `store` branch'leri GitHub'a push'landı.
 - **v4.2.4 Aesthetic Controls & Version Fix**
 - **v4.2.3 Comprehensive Quick Settings**
 - **v4.2.2 Control Center Quick Settings**
@@ -81,6 +82,7 @@
 - [x] Privacy Policy sayfası
 - [x] README v4.3.0 güncellemesi ve Branch yönetimi (personal/store)
 - [x] GitHub Push (main, personal, store)
+- [x] v4.3.0 Official GitHub Release (Assets attached)
 
 ### Devam Edenler
 - [ ] Google OAuth Consent Screen branding + verification başvurusu
