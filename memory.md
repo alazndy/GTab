@@ -43,6 +43,11 @@
 
 ## Gemini
 ### Yaptıkları
+- **v4.3.0 Release Preparation:**
+  - Tüm değişiklikler (Weather, Pomodoro, Spotify, Tasks API) `main` branch'ine commit'lendi.
+  - `README.md` v4.3.0 özelliklerini ve Personal/Store edition farklarını açıklayacak şekilde güncellendi.
+  - `personal` ve `store` branch'leri oluşturuldu.
+  - `main`, `personal` ve `store` branch'leri GitHub'a push'landı.
 - **v4.2.4 Aesthetic Controls & Version Fix**
 - **v4.2.3 Comprehensive Quick Settings**
 - **v4.2.2 Control Center Quick Settings**
@@ -74,6 +79,8 @@
 - [x] v4.3.0 Weather / Pomodoro / Spotify widget'ları
 - [x] Store Edition build sistemi (gmail.metadata vs gmail.readonly)
 - [x] Privacy Policy sayfası
+- [x] README v4.3.0 güncellemesi ve Branch yönetimi (personal/store)
+- [x] GitHub Push (main, personal, store)
 
 ### Devam Edenler
 - [ ] Google OAuth Consent Screen branding + verification başvurusu
