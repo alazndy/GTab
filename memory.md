@@ -30,9 +30,9 @@
 - **Privacy Policy:** `docs/privacy-policy.html` oluşturuldu (GitHub Pages için). URL: `https://alazndy.github.io/GTab/privacy-policy.html`
 
 ### Yapacakları
-- Google Cloud Console → OAuth Consent Screen'e privacy policy URL'sini ekle
-- Calendar + Tasks sensitive scope verification başvurusu yap
-- GitHub Pages'i aktif et (Settings → Pages → /docs)
+- Google Cloud Console → Branding URL'lerini alazlab.com/gtab ile güncelle + verification yeniden gönder
+- alazlab.com domainini portfolio-site'a bağla (DNS + Vercel/GitHub Pages)
+- `/gtab` route'u portfolio-site'a ekle (privacy policy + proje sayfası)
 - Store'a `dist-store/` klasörünü yükle
 
 ### Notlar
