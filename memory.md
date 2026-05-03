@@ -1,9 +1,9 @@
 # GTab Memory
 
 ## Son Durum
-- Tarih: 2026-04-29
-- Aktif agent: Claude
-- Versiyon: **4.3.0**
+- Tarih: 2026-05-03
+- Aktif agent: Gemini
+- Versiyon: **5.0.0**
 - Build sistemi: **İki edition** — `pnpm build` (personal) / `pnpm build:store` (store)
 
 ## Claude
@@ -43,6 +43,11 @@
 
 ## Gemini
 ### Yaptıkları
+- **v5.0 — Final Polish & UX Improvements:**
+  - `storageService.ts`: Tam yedekleme (full backup) versiyonu `5.0.0` olarak güncellendi.
+  - `QuoteDisplay.tsx`: "Pop-in" etkisini önlemek için state `FALLBACK_QUOTE` ile başlatıldı ve yükleme kontrolü optimize edildi.
+  - `SearchBar.tsx`: Arama çubuğu yer tutucusu "Search or Ctrl+K for Commands..." olarak güncellendi.
+  - `quoteService.ts`: `FALLBACK_QUOTE` sabiti bileşenlerde kullanılmak üzere dışa aktarıldı.
 - **Task Management Refactor:**
   - `tasks` state'i ve `addTask` aksiyonu global `GTabContext`'e taşındı.
   - `TasksWidget` local state yerine global context'i kullanacak şekilde güncellendi.
