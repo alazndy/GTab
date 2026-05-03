@@ -1,15 +1,9 @@
 
 import React from 'react';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
-import { ClockConfig } from '../types';
+import { useGTab } from '../context/GTabContext';
 
-interface ClockProps {
-  config: ClockConfig;
-  isEditMode?: boolean;
-  onOpenSettings?: () => void;
-}
-
-const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => {
+const Clock: React.FC = () => {
+  const { clockConfig: config } = useGTab();
   const [time, setTime] = React.useState(new Date());
 
   // Cache Intl.DateTimeFormat instances to avoid expensive recreations on every 1000ms render tick

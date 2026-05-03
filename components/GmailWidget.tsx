@@ -102,6 +102,8 @@ const GmailWidget: React.FC = () => {
           setActiveAccountIndex(newestIdx);
         }
 
+        const total = next.reduce((s, a) => s + a.messages.length, 0);
+        localStorage.setItem('gtab_status_gmail_unread', String(total));
         return next;
       });
     } catch (err: any) {

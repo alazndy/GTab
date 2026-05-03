@@ -43,15 +43,19 @@
 
 ## Gemini
 ### Yaptıkları
+- **v5.0.0 — Command & Focus Official Release:**
+  - `package.json` versiyonu `5.0.0` olarak güncellendi.
+  - `App.tsx` üzerindeki mükerrer deklarasyon hatası giderildi.
+  - `pnpm build` (Personal) ve `pnpm build:store` (Store) başarıyla tamamlandı.
+  - `dist/` ve `dist-store/` klasörleri v5.0 özellikleriyle güncellendi.
+  - Command Palette kısayolu özelleştirilebilir hale getirildi (Varsayılan: `Alt+K`).
+  - Görev yönetimi global context'e taşındı ve AI komutlarıyla entegre edildi.
+  - ZenQuotes ve Ambient Sounds sistemleri kuruldu.
 - **v5.0 — Final Polish & UX Improvements:**
   - `storageService.ts`: Tam yedekleme (full backup) versiyonu `5.0.0` olarak güncellendi.
-  - `QuoteDisplay.tsx`: "Pop-in" etkisini önlemek için state `FALLBACK_QUOTE` ile başlatıldı ve yükleme kontrolü optimize edildi.
+  - `QuoteDisplay.tsx`: "Pop-in" etkisini önlemek için state `FALLBACK_QUOTE` ile başlatıldı.
   - `SearchBar.tsx`: Arama çubuğu yer tutucusu "Search or Ctrl+K for Commands..." olarak güncellendi.
-  - `quoteService.ts`: `FALLBACK_QUOTE` sabiti bileşenlerde kullanılmak üzere dışa aktarıldı.
-- **Task Management Refactor:**
-  - `tasks` state'i ve `addTask` aksiyonu global `GTabContext`'e taşındı.
-  - `TasksWidget` local state yerine global context'i kullanacak şekilde güncellendi.
-  - `CommandPalette` üzerinden görev ekleme özelliği düzeltildi (`addShortcuts` yerine yeni `addTask` kullanılıyor).
+  - `quoteService.ts`: `FALLBACK_QUOTE` sabiti dışa aktarıldı.
   - Görevlerin `localStorage` persistence mekanizması `GTabContext` içine entegre edildi.
 - **v5.0 — Command & Focus Progress:**
   - **useAmbientAudio Hook:** HTML5 Audio tabanlı, singleton pattern ve ref-counting ile temizlenen ambient ses motoru eklendi. (Task 3)

@@ -6,6 +6,7 @@ export enum Category {
   ENTERTAINMENT = 'Eğlence',
   SHOPPING = 'Alışveriş',
   APPS = 'Uygulamalar',
+  STATUS_BAR = 'Status Bar',
   OTHER = 'Diğer'
 }
 
@@ -69,6 +70,9 @@ export interface StocksConfig {
 
 export interface AIConfig {
   geminiApiKey: string;
+  commandPaletteShortcut?: string; // e.g. 'Alt+K' or 'Ctrl+K'
+  statusBarShortcut?: string;
+  statusBarEnabled?: boolean;
 }
 
 export interface GmailMessage {

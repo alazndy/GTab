@@ -121,6 +121,13 @@ const PomodoroWidget: React.FC = () => {
     setTimeLeft(DURATIONS[phase]);
   };
 
+  // Broadcast status for StatusBar
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gtab:pomodoro-status', {
+      detail: { phase, timeLeft, running, sessions }
+    }));
+  }, [phase, timeLeft, running, sessions]);
+
   return (
     <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col overflow-hidden">
       {/* Phase tabs */}

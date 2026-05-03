@@ -72,14 +72,16 @@ const SpotifyWidget: React.FC = () => {
     if (res.status === 204 || !res.ok) { setTrack(null); return; }
     const data = await res.json();
     if (!data?.item) { setTrack(null); return; }
-    setTrack({
+    const trackData = {
       name: data.item.name,
       artist: data.item.artists.map((a: { name: string }) => a.name).join(', '),
       albumArt: data.item.album.images[0]?.url || '',
       isPlaying: data.is_playing,
       progress: data.progress_ms ?? 0,
       duration: data.item.duration_ms,
-    });
+    };
+    setTrack(trackData);
+    localStorage.setItem('gtab_status_spotify', JSON.stringify({ name: trackData.name, artist: trackData.artist, isPlaying: trackData.isPlaying }));
   }, []);
 
   useEffect(() => {

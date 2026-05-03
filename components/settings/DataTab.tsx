@@ -191,6 +191,24 @@ export const DataTab: React.FC<DataTabProps> = ({
                 className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/20 focus:border-purple-500/50 focus:outline-none transition-all"
               />
             </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-white/30 ml-1">Komut Paleti Kısayolu</label>
+              <select
+                value={aiConfig.commandPaletteShortcut || 'Alt+K'}
+                onChange={e => {
+                  const n = { ...aiConfig, commandPaletteShortcut: e.target.value };
+                  setAIConfig(n);
+                  saveAIConfig(n);
+                }}
+                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white focus:border-purple-500/50 focus:outline-none transition-all appearance-none"
+              >
+                <option value="Alt+K">Alt + K (Önerilen)</option>
+                <option value="Ctrl+K">Ctrl + K</option>
+                <option value="Cmd+K">Cmd + K (Mac)</option>
+                <option value="Ctrl+Space">Ctrl + Space</option>
+              </select>
+            </div>
           </div>
         </div>
       )}

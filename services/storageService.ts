@@ -27,68 +27,36 @@ export const PRESET_BACKGROUNDS = [
   'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=70&w=1600&auto=format&fit=crop'
 ];
 
-// Default shortcuts for new users - customize as needed
 const DEFAULT_SHORTCUTS: Shortcut[] = [
-  {
-    id: '1',
-    title: 'Google',
-    url: 'https://google.com',
-    category: Category.OTHER,
-    iconType: 'favicon'
-  },
-  {
-    id: '2',
-    title: 'YouTube',
-    url: 'https://youtube.com',
-    category: Category.ENTERTAINMENT,
-    iconType: 'favicon'
-  },
-  {
-    id: '3',
-    title: 'GitHub',
-    url: 'https://github.com',
-    category: Category.DEV,
-    iconType: 'favicon'
-  },
-  {
-    id: '4',
-    title: 'Gmail',
-    url: 'https://mail.google.com',
-    category: Category.WORK,
-    iconType: 'favicon'
-  },
-  {
-    id: '5',
-    title: 'Google Drive',
-    url: 'https://drive.google.com',
-    category: Category.WORK,
-    iconType: 'favicon'
-  },
-  {
-    id: '6',
-    title: 'Twitter',
-    url: 'https://twitter.com',
-    category: Category.SOCIAL,
-    iconType: 'favicon'
-  }
+  { id: '3',                                    title: 'GitHub',      url: 'https://github.com',                           category: Category.DEV,  iconType: 'favicon' },
+  { id: '4',                                    title: 'Gmail',       url: 'https://mail.google.com',                      category: Category.WORK, iconType: 'favicon' },
+  { id: '5',                                    title: 'Google Drive', url: 'https://drive.google.com',                    category: Category.WORK, iconType: 'favicon' },
+  { id: 'd40b2cec-ef00-4d96-a5a9-38011ed2f23f', title: 'Stitch',      url: 'https://stitch.withgoogle.com/',               category: Category.DEV },
+  { id: '5955ca80-fa7a-4f3b-955b-e38a6b1fbc84', title: 'Pommeli',     url: 'https://labs.google.com/u/0/pomelli',          category: Category.DEV },
+  { id: '68ede2f2-4bed-4868-aef7-65b89c4560f9', title: 'Gemini',      url: 'https://gemini.google.com/',                   category: Category.DEV },
+  { id: 'cf3ef4fc-d561-42c1-83c6-08d4e7c7c857', title: 'AI Studio',   url: 'https://aistudio.google.com/',                 category: Category.DEV, iconType: 'favicon' },
+  { id: '3612722b-e444-4c64-9bc5-d38cfe2ef06a', title: 'NotebookLM',  url: 'https://notebooklm.google.com/',               category: Category.OTHER },
+  { id: '91a16339-a556-49e4-87e5-4013c1204c6a', title: 'Claude',      url: 'https://claude.ai/',                           category: Category.OTHER },
+  { id: 'f1a9aaf3-9027-4ee7-a874-95026e376bd7', title: 'Reddit',      url: 'https://www.reddit.com/',                      category: Category.OTHER },
+  { id: '4db3b7a3-55ce-41dc-a29f-62916720f742', title: 'Google Docs', url: 'https://docs.google.com',                      category: Category.WORK, iconType: 'favicon' },
 ];
 
 export const DEFAULT_LAYOUT: WidgetConfig[] = [
-  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'gmail',      visible: false, order: 5, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'calendar',   visible: false, order: 6, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'stocks',     visible: false, order: 7, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'google-tasks', visible: false, order: 8,  opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 350, heightPx: 500 },
-  { id: 'google-keep',  visible: false, order: 9,  opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 400, heightPx: 600 },
-  { id: 'weather',      visible: false, order: 10, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 320 },
-  { id: 'pomodoro',     visible: false, order: 11, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 380 },
-  { id: 'spotify',      visible: false, order: 12, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 400 },
-  { id: 'rss',          visible: false, order: 13, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 380, heightPx: 500 },
-  { id: 'github',       visible: false, order: 14, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 320, heightPx: 480 },
+  { id: 'clock',        visible: true,  order: 0,  opacity: 10, glassEffect: true, showBorder: false, borderOpacity: 0,  widthPx: 320, heightPx: 180 },
+  { id: 'search',       visible: false, order: 1,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 500, heightPx: 140 },
+  { id: 'gmail',        visible: true,  order: 2,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 420, heightPx: 280 },
+  { id: 'calendar',     visible: true,  order: 3,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 340, heightPx: 300 },
+  { id: 'google-keep',  visible: true,  order: 4,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 260, heightPx: 300 },
+  { id: 'google-tasks', visible: true,  order: 5,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 280, heightPx: 300 },
+  { id: 'shortcuts',    visible: true,  order: 6,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 1100, heightPx: 340 },
+  { id: 'categories',   visible: false, order: 7,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20 },
+  { id: 'pomodoro',     visible: true,  order: 8,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 280, heightPx: 380 },
+  { id: 'weather',      visible: true,  order: 9,  opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 280, heightPx: 320 },
+  { id: 'stocks',       visible: true,  order: 10, opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 420, heightPx: 360 },
+  { id: 'tasks',        visible: false, order: 11, opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20 },
+  { id: 'spotify',      visible: true,  order: 12, opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 280, heightPx: 400 },
+  { id: 'rss',          visible: false, order: 13, opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 380, heightPx: 500 },
+  { id: 'github',       visible: false, order: 14, opacity: 10, glassEffect: true, showBorder: true,  borderOpacity: 20, widthPx: 320, heightPx: 480 },
 ];
 
 export const DEFAULT_CLOCK_CONFIG: ClockConfig = {
@@ -118,11 +86,11 @@ export const DEFAULT_CARD_CONFIG: CardConfig = {
   font: 'geist',
   iconSize: 'md',
   cardWidth: 100,
-  glowEnabled: true,
+  glowEnabled: false,
   gridGapX: 16,
   gridGapY: 16,
-  gridCols: 6,
-  showCardBorder: true,
+  gridCols: 8,
+  showCardBorder: false,
   cardBorderOpacity: 10,
   menuOpacity: 95,
   menuBorderOpacity: 10
@@ -201,9 +169,9 @@ export const saveTasks = (tasks: Task[]) => {
 export const getBackgroundConfig = (): BackgroundConfig => {
   try {
     const stored = localStorage.getItem(BG_KEY);
-    return stored ? JSON.parse(stored) : { type: 'random', value: '' };
+    return stored ? JSON.parse(stored) : { type: 'theme', value: 'portal' };
   } catch (e) {
-    return { type: 'random', value: '' };
+    return { type: 'theme', value: 'portal' };
   }
 };
 
@@ -286,9 +254,23 @@ export const saveStocksConfig = (config: StocksConfig) => {
 export const getAIConfig = (): AIConfig => {
   try {
     const stored = localStorage.getItem(AI_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : { geminiApiKey: '' };
+    return stored ? { 
+      statusBarShortcut: 'Alt+S', 
+      statusBarEnabled: true, 
+      ...JSON.parse(stored) 
+    } : { 
+      geminiApiKey: '', 
+      commandPaletteShortcut: 'Alt+K',
+      statusBarShortcut: 'Alt+S',
+      statusBarEnabled: true
+    };
   } catch (e) {
-    return { geminiApiKey: '' };
+    return { 
+      geminiApiKey: '', 
+      commandPaletteShortcut: 'Alt+K',
+      statusBarShortcut: 'Alt+S',
+      statusBarEnabled: true
+    };
   }
 };
 

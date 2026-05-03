@@ -1,5 +1,6 @@
 import React from 'react';
 import { CardShape, CardSize, CardAlignment, FontFamily, IconSize, WidgetId } from '../../types';
+import { WIDGET_MAP } from '../../registries/widgetRegistry';
 
 export const THEMES = [
   { id: 'default', name: 'Varsayılan', desc: 'Klasik glassmorphism.', gradient: 'from-slate-800 to-slate-900' },
@@ -52,23 +53,9 @@ export const ICON_SIZES: { id: IconSize; label: string; px: number }[] = [
   { id: 'lg', label: 'Büyük',     px: 44 },
 ];
 
-export const WIDGET_LABELS: Record<WidgetId, string> = {
-  clock:      'Saat & Tarih',
-  search:     'Arama Çubuğu',
-  tasks:      'Görevler',
-  categories: 'Kategori & Profil',
-  shortcuts:  'Kısayollar',
-  gmail:      'Gmail',
-  calendar:   'Takvim',
-  stocks:     'Borsa',
-  'google-tasks': 'Google Görevler',
-  'google-keep': 'Google Keep',
-  'weather': 'Hava Durumu',
-  'pomodoro': 'Pomodoro Timer',
-  'spotify': 'Spotify',
-  'rss': 'RSS / Haber',
-  'github': 'GitHub Aktivite',
-};
+export const WIDGET_LABELS: Record<WidgetId, string> = Object.fromEntries(
+  Array.from(WIDGET_MAP.entries()).map(([id, meta]) => [id, meta.label])
+) as Record<WidgetId, string>;
 
 export const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-0">{children}</p>

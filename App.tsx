@@ -3,21 +3,9 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from '@heroicons/react/24/outline';
-import Clock from './components/Clock';
-import SearchBar from './components/SearchBar';
-import TasksWidget from './components/TasksWidget';
-import GmailWidget from './components/GmailWidget';
-import CalendarWidget from './components/CalendarWidget';
-import StocksWidget from './components/StocksWidget';
-import GoogleTasksWidget from './components/GoogleTasksWidget';
-import GoogleKeepWidget from './components/GoogleKeepWidget';
-import WeatherWidget from './components/WeatherWidget';
-import PomodoroWidget from './components/PomodoroWidget';
-import SpotifyWidget from './components/SpotifyWidget';
 import { WidgetPicker } from './components/WidgetPicker';
-import RSSWidget from './components/RSSWidget';
-import GitHubWidget from './components/GitHubWidget';
 import CommandPalette from './components/CommandPalette';
+import { renderWidget, getWidgetLabel } from './registries/widgetRegistry';
 
 const AddModal = React.lazy(() => import('./components/AddModal'));
 const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSettingsModal'));
@@ -35,9 +23,10 @@ import { getThemeStyles } from './utils/themeStyles';
 import { AppBackground } from './components/AppBackground';
 import { HeaderControls } from './components/HeaderControls';
 import { WidgetWrapper } from './components/WidgetWrapper';
-import { CategoryFilterWidget } from './components/CategoryFilterWidget';
-import { ShortcutGridWidget } from './components/ShortcutGridWidget';
 import QuoteDisplay from './components/QuoteDisplay';
+import StatusBar from './components/StatusBar';
+
+import { resolveTargetUrl, getFavicon } from './components/utils/shortcutUtils';
 
 const App: React.FC = () => {
   const {
@@ -75,15 +64,49 @@ const App: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = React.useState(false);
 
   React.useEffect(() => {
+    const statusBarShortcuts = shortcuts
+      .filter(s => s.category === Category.STATUS_BAR)
+      .map(s => {
+        const profile = s.profiles?.find(p => p.id === s.defaultProfileId);
+        const url = resolveTargetUrl(s, profile);
+        return {
+          title: s.title,
+          url,
+          icon: getFavicon(url, s.url)
+        };
+      });
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['gtab_global_status'], (result) => {
+        const currentStatus = result.gtab_global_status || {};
+        chrome.storage.local.set({
+          gtab_global_status: {
+            ...currentStatus,
+            navShortcuts: statusBarShortcuts
+          }
+        });
+      });
+    }
+  }, [shortcuts]);
+
+  React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      const shortcut = aiConfig.commandPaletteShortcut || 'Alt+K';
+      
+      let isTriggered = false;
+      if (shortcut === 'Alt+K') isTriggered = e.altKey && e.key.toLowerCase() === 'k';
+      else if (shortcut === 'Ctrl+K') isTriggered = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
+      else if (shortcut === 'Cmd+K') isTriggered = e.metaKey && e.key.toLowerCase() === 'k';
+      else if (shortcut === 'Ctrl+Space') isTriggered = (e.ctrlKey || e.metaKey) && e.code === 'Space';
+
+      if (isTriggered) {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [aiConfig.commandPaletteShortcut]);
 
   const { draggedId, dragOverId, liveLayout, onDragStart, onDragEnter, onDragOver, onDragEnd } = useWidgetDnD({
     layout,
@@ -134,52 +157,6 @@ const App: React.FC = () => {
     return map[cardConfig.alignment] ?? 'mx-auto';
   }, [cardConfig.alignment]);
 
-  // --- Rendering Helper ---
-  const renderWidgetContent = (id: WidgetId) => {
-    switch (id) {
-      case 'clock':
-        return <Clock config={clockConfig} isEditMode={isEditMode} onOpenSettings={() => setIsClockModalOpen(true)} />;
-      case 'search':
-        return <SearchBar />;
-      case 'tasks':
-        return <TasksWidget />;
-      case 'categories':
-        return <CategoryFilterWidget />;
-      case 'shortcuts':
-        return <ShortcutGridWidget />;
-      case 'gmail': return <GmailWidget />;
-      case 'calendar': return <CalendarWidget />;
-      case 'stocks': return <StocksWidget />;
-      case 'google-tasks': return <GoogleTasksWidget />;
-      case 'google-keep': return <GoogleKeepWidget />;
-      case 'weather': return <WeatherWidget />;
-      case 'pomodoro': return <PomodoroWidget />;
-      case 'spotify': return <SpotifyWidget />;
-      case 'rss': return <RSSWidget />;
-      case 'github': return <GitHubWidget />;
-      default: return null;
-    }
-  };
-
-  const getWidgetLabel = (id: WidgetId) => {
-    switch(id) {
-      case 'clock': return 'Saat & Tarih';
-      case 'search': return 'Arama Çubuğu';
-      case 'tasks': return 'Görevler (Yerel)';
-      case 'categories': return 'Kategori & Profil Filtreleri';
-      case 'shortcuts': return 'Kısayol Izgarası';
-      case 'gmail': return 'Gmail';
-      case 'calendar': return 'Takvim';
-      case 'stocks': return 'Borsa';
-      case 'google-tasks': return 'Google Görevler';
-      case 'google-keep': return 'Google Keep';
-      case 'weather': return 'Hava Durumu';
-      case 'pomodoro': return 'Pomodoro';
-      case 'spotify': return 'Spotify';
-      case 'rss': return 'RSS / Haber';
-      case 'github': return 'GitHub Aktivite';
-    }
-  };
 
   return (
     <div
@@ -250,7 +227,7 @@ const App: React.FC = () => {
                   isFreeLayout={bgConfig.isFreeLayout}
                   onPointerDownFreeDrag={freeLayoutDragHandler}
                 >
-                  {renderWidgetContent(widget.id)}
+                  {renderWidget(widget.id)}
                 </WidgetWrapper>
               );
             })}
@@ -287,6 +264,7 @@ const App: React.FC = () => {
       </Suspense>
 
       <QuoteDisplay />
+      <StatusBar />
       
       <CommandPalette 
         isOpen={isCommandPaletteOpen} 
