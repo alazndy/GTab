@@ -17,6 +17,7 @@ import SpotifyWidget from './components/SpotifyWidget';
 import { WidgetPicker } from './components/WidgetPicker';
 import RSSWidget from './components/RSSWidget';
 import GitHubWidget from './components/GitHubWidget';
+import CommandPalette from './components/CommandPalette';
 
 const AddModal = React.lazy(() => import('./components/AddModal'));
 const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSettingsModal'));
@@ -56,6 +57,7 @@ const App: React.FC = () => {
     pendingUrl, setPendingUrl,
     activeBgUrl,
     isBgImageLoaded,
+    aiConfig, setAIConfig,
     addShortcuts, deleteShortcut, updateShortcut,
     toggleWidgetVisibility, updateWidgetConfig, resetLayout
   } = useGTab();
@@ -70,6 +72,18 @@ const App: React.FC = () => {
 
   // --- Logic Hooks ---
   const [showQuickSettings, setShowQuickSettings] = React.useState<WidgetId | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { draggedId, dragOverId, liveLayout, onDragStart, onDragEnter, onDragOver, onDragEnd } = useWidgetDnD({
     layout,
@@ -273,6 +287,11 @@ const App: React.FC = () => {
       </Suspense>
 
       <QuoteDisplay />
+      
+      <CommandPalette 
+        isOpen={isCommandPaletteOpen} 
+        onClose={() => setIsCommandPaletteOpen(false)} 
+      />
     </div>
   );
 };

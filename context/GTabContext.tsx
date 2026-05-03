@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, CardConfig, StocksConfig, AIConfig } from '../types';
+import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, CardConfig, StocksConfig, AIConfig, Task } from '../types';
 import {
   getShortcuts, saveShortcuts,
   getLayoutConfig, saveLayoutConfig, DEFAULT_LAYOUT,
@@ -8,13 +8,16 @@ import {
   getClockConfig, saveClockConfig,
   getCardConfig, saveCardConfig,
   getStocksConfig,
-  getAIConfig, saveAIConfig
+  getAIConfig, saveAIConfig,
+  getTasks, saveTasks
 } from '../services/storageService';
 
 interface GTabContextType {
   // Data State
   shortcuts: Shortcut[];
   setShortcuts: React.Dispatch<React.SetStateAction<Shortcut[]>>;
+  tasks: Task[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   layout: WidgetConfig[];
   setLayout: React.Dispatch<React.SetStateAction<WidgetConfig[]>>;
   bgConfig: BackgroundConfig;
@@ -56,6 +59,7 @@ interface GTabContextType {
 
   // Actions
   addShortcuts: (items: ShortcutPayload[], targetGroupId?: string) => void;
+  addTask: (text: string) => void;
   deleteShortcut: (id: string) => void;
   updateShortcut: (updated: Shortcut) => void;
   toggleWidgetVisibility: (id: WidgetId) => void;
@@ -73,6 +77,7 @@ export const useGTab = () => {
 
 export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => getShortcuts());
+  const [tasks, setTasks] = useState<Task[]>(() => getTasks());
   const [layout, setLayout] = useState<WidgetConfig[]>(() => getLayoutConfig());
   const [bgConfig, setBgConfig] = useState<BackgroundConfig>(() => getBackgroundConfig());
   const [clockConfig, setClockConfig] = useState<ClockConfig>(() => getClockConfig());
@@ -106,6 +111,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Persistence
   useEffect(() => { saveShortcuts(shortcuts); }, [shortcuts]);
+  useEffect(() => { saveTasks(tasks); }, [tasks]);
   useEffect(() => { saveLayoutConfig(layout); }, [layout]);
   useEffect(() => { saveBackgroundConfig(bgConfig); }, [bgConfig]);
   useEffect(() => { saveClockConfig(clockConfig); }, [clockConfig]);
@@ -170,6 +176,17 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setShortcuts(prev => [...prev, ...newShortcuts]);
     }
   }, [activeFolderId]);
+
+  const addTask = useCallback((text: string) => {
+    if (!text.trim()) return;
+    const newTask: Task = {
+      id: crypto.randomUUID(),
+      text: text.trim(),
+      completed: false,
+      createdAt: Date.now()
+    };
+    setTasks(prev => [newTask, ...prev]);
+  }, []);
 
   const deleteShortcut = useCallback((id: string) => {
     setShortcuts(prev => {
@@ -262,6 +279,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     shortcuts, setShortcuts,
+    tasks, setTasks,
     layout, setLayout,
     bgConfig, setBgConfig,
     clockConfig, setClockConfig,
@@ -279,7 +297,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pendingUrl, setPendingUrl,
     activeBgUrl, setActiveBgUrl,
     isBgImageLoaded, setIsBgImageLoaded,
-    addShortcuts, deleteShortcut, updateShortcut,
+    addShortcuts, addTask, deleteShortcut, updateShortcut,
     toggleWidgetVisibility, updateWidgetConfig, resetLayout
   };
 

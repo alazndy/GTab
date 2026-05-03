@@ -46,6 +46,16 @@ const PomodoroWidget: React.FC = () => {
 
   const { currentSoundId, isPlaying, volume, play, stop, pause, setVolume } = useAmbientAudio();
 
+  // Listen for global pomodoro events
+  useEffect(() => {
+    const handleCommand = (e: any) => {
+      if (e.detail === 'start') setRunning(true);
+      if (e.detail === 'stop') setRunning(false);
+    };
+    window.addEventListener('gtab:pomodoro', handleCommand);
+    return () => window.removeEventListener('gtab:pomodoro', handleCommand);
+  }, []);
+
   // Auto-play/pause ambient sound tied to focus session
   useEffect(() => {
     if (running && phase === 'work' && currentSoundId && !isPlaying) {

@@ -43,6 +43,11 @@
 
 ## Gemini
 ### Yaptıkları
+- **Task Management Refactor:**
+  - `tasks` state'i ve `addTask` aksiyonu global `GTabContext`'e taşındı.
+  - `TasksWidget` local state yerine global context'i kullanacak şekilde güncellendi.
+  - `CommandPalette` üzerinden görev ekleme özelliği düzeltildi (`addShortcuts` yerine yeni `addTask` kullanılıyor).
+  - Görevlerin `localStorage` persistence mekanizması `GTabContext` içine entegre edildi.
 - **v5.0 — Command & Focus Progress:**
   - **useAmbientAudio Hook:** HTML5 Audio tabanlı, singleton pattern ve ref-counting ile temizlenen ambient ses motoru eklendi. (Task 3)
 - **v4.3.0 Official Release:**

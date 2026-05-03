@@ -20,6 +20,7 @@ interface Suggestion {
 const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const { 
     addShortcuts, 
+    addTask,
     setIsModalOpen, 
     aiConfig,
     setIsEditMode,
@@ -76,7 +77,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     if (cmd.startsWith('add task ')) {
       const taskText = command.slice(9).trim();
       if (taskText) {
-        addShortcuts([{ title: taskText, url: '', isFolder: false, category: 'Work', profile: 'Personal' }]);
+        addTask(taskText);
         onClose();
       }
       return;

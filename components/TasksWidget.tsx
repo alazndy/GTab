@@ -1,29 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CheckCircleIcon, PlusIcon, TrashIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
-import { Task } from '../types';
-import { getTasks, saveTasks } from '../services/storageService';
+import { useGTab } from '../context/GTabContext';
 
 const TasksWidget: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(() => getTasks());
+  const { tasks, setTasks, addTask: addTaskGlobal } = useGTab();
   const [newTaskText, setNewTaskText] = useState('');
-
-  useEffect(() => {
-    saveTasks(tasks);
-  }, [tasks]);
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskText.trim()) return;
-
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      text: newTaskText,
-      completed: false,
-      createdAt: Date.now()
-    };
-
-    setTasks(prev => [newTask, ...prev]);
+    addTaskGlobal(newTaskText);
     setNewTaskText('');
   };
 
