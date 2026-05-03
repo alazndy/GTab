@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GTAB - Kişiselleştirilebilir Başlangıç Sayfası",
-  "version": "4.3.0",
+  "version": "4.4.2",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOrgk+x+DSfCB5FvtiC1/z02YaIvQZI2Z8sqQp6DSEN3wo+Tm1kokgcHsV/kiiY7GV1PjKpwFCN+n1q5x3glzagamXf8uBpg1Py/xoJNgfRrQwc8U8KF0SLOS4kdoIvfNfeJWfJ6pGpnTLOos+5nvpCKzPjlnVe/d2yysDigEsgpO4wfe+4eXsVy3eLBeUxf+gRCR8YuwlIkfXCs20t7AqqyjgWCNxDobldGrl2RLSnep1gK/EbEl6cCXXuFvk/tUhBa0IjZtM3AdxzVE0+YzHZuNqb8p1Y8gR5qxFXvws0HZhTy/BE6focTA8CS6lqbw2PePYC176ybdsmt7OQaqwIDAQAB",
   "description": "Kendi kişiselleştirilebilir yeni sekme sayfanız. Kısayollar, görevler, arama ve daha fazlası.",
   "icons": {
@@ -39,7 +39,9 @@
     "https://api.open-meteo.com/*",
     "https://nominatim.openstreetmap.org/*",
     "https://accounts.spotify.com/*",
-    "https://api.spotify.com/*"
+    "https://api.spotify.com/*",
+    "https://api.rss2json.com/*",
+    "https://api.github.com/*"
   ],
   "oauth2": {
     "client_id": "845733064613-ehbgo67a20brfs0292cfr9tr7k0079m3.apps.googleusercontent.com",

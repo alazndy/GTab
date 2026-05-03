@@ -67,6 +67,10 @@ export interface StocksConfig {
   symbols: string[];
 }
 
+export interface AIConfig {
+  geminiApiKey: string;
+}
+
 export interface GmailMessage {
   id: string;
   threadId: string;

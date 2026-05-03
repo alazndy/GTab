@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { PlayIcon, PauseIcon, ForwardIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, ForwardIcon, ArrowPathIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid';
+import { useAmbientAudio } from '../hooks/useAmbientAudio';
+import { AmbientSoundId } from '../types';
 
 type Phase = 'work' | 'short-break' | 'long-break';
 
@@ -41,6 +43,17 @@ const PomodoroWidget: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
   const intervalRef = useRef<number | null>(null);
+
+  const { currentSoundId, isPlaying, volume, play, stop, pause, setVolume } = useAmbientAudio();
+
+  // Auto-play/pause ambient sound tied to focus session
+  useEffect(() => {
+    if (running && phase === 'work' && currentSoundId && !isPlaying) {
+      play(currentSoundId);
+    } else if ((!running || phase !== 'work') && isPlaying) {
+      pause();
+    }
+  }, [running, phase, currentSoundId, isPlaying, play, pause]);
 
   const progress = (DURATIONS[phase] - timeLeft) / DURATIONS[phase];
   const dashOffset = CIRCUMFERENCE * (1 - progress);
@@ -156,6 +169,47 @@ const PomodoroWidget: React.FC = () => {
           <button onClick={() => advance(false)} className="p-2 text-white/30 hover:text-white/60 transition-colors">
             <ForwardIcon className="w-4 h-4" />
           </button>
+        </div>
+
+        {/* Ambient Sounds */}
+        <div className="flex flex-col items-center gap-3 w-full max-w-[180px] pt-2">
+          <div className="flex items-center justify-between w-full bg-white/5 rounded-full px-2 py-1 border border-white/5">
+            <button
+              onClick={() => stop()}
+              className={`p-1.5 rounded-full transition-all ${!currentSoundId ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
+              title="Sesi Kapat"
+            >
+              <span className="text-xs">🔇</span>
+            </button>
+            {(['rain', 'coffee', 'forest', 'white-noise'] as AmbientSoundId[]).map((id) => (
+              <button
+                key={id}
+                onClick={() => play(id)}
+                className={`p-1.5 rounded-full transition-all ${currentSoundId === id ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
+                title={id}
+              >
+                <span className="text-xs">
+                  {id === 'rain' && '🌧️'}
+                  {id === 'coffee' && '☕'}
+                  {id === 'forest' && '🌳'}
+                  {id === 'white-noise' && '🔊'}
+                </span>
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2 w-full px-1">
+            <SpeakerWaveIcon className="w-3 h-3 text-white/20" />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="flex-1 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white/40 hover:accent-white/60 transition-all"
+            />
+          </div>
         </div>
       </div>
 

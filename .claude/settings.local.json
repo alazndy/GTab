@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(powershell -Command \"Compress-Archive -Path 'dist-store/*' -DestinationPath 'releases/gtab_v4.3.0_store_final.zip' -Force\")"
+    ]
+  }
+}

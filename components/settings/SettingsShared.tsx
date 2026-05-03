@@ -66,6 +66,8 @@ export const WIDGET_LABELS: Record<WidgetId, string> = {
   'weather': 'Hava Durumu',
   'pomodoro': 'Pomodoro Timer',
   'spotify': 'Spotify',
+  'rss': 'RSS / Haber',
+  'github': 'GitHub Aktivite',
 };
 
 export const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (

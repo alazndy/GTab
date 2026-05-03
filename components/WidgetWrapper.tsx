@@ -1,12 +1,11 @@
 import React from 'react';
 import { WidgetConfig, WidgetId } from '../types';
 import { useGTab } from '../context/GTabContext';
-import { 
-  Bars3Icon, 
-  Cog6ToothIcon, 
-  SparklesIcon, 
-  EyeIcon, 
-  EyeSlashIcon
+import {
+  Bars3Icon,
+  Cog6ToothIcon,
+  SparklesIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { WidgetQuickSettings } from './WidgetQuickSettings';
 
@@ -92,7 +91,7 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
       onDragOver={!isFreeLayout ? onDragOver : undefined}
       onDragEnd={!isFreeLayout ? onDragEnd : undefined}
       onPointerDown={isEditMode && isFreeLayout && onPointerDownFreeDrag ? (e) => onPointerDownFreeDrag(e, widget, e.currentTarget) : undefined}
-      className={`widget-item transition-all duration-300 rounded-2xl p-4 md:p-6 ${editStyle} ${!widget.visible && isEditMode ? 'grayscale' : ''} ${isEditMode ? 'cursor-move' : ''} ${isFreeLayout ? '' : 'relative'}`}
+      className={`widget-item transition-all duration-300 rounded-2xl p-4 md:p-6 ${editStyle} ${isEditMode ? 'cursor-move' : ''} ${isFreeLayout ? '' : 'relative'}`}
       style={dynamicStyle}
       data-widget-id={widget.id}
     >
@@ -127,7 +126,13 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
               <button onClick={(e) => { e.preventDefault(); updateWidgetConfig(widget.id, { glassEffect: widget.glassEffect === false ? true : false }) }} className={`p-1.5 rounded-full transition-all border border-white/20 ${widget.glassEffect === false ? 'bg-indigo-500/80 text-white shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-black/60 hover:bg-black/80 text-white/70'}`} title="Cam Efekti">
                  <SparklesIcon className="w-4 h-4" />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); toggleWidgetVisibility(widget.id); }} className={`p-1.5 rounded-full transition-all border border-white/20 ${widget.visible ? 'bg-black/60 hover:bg-black/80 text-white/70' : 'bg-red-500/80 text-white shadow-[0_0_8px_rgba(239,68,68,0.5)] hover:bg-red-500'}`} title={widget.visible ? "Gizle" : "Göster"}>{widget.visible ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}</button>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleWidgetVisibility(widget.id); }}
+                className="p-1.5 rounded-full transition-all border border-red-500/40 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white"
+                title="Kaldır"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
             </div>
 
             <div 

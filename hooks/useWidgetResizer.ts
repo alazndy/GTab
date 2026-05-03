@@ -2,11 +2,10 @@ import React, { useCallback } from 'react';
 
 interface UseWidgetResizerProps {
   snapGridSize?: number;
-  onResizeEnd: (widthPx: number, heightPx: number) => void;
 }
 
-export const useWidgetResizer = ({ snapGridSize = 20, onResizeEnd }: UseWidgetResizerProps) => {
-  const handlePointerDown = useCallback((e: React.PointerEvent, widgetEl: HTMLElement) => {
+export const useWidgetResizer = ({ snapGridSize = 20 }: UseWidgetResizerProps = {}) => {
+  const handlePointerDown = useCallback((e: React.PointerEvent, widgetEl: HTMLElement, onResizeEnd: (widthPx: number, heightPx: number) => void) => {
     e.stopPropagation();
     e.preventDefault();
     const startX = e.clientX;
@@ -45,7 +44,7 @@ export const useWidgetResizer = ({ snapGridSize = 20, onResizeEnd }: UseWidgetRe
 
     document.addEventListener('pointermove', onPointerMove);
     document.addEventListener('pointerup', onPointerUp);
-  }, [snapGridSize, onResizeEnd]);
+  }, [snapGridSize]);
 
   return { handlePointerDown };
 };

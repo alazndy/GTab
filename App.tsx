@@ -267,6 +267,7 @@ const App: React.FC = () => {
           isOpen={isBgModalOpen} currentConfig={bgConfig} onClose={() => setIsBgModalOpen(false)} onSave={setBgConfig}
           cardConfig={cardConfig} onSaveCard={setCardConfig} shortcuts={shortcuts} onImportShortcuts={setShortcuts}
           layout={layout} onSaveLayout={setLayout}
+          aiConfig={aiConfig} onSaveAIConfig={setAIConfig}
         />
         <ClockSettingsModal isOpen={isClockModalOpen} config={clockConfig} onClose={() => setIsClockModalOpen(false)} onSave={setClockConfig} />
       </Suspense>

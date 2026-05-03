@@ -43,6 +43,8 @@
 
 ## Gemini
 ### Yaptıkları
+- **v5.0 — Command & Focus Progress:**
+  - **useAmbientAudio Hook:** HTML5 Audio tabanlı, singleton pattern ve ref-counting ile temizlenen ambient ses motoru eklendi. (Task 3)
 - **v4.3.0 Official Release:**
   - `pnpm build` ve `pnpm build:store` ile her iki sürüm inşa edildi.
   - `dist/` ve `dist-store/` klasörleri ziplenerek `releases/` klasörüne eklendi.

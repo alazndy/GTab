@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, CardConfig, StocksConfig } from '../types';
+import { Shortcut, Category, ShortcutPayload, WidgetConfig, WidgetId, BackgroundConfig, ClockConfig, CardConfig, StocksConfig, AIConfig } from '../types';
 import {
   getShortcuts, saveShortcuts,
   getLayoutConfig, saveLayoutConfig, DEFAULT_LAYOUT,
@@ -7,7 +7,8 @@ import {
   getViewState, saveViewState,
   getClockConfig, saveClockConfig,
   getCardConfig, saveCardConfig,
-  getStocksConfig
+  getStocksConfig,
+  getAIConfig, saveAIConfig
 } from '../services/storageService';
 
 interface GTabContextType {
@@ -24,6 +25,8 @@ interface GTabContextType {
   setCardConfig: React.Dispatch<React.SetStateAction<CardConfig>>;
   stocksConfig: StocksConfig;
   setStocksConfig: React.Dispatch<React.SetStateAction<StocksConfig>>;
+  aiConfig: AIConfig;
+  setAIConfig: React.Dispatch<React.SetStateAction<AIConfig>>;
 
   // View State
   filterCategory: Category | 'All';
@@ -75,6 +78,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [clockConfig, setClockConfig] = useState<ClockConfig>(() => getClockConfig());
   const [cardConfig, setCardConfig] = useState<CardConfig>(() => getCardConfig());
   const [stocksConfig, setStocksConfig] = useState<StocksConfig>(() => getStocksConfig());
+  const [aiConfig, setAIConfig] = useState<AIConfig>(() => getAIConfig());
 
   const [viewState] = useState(() => getViewState());
   const [filterCategory, setFilterCategory] = useState<Category | 'All'>(viewState.category);
@@ -106,6 +110,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => { saveBackgroundConfig(bgConfig); }, [bgConfig]);
   useEffect(() => { saveClockConfig(clockConfig); }, [clockConfig]);
   useEffect(() => { saveCardConfig(cardConfig); }, [cardConfig]);
+  useEffect(() => { saveAIConfig(aiConfig); }, [aiConfig]);
   useEffect(() => { saveViewState({ category: filterCategory, profile: filterProfile }); }, [filterCategory, filterProfile]);
 
   useEffect(() => {
@@ -262,6 +267,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clockConfig, setClockConfig,
     cardConfig, setCardConfig,
     stocksConfig, setStocksConfig,
+    aiConfig, setAIConfig,
     filterCategory, setFilterCategory,
     filterProfile, setFilterProfile,
     activeFolderId, setActiveFolderId,

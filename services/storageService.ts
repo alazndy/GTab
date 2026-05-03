@@ -9,6 +9,7 @@ const VIEW_STATE_KEY = 'gtab_view_state';
 const CLOCK_CONFIG_KEY = 'gtab_clock_config';
 const CARD_CONFIG_KEY = 'gtab_card_config';
 const STOCKS_CONFIG_KEY = 'gtab_stocks';
+const AI_CONFIG_KEY = 'gtab_ai_config';
 
 export interface ViewState {
   category: Category | 'All';
@@ -86,6 +87,8 @@ export const DEFAULT_LAYOUT: WidgetConfig[] = [
   { id: 'weather',      visible: false, order: 10, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 320 },
   { id: 'pomodoro',     visible: false, order: 11, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 380 },
   { id: 'spotify',      visible: false, order: 12, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 280, heightPx: 400 },
+  { id: 'rss',          visible: false, order: 13, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 380, heightPx: 500 },
+  { id: 'github',       visible: false, order: 14, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20, widthPx: 320, heightPx: 480 },
 ];
 
 export const DEFAULT_CLOCK_CONFIG: ClockConfig = {
@@ -280,20 +283,37 @@ export const saveStocksConfig = (config: StocksConfig) => {
   }
 };
 
-export const exportShortcutsToFile = (shortcuts: Shortcut[]) => {
-  const blob = new Blob([JSON.stringify(shortcuts, null, 2)], { type: 'application/json' });
+export const getAIConfig = (): AIConfig => {
+  try {
+    const stored = localStorage.getItem(AI_CONFIG_KEY);
+    return stored ? JSON.parse(stored) : { geminiApiKey: '' };
+  } catch (e) {
+    return { geminiApiKey: '' };
+  }
+};
+
+export const saveAIConfig = (config: AIConfig) => {
+  try {
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
+  } catch (e) {
+    console.error('Failed to save AI config', e);
+  }
+};
+
+const downloadJson = (data: unknown, filename: string) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `gtab-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
 
-export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
-  return new Promise((resolve, reject) => {
+const pickJsonFile = (): Promise<unknown> =>
+  new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -302,13 +322,8 @@ export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
       if (!file) { reject(new Error('Dosya seçilmedi')); return; }
       const reader = new FileReader();
       reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target?.result as string);
-          if (Array.isArray(data)) resolve(data as Shortcut[]);
-          else reject(new Error('Geçersiz format'));
-        } catch {
-          reject(new Error('Dosya okunamadı'));
-        }
+        try { resolve(JSON.parse(ev.target?.result as string)); }
+        catch { reject(new Error('Dosya okunamadı')); }
       };
       reader.readAsText(file);
     };
@@ -316,4 +331,62 @@ export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
     input.click();
     document.body.removeChild(input);
   });
+
+export const exportShortcutsToFile = (shortcuts: Shortcut[]) => {
+  downloadJson(shortcuts, `gtab-shortcuts-${new Date().toISOString().split('T')[0]}.json`);
 };
+
+export const importShortcutsFromFile = (): Promise<Shortcut[]> =>
+  pickJsonFile().then(data => {
+    if (Array.isArray(data)) return data as Shortcut[];
+    throw new Error('Geçersiz format');
+  });
+
+export const exportFullBackup = () => {
+  const get = (key: string) => {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
+  };
+  const backup = {
+    version: '4.4.0',
+    exportedAt: new Date().toISOString(),
+    type: 'gtab-full-backup',
+    data: {
+      shortcuts:    get(STORAGE_KEY),
+      layout:       get(LAYOUT_KEY),
+      tasks:        get(TASKS_KEY),
+      bgConfig:     get(BG_KEY),
+      clockConfig:  get(CLOCK_CONFIG_KEY),
+      cardConfig:   get(CARD_CONFIG_KEY),
+      stocks:       get(STOCKS_CONFIG_KEY),
+      aiConfig:     get(AI_CONFIG_KEY),
+      notes:        get('gtab_quick_notes'),
+      gmailAccounts: get('gtab_gmail_accounts'),
+      spotifyClientId: localStorage.getItem('gtab_spotify_client_id'),
+    }
+  };
+  downloadJson(backup, `gtab-full-backup-${new Date().toISOString().split('T')[0]}.json`);
+};
+
+export const importFullBackup = (): Promise<void> =>
+  pickJsonFile().then(raw => {
+    const backup = raw as any;
+    if (backup?.type !== 'gtab-full-backup' || !backup?.data) {
+      throw new Error('Geçersiz GTab yedek dosyası.');
+    }
+    const { data } = backup;
+    const set = (key: string, val: unknown) => {
+      if (val !== null && val !== undefined) localStorage.setItem(key, JSON.stringify(val));
+    };
+    set(STORAGE_KEY,       data.shortcuts);
+    set(LAYOUT_KEY,        data.layout);
+    set(TASKS_KEY,         data.tasks);
+    set(BG_KEY,            data.bgConfig);
+    set(CLOCK_CONFIG_KEY,  data.clockConfig);
+    set(CARD_CONFIG_KEY,   data.cardConfig);
+    set(STOCKS_CONFIG_KEY, data.stocks);
+    set(AI_CONFIG_KEY,     data.aiConfig);
+    set('gtab_quick_notes',    data.notes);
+    set('gtab_gmail_accounts', data.gmailAccounts);
+    if (data.spotifyClientId) localStorage.setItem('gtab_spotify_client_id', data.spotifyClientId);
+    window.location.reload();
+  });

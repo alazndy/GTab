@@ -45,12 +45,29 @@ export const useAmbientAudio = () => {
     if (globalAudio) {
       globalAudio.pause();
       globalAudio.currentTime = 0;
-      // We don't null globalAudio here to reuse the object, but we could
+    }
+    updateState({ isPlaying: false, currentSoundId: null });
+  }, []);
+
+  const pause = useCallback(() => {
+    if (globalAudio) {
+      globalAudio.pause();
     }
     updateState({ isPlaying: false });
   }, []);
 
-  const play = useCallback((soundId: AmbientSoundId) => {
+  const play = useCallback((soundId?: AmbientSoundId) => {
+    const idToPlay = soundId || globalState.currentSoundId;
+    if (!idToPlay) return;
+
+    // If same sound and just paused, resume
+    if (globalAudio && idToPlay === globalState.currentSoundId && !globalState.isPlaying) {
+      globalAudio.play()
+        .then(() => updateState({ isPlaying: true }))
+        .catch(err => console.error("Failed to resume:", err));
+      return;
+    }
+
     // Stop previous if any
     if (globalAudio) {
       globalAudio.pause();
@@ -58,7 +75,7 @@ export const useAmbientAudio = () => {
     }
 
     try {
-      const audioPath = `/sounds/${soundId}.mp3`;
+      const audioPath = `/sounds/${idToPlay}.mp3`;
       globalAudio = new Audio(audioPath);
       globalAudio.loop = true;
       globalAudio.volume = globalState.volume;
@@ -68,10 +85,10 @@ export const useAmbientAudio = () => {
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            updateState({ currentSoundId: soundId, isPlaying: true });
+            updateState({ currentSoundId: idToPlay, isPlaying: true });
           })
           .catch((error) => {
-            console.error(`Failed to play ambient sound: ${soundId}`, error);
+            console.error(`Failed to play ambient sound: ${idToPlay}`, error);
             console.warn(`Make sure ${audioPath} exists in the public directory.`);
             updateState({ isPlaying: false });
           });
@@ -94,6 +111,7 @@ export const useAmbientAudio = () => {
     ...state,
     play,
     stop,
+    pause,
     setVolume,
   };
 };
