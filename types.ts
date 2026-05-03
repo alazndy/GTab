@@ -172,3 +172,11 @@ export interface QuoteCache {
   quote: Quote;
   lastFetched: string; // ISO date string
 }
+
+export type AmbientSoundId = 'rain' | 'coffee' | 'forest' | 'white-noise';
+
+export interface AmbientAudioState {
+  currentSoundId: AmbientSoundId | null;
+  isPlaying: boolean;
+  volume: number;
+}
