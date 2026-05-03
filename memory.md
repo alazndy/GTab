@@ -43,6 +43,14 @@
 
 ## Gemini
 ### Yaptıkları
+- **v5.0.2 — Global Floating Dock Yapılandırması:**
+  - `types.ts`: `AIConfig` arayüzüne `dockPosition` (`'top-center'`, `'bottom-center'`, `'top-right'`) alanı eklendi.
+  - `storageService.ts`: `getAIConfig` fonksiyonu `dockPosition` için varsayılan olarak `'top-center'` değerini dönecek şekilde güncellendi.
+  - `DataTab.tsx`: "Yapay Zeka (Gemini AI)" bölümüne "Dock Pozisyonu" ayarı eklendi.
+- **v5.0.1 — Global Status Bar & UX Polish:**
+  - `DataTab.tsx`: Status Bar ayarları eklendi (Aktif/Pasif toggle ve `Alt+S`, `Ctrl+S`, `Cmd+S`, `Alt+B`, `Ctrl+B` kısayol seçimi).
+  - `QuoteDisplay.tsx`: Alıntı paneli alttan (`bottom-6`) üste (`top-20`) taşındı ve görsel olarak daha hafif hale getirildi.
+  - `storageService.ts`: `AIConfig` import hatası düzeltildi ve `getAIConfig` için varsayılan değerler güncellendi.
 - **v5.0.0 — Command & Focus Official Release:**
   - `package.json` versiyonu `5.0.0` olarak güncellendi.
   - `App.tsx` üzerindeki mükerrer deklarasyon hatası giderildi.
@@ -71,6 +79,7 @@
 - **v4.2.1 Workspace Cleanup & Build**
 - **v4.2.0 Live Shuffle DnD & Settings Navigation**
 ### Yapacakları
+- **Global Floating Dock (Görev 3 & 4):** Content script redesign ve final cila.
 - **v4.3.0+:** Dosya yapısını parçalamaya devam.
 ### Notlar
 - `hooks/useWidgetDnD.ts` artık `liveLayout` state'i ile anlık sürükleme tepkileri veriyor.
@@ -101,6 +110,7 @@
 - [x] v4.3.0 Official GitHub Release (Assets attached)
 
 ### Devam Edenler
+- [ ] Global Floating Dock Uygulaması (Görev 1 ve 2 Tamamlandı)
 - [ ] Google OAuth Consent Screen branding + verification başvurusu
 - [ ] GitHub Pages aktif etme
 

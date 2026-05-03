@@ -257,19 +257,22 @@ export const getAIConfig = (): AIConfig => {
     return stored ? { 
       statusBarShortcut: 'Alt+S', 
       statusBarEnabled: true, 
+      dockPosition: 'top-center',
       ...JSON.parse(stored) 
     } : { 
       geminiApiKey: '', 
       commandPaletteShortcut: 'Alt+K',
       statusBarShortcut: 'Alt+S',
-      statusBarEnabled: true
+      statusBarEnabled: true,
+      dockPosition: 'top-center'
     };
   } catch (e) {
     return { 
       geminiApiKey: '', 
       commandPaletteShortcut: 'Alt+K',
       statusBarShortcut: 'Alt+S',
-      statusBarEnabled: true
+      statusBarEnabled: true,
+      dockPosition: 'top-center'
     };
   }
 };

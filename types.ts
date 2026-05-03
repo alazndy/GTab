@@ -73,6 +73,7 @@ export interface AIConfig {
   commandPaletteShortcut?: string; // e.g. 'Alt+K' or 'Ctrl+K'
   statusBarShortcut?: string;
   statusBarEnabled?: boolean;
+  dockPosition?: 'top-center' | 'bottom-center' | 'top-right';
 }
 
 export interface GmailMessage {
