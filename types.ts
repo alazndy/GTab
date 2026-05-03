@@ -46,7 +46,7 @@ export interface WeatherData {
 
 export type ShortcutPayload = Omit<Shortcut, 'id'>;
 
-export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks' | 'gmail' | 'calendar' | 'stocks' | 'google-tasks' | 'google-keep' | 'weather' | 'pomodoro' | 'spotify';
+export type WidgetId = 'clock' | 'search' | 'categories' | 'shortcuts' | 'tasks' | 'gmail' | 'calendar' | 'stocks' | 'google-tasks' | 'google-keep' | 'weather' | 'pomodoro' | 'spotify' | 'rss' | 'github';
 
 export interface WidgetConfig {
   id: WidgetId;
@@ -123,7 +123,8 @@ export interface BackgroundConfig {
   type: BackgroundType;
   value: string;
   customTheme?: CustomThemeConfig;
-  isFreeLayout?: boolean; // Toggle for freeform vs auto-align widget layout
+  isFreeLayout?: boolean;
+  widgetGap?: number; // px, default 24
 }
 
 export type TimeFormat = '12h' | '24h';
@@ -159,4 +160,15 @@ export interface CardConfig {
   cardBorderOpacity?: number;
   menuOpacity?: number;
   menuBorderOpacity?: number;
+}
+
+export interface Quote {
+  q: string; // The quote text
+  a: string; // The author
+  h: string; // HTML representation
+}
+
+export interface QuoteCache {
+  quote: Quote;
+  lastFetched: string; // ISO date string
 }
