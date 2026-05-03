@@ -14,6 +14,9 @@ import GoogleKeepWidget from './components/GoogleKeepWidget';
 import WeatherWidget from './components/WeatherWidget';
 import PomodoroWidget from './components/PomodoroWidget';
 import SpotifyWidget from './components/SpotifyWidget';
+import { WidgetPicker } from './components/WidgetPicker';
+import RSSWidget from './components/RSSWidget';
+import GitHubWidget from './components/GitHubWidget';
 
 const AddModal = React.lazy(() => import('./components/AddModal'));
 const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSettingsModal'));
@@ -33,6 +36,7 @@ import { HeaderControls } from './components/HeaderControls';
 import { WidgetWrapper } from './components/WidgetWrapper';
 import { CategoryFilterWidget } from './components/CategoryFilterWidget';
 import { ShortcutGridWidget } from './components/ShortcutGridWidget';
+import QuoteDisplay from './components/QuoteDisplay';
 
 const App: React.FC = () => {
   const {
@@ -77,12 +81,7 @@ const App: React.FC = () => {
     updateWidgetConfig
   });
 
-  const { handlePointerDown: resizeHandler } = useWidgetResizer({
-    snapGridSize: 20,
-    onResizeEnd: (w, h) => {
-        // Will be updated via closure in render loop
-    }
-  });
+  const { handlePointerDown: resizeHandler } = useWidgetResizer({ snapGridSize: 20 });
 
   // Extract logic moved to ShortcutGridWidget and CategoryFilterWidget
 
@@ -142,6 +141,8 @@ const App: React.FC = () => {
       case 'weather': return <WeatherWidget />;
       case 'pomodoro': return <PomodoroWidget />;
       case 'spotify': return <SpotifyWidget />;
+      case 'rss': return <RSSWidget />;
+      case 'github': return <GitHubWidget />;
       default: return null;
     }
   };
@@ -161,6 +162,8 @@ const App: React.FC = () => {
       case 'weather': return 'Hava Durumu';
       case 'pomodoro': return 'Pomodoro';
       case 'spotify': return 'Spotify';
+      case 'rss': return 'RSS / Haber';
+      case 'github': return 'GitHub Aktivite';
     }
   };
 
@@ -199,11 +202,12 @@ const App: React.FC = () => {
 
         <main className={`flex-1 flex flex-col items-center w-full transition-all ${mainAlignClass} ${bgConfig.isFreeLayout ? 'relative' : ''}`}>
           <div 
-            className={`w-full ${bgConfig.isFreeLayout ? 'absolute top-0 left-0' : 'flex flex-row flex-wrap justify-start gap-6 items-start'}`}
+            className={`w-full ${bgConfig.isFreeLayout ? 'absolute top-0 left-0' : 'flex flex-row flex-wrap justify-start items-start'}`}
+            style={!bgConfig.isFreeLayout ? { gap: `${bgConfig.widgetGap ?? 24}px` } : undefined}
             style={bgConfig.isFreeLayout ? { minHeight: canvasMinHeight } : undefined}
           >
             {mainWidgets.map((widget, index) => {
-              if (!widget.visible && !isEditMode) return null;
+              if (!widget.visible) return null;
               
               return (
                 <WidgetWrapper
@@ -238,6 +242,13 @@ const App: React.FC = () => {
         </main>
       </div>
 
+      {isEditMode && (
+        <WidgetPicker
+          layout={layout}
+          toggleWidgetVisibility={toggleWidgetVisibility}
+        />
+      )}
+
       <Suspense fallback={null}>
         {activeFolder && (
             <FolderViewModal
@@ -257,6 +268,8 @@ const App: React.FC = () => {
         />
         <ClockSettingsModal isOpen={isClockModalOpen} config={clockConfig} onClose={() => setIsClockModalOpen(false)} onSave={setClockConfig} />
       </Suspense>
+
+      <QuoteDisplay />
     </div>
   );
 };
