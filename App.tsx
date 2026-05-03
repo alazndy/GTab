@@ -203,8 +203,10 @@ const App: React.FC = () => {
         <main className={`flex-1 flex flex-col items-center w-full transition-all ${mainAlignClass} ${bgConfig.isFreeLayout ? 'relative' : ''}`}>
           <div 
             className={`w-full ${bgConfig.isFreeLayout ? 'absolute top-0 left-0' : 'flex flex-row flex-wrap justify-start items-start'}`}
-            style={!bgConfig.isFreeLayout ? { gap: `${bgConfig.widgetGap ?? 24}px` } : undefined}
-            style={bgConfig.isFreeLayout ? { minHeight: canvasMinHeight } : undefined}
+            style={{
+              ...(!bgConfig.isFreeLayout ? { gap: `${bgConfig.widgetGap ?? 24}px` } : {}),
+              ...(bgConfig.isFreeLayout ? { minHeight: canvasMinHeight } : {})
+            }}
           >
             {mainWidgets.map((widget, index) => {
               if (!widget.visible) return null;
