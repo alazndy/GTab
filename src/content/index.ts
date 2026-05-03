@@ -21,6 +21,7 @@ interface GlobalStatus {
 interface AIConfig {
   statusBarEnabled?: boolean;
   statusBarShortcut?: string;
+  dockPosition?: 'top-center' | 'bottom-center' | 'top-right';
 }
 
 const BAR_CSS = `
@@ -30,41 +31,88 @@ const BAR_CSS = `
   }
   #gtab-container {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2147483647;
     display: flex;
     align-items: center;
-    justify-content: center;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 999px;
+    padding: 4px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    user-select: none;
+    overflow: hidden;
     color: white;
     font-size: 13px;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 2147483647;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
+    max-width: 36px;
   }
+  
+  /* Collapsed state */
+  #gtab-container.collapsed {
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  /* Expanded state */
+  #gtab-container.expanded {
+    width: auto;
+    max-width: 1000px;
+    height: 44px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  /* Positions */
+  #gtab-container.pos-top-center { top: 12px; left: 50%; transform: translateX(-50%); }
+  #gtab-container.pos-bottom-center { bottom: 12px; left: 50%; transform: translateX(-50%); }
+  #gtab-container.pos-top-right { top: 12px; right: 12px; }
+
   #gtab-container.hidden {
-    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -20px);
   }
+  #gtab-container.pos-top-right.hidden {
+    transform: translateY(-20px);
+  }
+  #gtab-container.pos-bottom-center.hidden {
+    transform: translate(-50%, 20px);
+  }
+
   .bar-content {
     display: flex;
     align-items: center;
     gap: 12px;
-    max-width: 1400px;
-    width: 100%;
-    padding: 0 24px;
-    justify-content: center;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
+  #gtab-container.expanded .bar-content {
+    opacity: 1;
+  }
+  
+  .collapsed-indicator {
+    font-weight: bold;
+    font-size: 16px;
+    display: none;
+  }
+  #gtab-container.collapsed .collapsed-indicator {
+    display: block;
+  }
+
   .stat-item {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 999px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.05);
     white-space: nowrap;
@@ -81,24 +129,19 @@ const BAR_CSS = `
     width: 1px;
     height: 18px;
     background: rgba(255, 255, 255, 0.15);
-    margin: 0 4px;
   }
   .nav-shortcuts {
     display: flex;
     align-items: center;
     gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav-shortcuts::-webkit-scrollbar {
-    display: none;
   }
   .nav-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 10px;
-    border-radius: 6px;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(255, 255, 255, 0.03);
@@ -113,32 +156,18 @@ const BAR_CSS = `
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-  }
-  .nav-item span {
-    font-weight: 500;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .pomo-work { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); }
   .pomo-break { color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2); }
-  .pomo-work:hover { background: rgba(248, 113, 113, 0.2); }
-  .pomo-break:hover { background: rgba(74, 222, 128, 0.2); }
 `;
 
 let shadowHost: HTMLElement | null = null;
 let shadowRoot: ShadowRoot | null = null;
 let currentShortcut = 'Alt+S';
+let isExpanded = false;
 
 function fmt(s: number): string {
   return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
-}
-
-function pushContent(active: boolean) {
-  const height = '40px';
-  document.documentElement.style.transition = 'margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-  document.documentElement.style.marginTop = active ? height : '0';
 }
 
 function initShadowDOM() {
@@ -147,10 +176,6 @@ function initShadowDOM() {
   shadowHost = document.createElement('div');
   shadowHost.id = 'gtab-status-bar-host';
   shadowHost.style.position = 'fixed';
-  shadowHost.style.top = '0';
-  shadowHost.style.left = '0';
-  shadowHost.style.width = '100%';
-  shadowHost.style.height = '0';
   shadowHost.style.zIndex = '2147483647';
   shadowHost.style.pointerEvents = 'none';
   
@@ -162,25 +187,31 @@ function initShadowDOM() {
   
   const container = document.createElement('div');
   container.id = 'gtab-container';
-  container.style.pointerEvents = 'auto';
+  container.classList.add('collapsed');
   shadowRoot.appendChild(container);
   
   document.documentElement.appendChild(shadowHost);
 }
 
-function renderBar(status: GlobalStatus, visible: boolean) {
+function renderBar(status: GlobalStatus, config: AIConfig, visible: boolean) {
   initShadowDOM();
   const container = shadowRoot!.getElementById('gtab-container')!;
   
-  if (!visible) {
-    container.classList.add('hidden');
-    pushContent(false);
-    return;
+  // Update visibility and position
+  container.className = ''; // Reset classes
+  if (!visible) container.classList.add('hidden');
+  
+  const pos = config.dockPosition || 'top-center';
+  container.classList.add(`pos-${pos}`);
+  
+  if (isExpanded) {
+    container.classList.add('expanded');
+    container.classList.remove('collapsed');
+  } else {
+    container.classList.add('collapsed');
+    container.classList.remove('expanded');
   }
-  
-  container.classList.remove('hidden');
-  pushContent(true);
-  
+
   const parts: string[] = [];
   
   if (status.pomodoro) {
@@ -216,29 +247,54 @@ function renderBar(status: GlobalStatus, visible: boolean) {
         ${status.navShortcuts.map((ns, i) => `
           <div class="nav-item" data-idx="${i}" title="${ns.title}">
             <img src="${ns.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=32&domain=${new URL(ns.url).hostname}'"/>
-            <span>${ns.title}</span>
           </div>
         `).join('')}
       </div>
     `;
   }
   
+  // Collapsed indicator content
+  let indicator = 'G';
+  if (status.pomodoro && status.pomodoro.running) {
+    indicator = fmt(status.pomodoro.timeLeft).split(':')[0]; // Just minutes
+  }
+
   container.innerHTML = `
+    <div class="collapsed-indicator">${indicator}</div>
     <div class="bar-content">
       ${parts.join('')}
       ${navHtml}
     </div>
   `;
   
+  // Re-attach listeners because we use innerHTML
+  container.onclick = (e) => {
+    const target = e.target as HTMLElement;
+    if (container.classList.contains('collapsed')) {
+      isExpanded = true;
+      renderBar(status, config, visible);
+      e.stopPropagation();
+      return;
+    }
+    
+    // If clicking the container itself while expanded, collapse it
+    if (target === container || target.classList.contains('bar-content')) {
+      isExpanded = false;
+      renderBar(status, config, visible);
+    }
+  };
+
   container.querySelectorAll('.nav-item').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
       const idx = parseInt((el as HTMLElement).dataset.idx!);
       const url = status.navShortcuts![idx].url;
-      window.location.href = url;
+      window.open(url, '_blank');
     });
   });
   
-  container.querySelector('#pomo-toggle')?.addEventListener('click', () => {
+  container.querySelector('#pomo-toggle')?.addEventListener('click', (e) => {
+    e.stopPropagation();
     chrome.storage.local.set({ gtab_pomo_cmd: { cmd: status.pomodoro?.running ? 'stop' : 'start', ts: Date.now() } });
   });
 }
@@ -274,11 +330,10 @@ async function start() {
   if (config?.statusBarShortcut) currentShortcut = config.statusBarShortcut;
   
   if (config?.statusBarEnabled !== false && status) {
-    renderBar(status, visible);
+    renderBar(status, config, visible);
   } else if (shadowHost) {
     shadowHost.remove();
     shadowHost = null;
-    pushContent(false);
   }
 }
 
