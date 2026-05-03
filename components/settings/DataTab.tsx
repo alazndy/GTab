@@ -209,6 +209,45 @@ export const DataTab: React.FC<DataTabProps> = ({
                 <option value="Ctrl+Space">Ctrl + Space</option>
               </select>
             </div>
+
+            <div className="pt-4 border-t border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium text-white">Status Bar Aktif</div>
+                  <div className="text-[10px] text-white/40">Sayfanın en altında ince bilgi çubuğu</div>
+                </div>
+                <button
+                  onClick={() => {
+                    const n = { ...aiConfig, statusBarEnabled: !aiConfig.statusBarEnabled };
+                    setAIConfig(n);
+                    saveAIConfig(n);
+                  }}
+                  className={`w-10 h-5 rounded-full transition-all relative ${aiConfig.statusBarEnabled ? 'bg-purple-500' : 'bg-white/10'}`}
+                >
+                  <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${aiConfig.statusBarEnabled ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/30 ml-1">Status Bar Kısayolu</label>
+                <select
+                  value={aiConfig.statusBarShortcut || 'Alt+S'}
+                  onChange={e => {
+                    const n = { ...aiConfig, statusBarShortcut: e.target.value };
+                    setAIConfig(n);
+                    saveAIConfig(n);
+                  }}
+                  disabled={!aiConfig.statusBarEnabled}
+                  className={`w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white focus:border-purple-500/50 focus:outline-none transition-all appearance-none ${!aiConfig.statusBarEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <option value="Alt+S">Alt + S</option>
+                  <option value="Ctrl+S">Ctrl + S</option>
+                  <option value="Cmd+S">Cmd + S (Mac)</option>
+                  <option value="Alt+B">Alt + B</option>
+                  <option value="Ctrl+B">Ctrl + B</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
       )}

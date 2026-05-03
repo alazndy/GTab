@@ -1,5 +1,5 @@
 
-import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig, CustomThemeConfig, StocksConfig } from '../types';
+import { Shortcut, Category, WidgetConfig, Task, BackgroundConfig, ClockConfig, CardConfig, CustomThemeConfig, StocksConfig, AIConfig } from '../types';
 
 const STORAGE_KEY = 'gtab_shortcuts';
 const LAYOUT_KEY = 'gtab_layout';
