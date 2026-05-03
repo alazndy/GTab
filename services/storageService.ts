@@ -347,7 +347,7 @@ export const exportFullBackup = () => {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
   };
   const backup = {
-    version: '4.4.0',
+    version: '5.0.0',
     exportedAt: new Date().toISOString(),
     type: 'gtab-full-backup',
     data: {

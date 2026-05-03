@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getDailyQuote } from '../services/quoteService';
+import { getDailyQuote, FALLBACK_QUOTE } from '../services/quoteService';
 import { Quote } from '../types';
 
 const QuoteDisplay: React.FC = () => {
-  const [quote, setQuote] = useState<Quote | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [quote, setQuote] = useState<Quote>(FALLBACK_QUOTE);
 
   useEffect(() => {
     const fetchQuote = async () => {
@@ -13,14 +12,12 @@ const QuoteDisplay: React.FC = () => {
         setQuote(q);
       } catch (error) {
         console.error('QuoteDisplay error:', error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchQuote();
   }, []);
 
-  if (loading || !quote) return null;
+  if (!quote) return null;
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[40] pointer-events-auto">

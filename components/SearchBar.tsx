@@ -28,7 +28,7 @@ const SearchBar: React.FC = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Web'de ara..."
+          placeholder="Search or Ctrl+K for Commands..."
           autoComplete="off"
           className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-lg placeholder-white/60 py-4 pl-14 pr-6 outline-none focus:bg-white/20 focus:border-[var(--theme-accent,white)] transition-all shadow-lg rounded-full"
         />

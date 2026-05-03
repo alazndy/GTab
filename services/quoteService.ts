@@ -1,7 +1,7 @@
 import { Quote, QuoteCache } from '../types';
 
 const QUOTE_CACHE_KEY = 'gtab_daily_quote';
-const FALLBACK_QUOTE: Quote = {
+export const FALLBACK_QUOTE: Quote = {
   q: "The only way to do great work is to love what you do.",
   a: "Steve Jobs",
   h: "<blockquote>&ldquo;The only way to do great work is to love what you do.&rdquo; &mdash; <cite>Steve Jobs</cite></blockquote>"
