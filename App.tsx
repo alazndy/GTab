@@ -63,31 +63,105 @@ const App: React.FC = () => {
   const [showQuickSettings, setShowQuickSettings] = React.useState<WidgetId | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = React.useState(false);
 
+  // Global Sync for Dock/Status Bar
   React.useEffect(() => {
-    const statusBarShortcuts = shortcuts
-      .filter(s => s.category === Category.STATUS_BAR)
-      .map(s => {
-        const profile = s.profiles?.find(p => p.id === s.defaultProfileId);
-        const url = resolveTargetUrl(s, profile);
-        return {
-          title: s.title,
-          url,
-          icon: getFavicon(url, s.url)
-        };
-      });
+    const sync = () => {
+      const statusBarShortcuts = shortcuts
+        .filter(s => s.category === Category.STATUS_BAR)
+        .map(s => {
+          const profile = s.profiles?.find(p => p.id === s.defaultProfileId);
+          const url = resolveTargetUrl(s, profile);
+          return {
+            title: s.title,
+            url,
+            icon: getFavicon(url, s.url)
+          };
+        });
 
+      let pomodoro = null;
+      let weather = null;
+      let spotify = null;
+      let gmailUnread = 0;
+      let taskCount = 0;
+
+      try {
+        const w = localStorage.getItem('gtab_weather_v2');
+        if (w) { const d = JSON.parse(w); weather = { temp: d.temp }; }
+      } catch {}
+      
+      const gmail = localStorage.getItem('gtab_status_gmail_unread');
+      if (gmail !== null) gmailUnread = parseInt(gmail) || 0;
+      
+      try {
+        const sp = localStorage.getItem('gtab_status_spotify');
+        if (sp) spotify = JSON.parse(sp);
+      } catch {}
+      
+      taskCount = shortcuts.reduce((acc, s) => {
+        // This is a rough estimation since tasks state is handled by GTabContext
+        // but we'll use the proper tasks state from the hook below
+        return acc;
+      }, 0);
+
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+         // Reading tasks and pomodoro status requires fresh data
+         // For now, we'll sync shortcuts and the basics. 
+         // Real-time pomodoro sync happens via event listener below.
+         chrome.storage.local.get(['gtab_global_status'], (result) => {
+           const currentStatus = result.gtab_global_status || {};
+           chrome.storage.local.set({
+             gtab_global_status: {
+               ...currentStatus,
+               navShortcuts: statusBarShortcuts,
+               weather,
+               gmailUnread,
+               spotify,
+               theme: {
+                 accent: themeStyles.accentColor,
+                 bg: themeStyles.menuBg,
+                 border: themeStyles.menuBorder
+               }
+             }
+           });
+         });
+         }
+         };
+
+         sync();
+         const id = setInterval(sync, 30_000); // Sync every 30s
+         return () => clearInterval(id);
+         }, [shortcuts, themeStyles]);
+  // Real-time Pomodoro & Tasks Sync
+  const { tasks } = useGTab();
+  React.useEffect(() => {
+    const handlePomo = (e: any) => {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['gtab_global_status'], (result) => {
+          chrome.storage.local.set({
+            gtab_global_status: {
+              ...(result.gtab_global_status || {}),
+              pomodoro: e.detail
+            }
+          });
+        });
+      }
+    };
+    window.addEventListener('gtab:pomodoro-status', handlePomo);
+
+    // Sync tasks
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['gtab_global_status'], (result) => {
-        const currentStatus = result.gtab_global_status || {};
         chrome.storage.local.set({
           gtab_global_status: {
-            ...currentStatus,
-            navShortcuts: statusBarShortcuts
+            ...(result.gtab_global_status || {}),
+            taskCount: tasks.filter(t => !t.completed).length
           }
         });
       });
     }
-  }, [shortcuts]);
+
+    return () => window.removeEventListener('gtab:pomodoro-status', handlePomo);
+  }, [tasks]);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

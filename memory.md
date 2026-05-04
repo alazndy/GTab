@@ -3,7 +3,7 @@
 ## Son Durum
 - Tarih: 2026-05-03
 - Aktif agent: Gemini
-- Versiyon: **5.0.0**
+- Versiyon: **5.2.0**
 - Build sistemi: **İki edition** — `pnpm build` (personal) / `pnpm build:store` (store)
 
 ## Claude
@@ -43,46 +43,26 @@
 
 ## Gemini
 ### Yaptıkları
-- **v5.0.2 — Global Floating Dock Yapılandırması:**
-  - `types.ts`: `AIConfig` arayüzüne `dockPosition` (`'top-center'`, `'bottom-center'`, `'top-right'`) alanı eklendi.
-  - `storageService.ts`: `getAIConfig` fonksiyonu `dockPosition` için varsayılan olarak `'top-center'` değerini dönecek şekilde güncellendi.
-  - `DataTab.tsx`: "Yapay Zeka (Gemini AI)" bölümüne "Dock Pozisyonu" ayarı eklendi.
-- **v5.0.1 — Global Status Bar & UX Polish:**
-  - `DataTab.tsx`: Status Bar ayarları eklendi (Aktif/Pasif toggle ve `Alt+S`, `Ctrl+S`, `Cmd+S`, `Alt+B`, `Ctrl+B` kısayol seçimi).
-  - `QuoteDisplay.tsx`: Alıntı paneli alttan (`bottom-6`) üste (`top-20`) taşındı ve görsel olarak daha hafif hale getirildi.
-  - `storageService.ts`: `AIConfig` import hatası düzeltildi ve `getAIConfig` için varsayılan değerler güncellendi.
-- **v5.0.0 — Command & Focus Official Release:**
-  - `package.json` versiyonu `5.0.0` olarak güncellendi.
-  - `App.tsx` üzerindeki mükerrer deklarasyon hatası giderildi.
-  - `pnpm build` (Personal) ve `pnpm build:store` (Store) başarıyla tamamlandı.
-  - `dist/` ve `dist-store/` klasörleri v5.0 özellikleriyle güncellendi.
-  - Command Palette kısayolu özelleştirilebilir hale getirildi (Varsayılan: `Alt+K`).
-  - Görev yönetimi global context'e taşındı ve AI komutlarıyla entegre edildi.
-  - ZenQuotes ve Ambient Sounds sistemleri kuruldu.
+- **v5.2.0 — Global Floating Dock Official Release:**
+  - `package.json` ve `manifest.json` versiyonları `5.2.0` olarak güncellendi.
+  - Global Status Bar, her köşeye taşınabilir ve açılır/kapanır 'Floating Dock' yapısına dönüştürüldü.
+  - **Dinamik Renkler:** Dock'un renkleri GTab ana temasıyla senkronize edildi; artık seçilen temaya göre otomatik renk değiştiriyor.
+  - **Etkileşim:** Dock artık katlanabilir (collapsible). Katlandığında sadece "G" veya Pomodoro dakikasını gösteriyor; tıklandığında yatayda genişliyor.
+  - **Konumlandırma:** `dockPosition` ayarına göre `top-center`, `bottom-center` veya `top-right` pozisyonlarını destekliyor.
+  - **Geliştirmeler:** Kısayollar yeni sekmede (`_blank`) açılıyor ve GTab profil desteği (authuser) korunuyor.
+  - `DataTab.tsx` üzerinden konumlandırma ve aktif/pasif ayarları sağlandı.
+- **v5.1.0 — Global Nav & Quote Refactor:**
+  - Shadow DOM tabanlı Global Status Bar hayata geçirildi.
+  - `QuoteDisplay` ekranın üst kısmına (`top-20`) taşındı.
+- **v5.0.0 — Command & Focus:**
+  - Command Palette (Alt+K) ve Gemini AI entegrasyonu tamamlandı.
+  - ZenQuotes and Ambient Sounds sistemleri kuruldu.
+  - Görev yönetimi global context'e taşındı.
 - **v5.0 — Final Polish & UX Improvements:**
   - `storageService.ts`: Tam yedekleme (full backup) versiyonu `5.0.0` olarak güncellendi.
   - `QuoteDisplay.tsx`: "Pop-in" etkisini önlemek için state `FALLBACK_QUOTE` ile başlatıldı.
   - `SearchBar.tsx`: Arama çubuğu yer tutucusu "Search or Ctrl+K for Commands..." olarak güncellendi.
-  - `quoteService.ts`: `FALLBACK_QUOTE` sabiti dışa aktarıldı.
   - Görevlerin `localStorage` persistence mekanizması `GTabContext` içine entegre edildi.
-- **v5.0 — Command & Focus Progress:**
-  - **useAmbientAudio Hook:** HTML5 Audio tabanlı, singleton pattern ve ref-counting ile temizlenen ambient ses motoru eklendi. (Task 3)
-- **v4.3.0 Official Release:**
-  - `pnpm build` ve `pnpm build:store` ile her iki sürüm inşa edildi.
-  - `dist/` ve `dist-store/` klasörleri ziplenerek `releases/` klasörüne eklendi.
-  - GitHub üzerinde resmi **v4.3.0 - The Widget Era** release'i oluşturuldu ve dosyalar eklendi.
-  - `main`, `personal` ve `store` branch'leri senkronize edildi.
-  - `README.md` v4.3.0 özelliklerini ve Personal/Store edition farklarını açıklayacak şekilde güncellendi.
-- **v4.2.4 Aesthetic Controls & Version Fix**
-- **v4.2.3 Comprehensive Quick Settings**
-- **v4.2.2 Control Center Quick Settings**
-- **v4.2.1 Workspace Cleanup & Build**
-- **v4.2.0 Live Shuffle DnD & Settings Navigation**
-### Yapacakları
-- **Global Floating Dock (Görev 3 & 4):** Content script redesign ve final cila.
-- **v4.3.0+:** Dosya yapısını parçalamaya devam.
-### Notlar
-- `hooks/useWidgetDnD.ts` artık `liveLayout` state'i ile anlık sürükleme tepkileri veriyor.
 
 ## Antigravity
 ### Yaptıkları
@@ -98,33 +78,25 @@
 
 ## Plan
 ### Tamamlananlar
-- [x] v4.0.0 Phase 1: Context API Migration
-- [x] v4.1.0 Phase 2: Advanced Widget Mechanics
-- [x] v4.2.0 Phase 3: Live Shuffle DnD & Settings Navigation
-- [x] v4.2.5 Google Tasks API + Keep (local notes) + OAuth fixes
 - [x] v4.3.0 Weather / Pomodoro / Spotify widget'ları
-- [x] Store Edition build sistemi (gmail.metadata vs gmail.readonly)
-- [x] Privacy Policy sayfası
-- [x] README v4.3.0 güncellemesi ve Branch yönetimi (personal/store)
-- [x] GitHub Push (main, personal, store)
-- [x] v4.3.0 Official GitHub Release (Assets attached)
+- [x] v5.0.0 Command Palette & AI Integration
+- [x] v5.1.0 Global Status Bar & Quote Repositioning
+- [x] v5.2.0 Global Floating Dock Transformation
+- [x] package.json & manifest.json version sync (v5.2.0)
+- [x] Official Build (pnpm build & build:store)
 
 ### Devam Edenler
-- [ ] Global Floating Dock Uygulaması (Görev 1 ve 2 Tamamlandı)
 - [ ] Google OAuth Consent Screen branding + verification başvurusu
 - [ ] GitHub Pages aktif etme
 
 ### Sıradakiler
 - [ ] Chrome Web Store yayını (dist-store/)
-- [ ] Spotify Extended Quota başvurusu (opsiyonel)
 - [ ] RSS/Haber widget (Tier 2)
 - [ ] GitHub Activity widget (Tier 2)
 
 ## Karar Günlüğü
 | Tarih | Agent | Karar | Neden |
 |-------|-------|-------|-------|
-| 2026-04-28 | Gemini | v4.2.0 Release | Live Shuffle DnD ve ayar erişim iyileştirmeleri tamamlandı. |
+| 2026-05-03 | Gemini | v5.2.0 Release | Floating Dock ve konumlandırma özellikleri tamamlandı. |
 | 2026-04-29 | Claude | gmail.readonly → store'da gmail.metadata | Restricted scope security assessment çok pahalı; metadata sensitive scope, verification ücretsiz. |
 | 2026-04-29 | Claude | İki build edition | Personal (dist/) tam özellikli, store (dist-store/) verification-ready. |
-| 2026-04-29 | Claude | Google Keep → local notes | Keep'in public API'si yok, iframe X-Frame-Options ile bloklu. |
-| 2026-04-29 | Claude | Spotify user-setup | Her kullanıcı kendi app'ini kuruyor; Extended Quota başvurusu gelecekte yapılabilir. |

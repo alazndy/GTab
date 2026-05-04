@@ -74,6 +74,7 @@ export interface AIConfig {
   statusBarShortcut?: string;
   statusBarEnabled?: boolean;
   dockPosition?: 'top-center' | 'bottom-center' | 'top-right';
+  dockBehavior?: 'expand' | 'modal';
 }
 
 export interface GmailMessage {

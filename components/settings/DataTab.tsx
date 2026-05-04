@@ -265,6 +265,23 @@ export const DataTab: React.FC<DataTabProps> = ({
                   <option value="top-right">Sağ Üst</option>
                 </select>
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-white/30 ml-1">Dock Tıklama Davranışı</label>
+                <select
+                  value={aiConfig.dockBehavior || 'modal'}
+                  onChange={e => {
+                    const n = { ...aiConfig, dockBehavior: e.target.value as any };
+                    setAIConfig(n);
+                    saveAIConfig(n);
+                  }}
+                  disabled={!aiConfig.statusBarEnabled}
+                  className={`w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white focus:border-purple-500/50 focus:outline-none transition-all appearance-none ${!aiConfig.statusBarEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <option value="expand">Yana Genişle</option>
+                  <option value="modal">Launchpad Modal Aç</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>

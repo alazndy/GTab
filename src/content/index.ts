@@ -16,6 +16,7 @@ interface GlobalStatus {
   weather: { temp: number } | null;
   spotify: { name: string; isPlaying: boolean } | null;
   navShortcuts?: NavShortcut[];
+  theme?: { accent: string; bg: string; border: string; };
 }
 
 interface AIConfig {
@@ -28,16 +29,19 @@ const BAR_CSS = `
   :host {
     all: initial;
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --dock-bg: rgba(15, 23, 42, 0.75);
+    --dock-border: rgba(255, 255, 255, 0.1);
+    --dock-accent: #3b82f6;
   }
   #gtab-container {
     position: fixed;
     z-index: 2147483647;
     display: flex;
     align-items: center;
-    background: rgba(15, 23, 42, 0.75);
+    background: var(--dock-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--dock-border);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     border-radius: 999px;
     padding: 4px;
@@ -60,6 +64,11 @@ const BAR_CSS = `
     cursor: pointer;
   }
   
+  #gtab-container.collapsed:hover {
+    box-shadow: 0 0 15px var(--dock-accent);
+    border-color: var(--dock-accent);
+  }
+
   /* Expanded state */
   #gtab-container.expanded {
     width: auto;
@@ -102,6 +111,7 @@ const BAR_CSS = `
     font-weight: bold;
     font-size: 16px;
     display: none;
+    color: var(--dock-accent);
   }
   #gtab-container.collapsed .collapsed-indicator {
     display: block;
@@ -123,12 +133,12 @@ const BAR_CSS = `
   }
   .stat-item.clickable:hover {
     background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--dock-accent);
   }
   .divider {
     width: 1px;
     height: 18px;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--dock-border);
   }
   .nav-shortcuts {
     display: flex;
@@ -149,7 +159,7 @@ const BAR_CSS = `
   }
   .nav-item:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--dock-accent);
     transform: translateY(-1px);
   }
   .nav-item img {
@@ -182,6 +192,7 @@ function initShadowDOM() {
   shadowRoot = shadowHost.attachShadow({ mode: 'closed' });
   
   const style = document.createElement('style');
+  style.id = 'gtab-style';
   style.textContent = BAR_CSS;
   shadowRoot.appendChild(style);
   
@@ -197,6 +208,13 @@ function renderBar(status: GlobalStatus, config: AIConfig, visible: boolean) {
   initShadowDOM();
   const container = shadowRoot!.getElementById('gtab-container')!;
   
+  // Apply Theme Colors
+  if (status.theme) {
+    shadowHost!.style.setProperty('--dock-accent', status.theme.accent);
+    shadowHost!.style.setProperty('--dock-bg', status.theme.bg);
+    shadowHost!.style.setProperty('--dock-border', status.theme.border);
+  }
+
   // Update visibility and position
   container.className = ''; // Reset classes
   if (!visible) container.classList.add('hidden');
@@ -323,14 +341,22 @@ async function toggleVisibility() {
 
 async function start() {
   const data = await chrome.storage.local.get([STATUS_KEY, CONFIG_KEY, VISIBILITY_KEY]);
-  const status = data[STATUS_KEY] as GlobalStatus;
+  const status = (data[STATUS_KEY] || {
+    pomodoro: null,
+    gmailUnread: 0,
+    taskCount: 0,
+    weather: null,
+    spotify: null,
+    navShortcuts: []
+  }) as GlobalStatus;
+  
   const config = data[CONFIG_KEY] as AIConfig;
   const visible = data[VISIBILITY_KEY] ?? true;
   
   if (config?.statusBarShortcut) currentShortcut = config.statusBarShortcut;
   
-  if (config?.statusBarEnabled !== false && status) {
-    renderBar(status, config, visible);
+  if (config?.statusBarEnabled !== false) {
+    renderBar(status, config || {}, visible);
   } else if (shadowHost) {
     shadowHost.remove();
     shadowHost = null;

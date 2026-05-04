@@ -258,13 +258,15 @@ export const getAIConfig = (): AIConfig => {
       statusBarShortcut: 'Alt+S', 
       statusBarEnabled: true, 
       dockPosition: 'top-center',
+      dockBehavior: 'modal',
       ...JSON.parse(stored) 
     } : { 
       geminiApiKey: '', 
       commandPaletteShortcut: 'Alt+K',
       statusBarShortcut: 'Alt+S',
       statusBarEnabled: true,
-      dockPosition: 'top-center'
+      dockPosition: 'top-center',
+      dockBehavior: 'modal'
     };
   } catch (e) {
     return { 
@@ -272,7 +274,8 @@ export const getAIConfig = (): AIConfig => {
       commandPaletteShortcut: 'Alt+K',
       statusBarShortcut: 'Alt+S',
       statusBarEnabled: true,
-      dockPosition: 'top-center'
+      dockPosition: 'top-center',
+      dockBehavior: 'modal'
     };
   }
 };

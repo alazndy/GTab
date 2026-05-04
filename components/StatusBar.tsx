@@ -29,13 +29,6 @@ const StatusBar: React.FC = () => {
     return () => window.removeEventListener('gtab:pomodoro-status', handler);
   }, []);
 
-  // Sync to chrome.storage for content script
-  useEffect(() => {
-    if (typeof chrome === 'undefined' || !chrome.storage) return;
-    const status = { pomodoro, gmailUnread, taskCount, weather, spotify };
-    chrome.storage.local.set({ gtab_global_status: status });
-  }, [pomodoro, gmailUnread, taskCount, weather, spotify]);
-
   // Listen for pomodoro commands from content script
   useEffect(() => {
     if (typeof chrome === 'undefined' || !chrome.storage) return;

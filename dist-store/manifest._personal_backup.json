@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GTAB - Kişiselleştirilebilir Başlangıç Sayfası",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOrgk+x+DSfCB5FvtiC1/z02YaIvQZI2Z8sqQp6DSEN3wo+Tm1kokgcHsV/kiiY7GV1PjKpwFCN+n1q5x3glzagamXf8uBpg1Py/xoJNgfRrQwc8U8KF0SLOS4kdoIvfNfeJWfJ6pGpnTLOos+5nvpCKzPjlnVe/d2yysDigEsgpO4wfe+4eXsVy3eLBeUxf+gRCR8YuwlIkfXCs20t7AqqyjgWCNxDobldGrl2RLSnep1gK/EbEl6cCXXuFvk/tUhBa0IjZtM3AdxzVE0+YzHZuNqb8p1Y8gR5qxFXvws0HZhTy/BE6focTA8CS6lqbw2PePYC176ybdsmt7OQaqwIDAQAB",
   "description": "Kendi kişiselleştirilebilir yeni sekme sayfanız. Kısayollar, görevler, arama ve daha fazlası.",
   "icons": {
