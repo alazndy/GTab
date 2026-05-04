@@ -50,6 +50,10 @@
   - **Etkileşim:** Dock artık katlanabilir (collapsible). Katlandığında sadece "G" veya Pomodoro dakikasını gösteriyor; tıklandığında yatayda genişliyor.
   - **Konumlandırma:** `dockPosition` ayarına göre `top-center`, `bottom-center` veya `top-right` pozisyonlarını destekliyor.
   - **Geliştirmeler:** Kısayollar yeni sekmede (`_blank`) açılıyor ve GTab profil desteği (authuser) korunuyor.
+  - **Launchpad Modal Yapılandırması:**
+    - `types.ts`: `AIConfig` arayüzüne `dockBehavior` (`'expand' | 'modal'`) alanı eklendi.
+    - `storageService.ts`: `getAIConfig` varsayılan olarak `dockBehavior: 'modal'` dönecek şekilde güncellendi.
+    - `DataTab.tsx`: "Yapay Zeka (Gemini AI)" bölümüne "Dock Tıklama Davranışı" seçeneği eklendi.
   - `DataTab.tsx` üzerinden konumlandırma ve aktif/pasif ayarları sağlandı.
 - **v5.1.0 — Global Nav & Quote Refactor:**
   - Shadow DOM tabanlı Global Status Bar hayata geçirildi.
