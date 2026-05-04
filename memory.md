@@ -1,9 +1,9 @@
 # GTab Memory
 
 ## Son Durum
-- Tarih: 2026-05-03
+- Tarih: 2026-05-04
 - Aktif agent: Gemini
-- Versiyon: **5.2.0**
+- Versiyon: **5.3.0**
 - Build sistemi: **İki edition** — `pnpm build` (personal) / `pnpm build:store` (store)
 
 ## Claude
@@ -16,7 +16,7 @@
   - **WidgetId:** weather, pomodoro, spotify tipleri eklendi. DEFAULT_LAYOUT'a eklendi.
 
 - **v4.2.5 — OAuth & Google Tasks Fixes:**
-  - **Google Tasks Widget:** iframe → Tasks REST API'ye geçiş (Gmail gibi). REAUTH_REQUIRED, API_NOT_ENABLED hata tespiti. forceConsent=true mekanizması.
+  - **Google Tasks Widget:** iframe → Tasks REST API've geçiş (Gmail gibi). REAUTH_REQUIRED, API_NOT_ENABLED hata tespiti. forceConsent=true mekanizması.
   - **Google Keep Widget:** iframe → Local "Hızlı Notlar" widget (localStorage, Keep'in public API'si yok).
   - **googleAuthService.ts:** `prompt=none` (non-interactive) / `prompt=consent` (force re-auth) / `prompt=select_account` (normal interactive). abortOnLoadForNonInteractive: true.
 
@@ -43,18 +43,16 @@
 
 ## Gemini
 ### Yaptıkları
-- **v5.2.0 — Global Floating Dock Official Release:**
-  - `package.json` ve `manifest.json` versiyonları `5.2.0` olarak güncellendi.
-  - Global Status Bar, her köşeye taşınabilir ve açılır/kapanır 'Floating Dock' yapısına dönüştürüldü.
+- **v5.3.0 — Global Launchpad Modal Official Release:**
+  - `package.json` ve `manifest.json` versiyonları `5.3.0` olarak güncellendi.
+  - **Launchpad Modal:** Dock'a tıklandığında ekranın ortasında açılan, glassmorphic bir 'Uygulama Başlatıcı' (Launchpad) hayata geçirildi.
+  - **Grid Sistemi:** Modal içinde tüm kısayollar büyük ikonlar ve başlıklarla ızgara (grid) yapısında listeleniyor.
+  - **Detaylı İstatistikler:** Modal'ın üst kısmında Pomodoro, Hava Durumu ve Görev sayıları daha detaylı şekilde gösteriliyor.
+  - **Yapılandırılabilir Davranış:** `DataTab.tsx` üzerinden dock tıklama davranışı seçilebilir kılındı ('Yana Genişle' veya 'Modal Aç').
+  - **Kapatma Mekanizmaları:** Modal dışına tıklama, `Esc` tuşu veya kapat butonu ile modalın kolayca kapatılması sağlandı.
+- **v5.2.0 — Global Floating Dock:**
+  - Global Status Bar, modern ve yüzen bir "Floating Dock" yapısına dönüştürüldü.
   - **Dinamik Renkler:** Dock'un renkleri GTab ana temasıyla senkronize edildi; artık seçilen temaya göre otomatik renk değiştiriyor.
-  - **Etkileşim:** Dock artık katlanabilir (collapsible). Katlandığında sadece "G" veya Pomodoro dakikasını gösteriyor; tıklandığında yatayda genişliyor.
-  - **Konumlandırma:** `dockPosition` ayarına göre `top-center`, `bottom-center` veya `top-right` pozisyonlarını destekliyor.
-  - **Geliştirmeler:** Kısayollar yeni sekmede (`_blank`) açılıyor ve GTab profil desteği (authuser) korunuyor.
-  - **Launchpad Modal Yapılandırması:**
-    - `types.ts`: `AIConfig` arayüzüne `dockBehavior` (`'expand' | 'modal'`) alanı eklendi.
-    - `storageService.ts`: `getAIConfig` varsayılan olarak `dockBehavior: 'modal'` dönecek şekilde güncellendi.
-    - `DataTab.tsx`: "Yapay Zeka (Gemini AI)" bölümüne "Dock Tıklama Davranışı" seçeneği eklendi.
-  - `DataTab.tsx` üzerinden konumlandırma ve aktif/pasif ayarları sağlandı.
 - **v5.1.0 — Global Nav & Quote Refactor:**
   - Shadow DOM tabanlı Global Status Bar hayata geçirildi.
   - `QuoteDisplay` ekranın üst kısmına (`top-20`) taşındı.
@@ -77,8 +75,14 @@
 - Google Tasks + Google Keep iframe tabanlı widget'lar (sonradan Claude tarafından yeniden yazıldı)
 ### Yapacakları
 - UI Bütünlüğü Kontrolü (margin/padding uyumsuzlukları)
+- **Infrastructure Hardening & Optimization (v5.4.0 Hazırlık):**
+  - Tam codebase taraması yapıldı, monolith bileşenler belirlendi.
+  - `manifest.json` versiyonu v5.3.0 ile senkronize edildi.
+  - Refactoring için stratejik plan (`hardening_plan.md`) oluşturuldu.
+
 ### Notlar
 - `App.tsx` artık neredeyse tamamen state yönetimi ve ana layout sarmalayıcısı.
+- Kod tabanı v5.3.0 ile stabil, bir sonraki aşama altyapı güçlendirme.
 
 ## Plan
 ### Tamamlananlar
@@ -86,7 +90,9 @@
 - [x] v5.0.0 Command Palette & AI Integration
 - [x] v5.1.0 Global Status Bar & Quote Repositioning
 - [x] v5.2.0 Global Floating Dock Transformation
-- [x] package.json & manifest.json version sync (v5.2.0)
+- [x] v5.3.0 Global Launchpad Modal Implementation
+- [x] package.json & manifest.json version sync (v5.3.0)
+- [x] Full codebase scan & Hardening Plan (Antigravity)
 - [x] Official Build (pnpm build & build:store)
 
 ### Devam Edenler
@@ -101,6 +107,7 @@
 ## Karar Günlüğü
 | Tarih | Agent | Karar | Neden |
 |-------|-------|-------|-------|
+| 2026-05-03 | Gemini | v5.3.0 Release | Launchpad Modal özelliği eklendi. |
 | 2026-05-03 | Gemini | v5.2.0 Release | Floating Dock ve konumlandırma özellikleri tamamlandı. |
 | 2026-04-29 | Claude | gmail.readonly → store'da gmail.metadata | Restricted scope security assessment çok pahalı; metadata sensitive scope, verification ücretsiz. |
 | 2026-04-29 | Claude | İki build edition | Personal (dist/) tam özellikli, store (dist-store/) verification-ready. |
