@@ -29,7 +29,10 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                     <button
                         key={w.id}
                         onClick={() => {
-                            const next = localLayout.map(item => item.id === w.id ? { ...item, visible: !item.visible } : item);
+                            const idx = localLayout.findIndex(item => item.id === w.id);
+                            if (idx === -1) return;
+                            const next = [...localLayout];
+                            next[idx] = { ...next[idx], visible: !next[idx].visible };
                             setLocalLayout(next); onSaveLayout(next);
                         }}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-medium ${w.visible ? 'bg-blue-500/15 border-blue-500/30 text-blue-300' : 'bg-white/5 border-white/10 text-white/30 hover:bg-white/10'}`}
@@ -115,7 +118,10 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-xs font-medium text-white/90">{WIDGET_LABELS[w.id]}</h4>
                                     <button onClick={() => {
-                                        const next = localLayout.map(item => item.id === w.id ? { ...item, showBorder: item.showBorder === false ? true : false } : item);
+                                        const idx = localLayout.findIndex(item => item.id === w.id);
+                                        if (idx === -1) return;
+                                        const next = [...localLayout];
+                                        next[idx] = { ...next[idx], showBorder: next[idx].showBorder === false ? true : false };
                                         setLocalLayout(next); onSaveLayout(next);
                                         }}
                                         className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold transition-colors ${w.showBorder !== false ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
@@ -128,7 +134,10 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                                     <div>
                                         <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Arkaplan</span><span>{w.opacity ?? 10}%</span></div>
                                         <input type="range" min={0} max={100} step={5} value={w.opacity ?? 10} onChange={e => {
-                                                const next = localLayout.map(item => item.id === w.id ? { ...item, opacity: Number(e.target.value) } : item);
+                                                const idx = localLayout.findIndex(item => item.id === w.id);
+                                                if (idx === -1) return;
+                                                const next = [...localLayout];
+                                                next[idx] = { ...next[idx], opacity: Number(e.target.value) };
                                                 setLocalLayout(next); onSaveLayout(next);
                                             }}
                                             className="w-full accent-white/80 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
@@ -139,7 +148,10 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                                         <div>
                                             <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Çerçeve</span><span>{w.borderOpacity ?? 20}%</span></div>
                                             <input type="range" min={0} max={100} step={5} value={w.borderOpacity ?? 20} onChange={e => {
-                                                const next = localLayout.map(item => item.id === w.id ? { ...item, borderOpacity: Number(e.target.value) } : item);
+                                                const idx = localLayout.findIndex(item => item.id === w.id);
+                                                if (idx === -1) return;
+                                                const next = [...localLayout];
+                                                next[idx] = { ...next[idx], borderOpacity: Number(e.target.value) };
                                                 setLocalLayout(next); onSaveLayout(next);
                                             }}
                                             className="w-full accent-green-400 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
