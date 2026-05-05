@@ -104,6 +104,12 @@ const GmailWidget: React.FC = () => {
 
         const total = next.reduce((s, a) => s + a.messages.length, 0);
         localStorage.setItem('gtab_status_gmail_unread', String(total));
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          const emails = next.flatMap(a => a.messages).slice(0, 10).map(m => ({
+            id: m.id, subject: m.subject || '(Konu yok)', from: m.from, snippet: m.snippet
+          }));
+          chrome.storage.local.set({ gtab_status_emails: emails });
+        }
         return next;
       });
     } catch (err: any) {

@@ -2,12 +2,32 @@
 
 ## Son Durum
 - Tarih: 2026-05-04
-- Aktif agent: Gemini
-- Versiyon: **5.3.0**
+- Aktif agent: Claude
+- Versiyon: **5.3.1** (build güncellendi)
 - Build sistemi: **İki edition** — `pnpm build` (personal) / `pnpm build:store` (store)
 
 ## Claude
 ### Yaptıkları
+- **v5.3.1 — Content Script Panel Sistemi + Media Controller:**
+  - **WIDGET_REGISTRY:** Tüm widget'lar tek bir `registries/widgetRegistry.tsx` dosyasında. Yeni widget eklemek için artık sadece 2 adım (types.ts + registry entry).
+  - **Clock.tsx:** Props kaldırıldı, clockConfig context'ten okunuyor. Tamamen self-contained.
+  - **App.tsx:** 15+ widget import → 1 satır registry import. 2 switch-case silindi.
+  - **StatusBar:** Her sayfada görünen floating dock. Pomodoro/Gmail/Tasks/Weather/Spotify gösterir.
+  - **Content Script Panel Sistemi:**
+    - ⏱ Timer tıklanınca → faz seçme, sayaç, ▶⏸↺⏭ kontrolleri
+    - ✉️ Mail tıklanınca → okunmamış email listesi, tıklayınca Gmail'de açılır
+    - Medya controller → sayfadaki HTML5 video/audio algılanır, ⏮▶⏸⏭ + progress bar
+  - **GmailWidget:** Email listesini `gtab_status_emails` olarak chrome.storage'a kaydeder.
+  - **Default Layout:** Backup'tan güncel yerleşim ve kısayollar ayarlandı (Portal tema, 8 kolon grid).
+  - **storageService defaults:** DEFAULT_SHORTCUTS, DEFAULT_LAYOUT, DEFAULT_CARD_CONFIG güncellendi.
+
+- **v4.4.x — Widget Management & UX:**
+  - Widget Picker (Android-style drawer) — edit modunda + butonu
+  - Widget silme — kartların köşesinde kırmızı X
+  - Widget arası boşluk slider (widgetGap)
+  - Tam Yedekleme (exportFullBackup/importFullBackup) — tüm ayarlar
+  - Ayarlar ekranı yeniden tasarımı (sidebar + gruplar)
+
 - **v4.3.0 — Yeni Widget'lar + Store Hazırlığı:**
   - **Weather Widget:** Open-Meteo API (API key gereksiz), Nominatim reverse geocoding, 30dk cache, sıcaklık/nem/rüzgar/hissedilen gösterimi.
   - **Pomodoro Widget:** 25/5/15dk fazları, SVG ring animasyonu, session sayacı, tarayıcı bildirimi.

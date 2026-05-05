@@ -1,4 +1,4 @@
-const y="gtab_global_status",w="gtab_ai_config",b="gtab_status_bar_visible",C=`
+const z="gtab_global_status",P="gtab_ai_config",f="gtab_status_bar_visible",B=`
   :host {
     all: initial;
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -278,12 +278,159 @@ const y="gtab_global_status",w="gtab_ai_config",b="gtab_status_bar_visible",C=`
     background: rgba(255, 255, 255, 0.15);
     border-color: var(--dock-accent);
   }
-`;let i=null,c=null,S="Alt+S",v=!1,p=!1;function k(t){return`${Math.floor(t/60).toString().padStart(2,"0")}:${(t%60).toString().padStart(2,"0")}`}function z(){if(i)return;i=document.createElement("div"),i.id="gtab-status-bar-host",i.style.position="fixed",i.style.zIndex="2147483647",i.style.pointerEvents="none",c=i.attachShadow({mode:"closed"});const t=document.createElement("style");t.id="gtab-style",t.textContent=C,c.appendChild(t);const e=document.createElement("div");e.id="gtab-modal-overlay",e.innerHTML='<div id="gtab-modal-content"></div>',c.appendChild(e);const a=document.createElement("div");a.id="gtab-container",a.classList.add("collapsed"),c.appendChild(a),document.documentElement.appendChild(i)}function _(t,e,a){var m,h,s;const o=`
+
+  /* Dropdown Panels */
+  .gtab-panel {
+    position: fixed;
+    z-index: 2147483646;
+    background: rgba(10, 12, 20, 0.92);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    min-width: 280px;
+    max-width: 360px;
+    max-height: 420px;
+    overflow-y: auto;
+    backdrop-filter: blur(24px);
+    color: white;
+    font-size: 12px;
+    animation: panel-in 0.15s ease;
+  }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .panel-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    opacity: .4;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  /* Timer panel */
+  .pomo-panel-time {
+    font-size: 36px;
+    font-weight: 200;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    padding: 8px 0;
+    color: var(--dock-accent);
+  }
+  .pomo-panel-phase {
+    text-align: center;
+    font-size: 11px;
+    opacity: .5;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .pomo-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .pomo-tab {
+    flex: 1;
+    padding: 5px 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.04);
+    cursor: pointer;
+    font-size: 10px;
+    text-align: center;
+    transition: all .15s;
+    color: rgba(255,255,255,.5);
+  }
+  .pomo-tab.active { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); color: white; }
+  .pomo-tab:hover { background: rgba(255,255,255,.09); }
+  .pomo-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .pomo-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.06);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    color: white;
+  }
+  .pomo-btn.primary { width: 48px; height: 48px; font-size: 18px; background: var(--dock-accent); border-color: transparent; }
+  .pomo-btn:hover { background: rgba(255,255,255,.14); }
+  .pomo-btn.primary:hover { filter: brightness(1.2); }
+  .pomo-dots { display: flex; justify-content: center; gap: 6px; }
+  .pomo-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.15); }
+  .pomo-dot.done { background: #f87171; }
+  /* Mail panel */
+  .mail-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 8px 10px; border-radius: 10px; cursor: pointer;
+    border: 1px solid transparent; transition: all .15s;
+  }
+  .mail-item:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.08); }
+  .mail-from { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.85); }
+  .mail-subject { font-size: 11px; color: rgba(255,255,255,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail-snippet { font-size: 10px; color: rgba(255,255,255,.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Media panel */
+  .media-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .media-artist { font-size: 11px; opacity: .5; margin-bottom: 10px; }
+  .media-progress { width: 100%; height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; margin-bottom: 10px; overflow: hidden; }
+  .media-progress-fill { height: 100%; background: var(--dock-accent); transition: width .5s linear; }
+  .media-controls { display: flex; justify-content: center; gap: 10px; }
+  .media-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06);
+    cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; color: white;
+  }
+  .media-btn.primary { width: 44px; height: 44px; font-size: 18px; background: var(--dock-accent); border-color: transparent; }
+  .media-btn:hover { background: rgba(255,255,255,.14); }
+  .media-btn.primary:hover { filter: brightness(1.2); }
+`;let d=null,n=null,q="Alt+S",E=!1,x=!1,v=null,k=null,y=null;function H(t){const e=t.match(/^(.*?)\s*<.*>$/);return e?e[1].trim():t}function M(){const t=navigator.mediaSession,e=t==null?void 0:t.metadata,o=[...Array.from(document.querySelectorAll("video")),...Array.from(document.querySelectorAll("audio"))],a=o.find(r=>!r.paused&&r.duration>0)||o.find(r=>r.duration>0);return!e&&!a?null:{title:(e==null?void 0:e.title)||(a?document.title.slice(0,40):""),artist:(e==null?void 0:e.artist)||window.location.hostname,isPlaying:(t==null?void 0:t.playbackState)==="playing"||(a?!a.paused:!1),progress:a&&a.duration>0?a.currentTime/a.duration*100:0}}function Y(t){const o=[...Array.from(document.querySelectorAll("video")),...Array.from(document.querySelectorAll("audio"))].find(a=>a.duration>0);if(t==="play"){o==null||o.play();try{navigator.mediaSession.playbackState="playing"}catch{}}if(t==="pause"){o==null||o.pause();try{navigator.mediaSession.playbackState="paused"}catch{}}if(t==="prev")try{navigator.mediaSession.callAction("previoustrack")}catch{}if(t==="next")try{navigator.mediaSession.callAction("nexttrack")}catch{}}function L(){var t;v=null,(t=n==null?void 0:n.querySelector(".gtab-panel"))==null||t.remove()}function w(t){var m;if(v===t){L();return}v=t,(m=n==null?void 0:n.querySelector(".gtab-panel"))==null||m.remove();const e=document.createElement("div");e.className="gtab-panel";const o=n==null?void 0:n.getElementById("gtab-container"),a=o==null?void 0:o.classList.contains("pos-bottom-center"),r=o==null?void 0:o.getBoundingClientRect();r&&(a?e.style.bottom=`${window.innerHeight-r.top+8}px`:e.style.top=`${r.bottom+8}px`,e.style.left="50%",e.style.transform="translateX(-50%)"),t==="timer"?U(e):t==="mail"?K(e):t==="media"&&D(e),n==null||n.appendChild(e)}function U(t){var l;const e=k==null?void 0:k.pomodoro,o=[["work","Odak"],["short-break","Kısa Mola"],["long-break","Uzun Mola"]],a=(e==null?void 0:e.phase)||"work",r={work:1500,"short-break":300,"long-break":900},m=(e==null?void 0:e.timeLeft)??r[a],b=(e==null?void 0:e.running)??!1,c=(e==null?void 0:e.sessions)??0;t.innerHTML=`
+    <div class="panel-header">Pomodoro</div>
+    <div class="pomo-tabs">
+      ${o.map(([s,p])=>`<div class="pomo-tab ${a===s?"active":""}" data-phase="${s}">${p}</div>`).join("")}
+    </div>
+    <div class="pomo-panel-time">${S(m)}</div>
+    <div class="pomo-panel-phase">${((l=o.find(([s])=>s===a))==null?void 0:l[1])||""}</div>
+    <div class="pomo-controls">
+      <div class="pomo-btn" data-cmd="reset">↺</div>
+      <div class="pomo-btn primary" data-cmd="${b?"stop":"start"}">${b?"⏸":"▶"}</div>
+      <div class="pomo-btn" data-cmd="skip">⏭</div>
+    </div>
+    <div class="pomo-dots">
+      ${Array.from({length:4}).map((s,p)=>`<div class="pomo-dot ${p<c%4?"done":""}"></div>`).join("")}
+    </div>
+  `,t.querySelectorAll("[data-cmd]").forEach(s=>{s.addEventListener("click",p=>{p.stopPropagation();const u=s.dataset.cmd;chrome.storage.local.set({gtab_pomo_cmd:{cmd:u,ts:Date.now()}})})}),t.querySelectorAll("[data-phase]").forEach(s=>{s.addEventListener("click",p=>{p.stopPropagation();const u=s.dataset.phase;chrome.storage.local.set({gtab_pomo_cmd:{cmd:"switch-phase",phase:u,ts:Date.now()}})})})}function K(t){chrome.storage.local.get(["gtab_status_emails"],e=>{const o=e.gtab_status_emails||[];t.innerHTML=`<div class="panel-header">Okunmamış E-postalar (${o.length})</div>`+(o.length===0?'<div style="padding:12px;opacity:.4;text-align:center">E-posta yok</div>':o.map(a=>`
+            <div class="mail-item" data-id="${a.id}">
+              <div class="mail-from">${H(a.from)}</div>
+              <div class="mail-subject">${a.subject}</div>
+              ${a.snippet?`<div class="mail-snippet">${a.snippet}</div>`:""}
+            </div>
+          `).join("")),t.querySelectorAll(".mail-item").forEach(a=>{a.addEventListener("click",()=>{window.open(`https://mail.google.com/mail/#inbox/${a.dataset.id}`,"_blank"),L()})})})}function D(t){const e=M();if(!e){t.innerHTML='<div style="padding:12px;opacity:.4;text-align:center">Medya bulunamadı</div>';return}t.innerHTML=`
+    <div class="panel-header">Medya</div>
+    <div class="media-title">${e.title}</div>
+    <div class="media-artist">${e.artist}</div>
+    <div class="media-progress"><div class="media-progress-fill" style="width:${e.progress}%"></div></div>
+    <div class="media-controls">
+      <div class="media-btn" data-action="prev">⏮</div>
+      <div class="media-btn primary" data-action="${e.isPlaying?"pause":"play"}">${e.isPlaying?"⏸":"▶"}</div>
+      <div class="media-btn" data-action="next">⏭</div>
+    </div>
+  `,t.querySelectorAll("[data-action]").forEach(o=>{o.addEventListener("click",a=>{a.stopPropagation(),Y(o.dataset.action),setTimeout(()=>{L(),w("media")},300)})}),y&&clearInterval(y),y=window.setInterval(()=>{const o=M();if(!o||v!=="media"){clearInterval(y);return}const a=t.querySelector(".media-progress-fill");a&&(a.style.width=`${o.progress}%`)},1e3)}function S(t){return`${Math.floor(t/60).toString().padStart(2,"0")}:${(t%60).toString().padStart(2,"0")}`}function O(){if(d)return;d=document.createElement("div"),d.id="gtab-status-bar-host",d.style.position="fixed",d.style.zIndex="2147483647",d.style.pointerEvents="none",n=d.attachShadow({mode:"closed"});const t=document.createElement("style");t.id="gtab-style",t.textContent=B,n.appendChild(t);const e=document.createElement("div");e.id="gtab-modal-overlay",e.innerHTML='<div id="gtab-modal-content"></div>',n.appendChild(e);const o=document.createElement("div");o.id="gtab-container",o.classList.add("collapsed"),n.appendChild(o),document.documentElement.appendChild(d)}function N(t,e,o){var m,b,c;const a=`
     <div class="modal-stats">
       ${t.pomodoro?`
         <div class="modal-stat-card">
           <span class="modal-stat-label">Focus</span>
-          <span class="modal-stat-value">🍅 ${k(t.pomodoro.timeLeft)}</span>
+          <span class="modal-stat-value">🍅 ${S(t.pomodoro.timeLeft)}</span>
         </div>
       `:""}
       <div class="modal-stat-card">
@@ -295,46 +442,51 @@ const y="gtab_global_status",w="gtab_ai_config",b="gtab_status_bar_visible",C=`
         <span class="modal-stat-value">✅ ${t.taskCount}</span>
       </div>
     </div>
-  `,l=(h=t.navShortcuts)!=null&&h.length?`
+  `,r=(b=t.navShortcuts)!=null&&b.length?`
     <div class="launchpad-grid">
-      ${t.navShortcuts.map((d,g)=>`
-        <div class="launchpad-item" data-idx="${g}">
+      ${t.navShortcuts.map((l,s)=>`
+        <div class="launchpad-item" data-idx="${s}">
           <div class="launchpad-icon">
-            <img src="${d.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=64&domain=${new URL(d.url).hostname}'"/>
+            <img src="${l.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=64&domain=${new URL(l.url).hostname}'"/>
           </div>
-          <div class="launchpad-title">${d.title}</div>
+          <div class="launchpad-title">${l.title}</div>
         </div>
       `).join("")}
     </div>
   `:'<div style="opacity: 0.5; padding: 20px; text-align: center;">No shortcuts added yet.</div>';e.innerHTML=`
     <div class="modal-header">
-      ${o}
+      ${a}
       <div class="close-modal-btn" id="close-modal">✕</div>
     </div>
-    ${l}
-  `,(s=e.querySelector("#close-modal"))==null||s.addEventListener("click",()=>{p=!1,x()}),e.querySelectorAll(".launchpad-item").forEach(d=>{d.addEventListener("click",()=>{const g=parseInt(d.dataset.idx),u=t.navShortcuts[g].url;window.open(u,"_blank"),p=!1,x()})})}function f(t,e,a){var u,$;z();const o=c.getElementById("gtab-container"),l=c.getElementById("gtab-modal-overlay"),m=c.getElementById("gtab-modal-content");t.theme&&(i.style.setProperty("--dock-accent",t.theme.accent),i.style.setProperty("--dock-bg",t.theme.bg),i.style.setProperty("--dock-border",t.theme.border)),p&&a?(l.classList.add("open"),_(t,m)):l.classList.remove("open"),o.className="",a||o.classList.add("hidden");const h=e.dockPosition||"top-center";o.classList.add(`pos-${h}`),v?(o.classList.add("expanded"),o.classList.remove("collapsed")):(o.classList.add("collapsed"),o.classList.remove("expanded"));const s=[];if(t.pomodoro){const n=t.pomodoro,r=n.phase==="work"?"pomo-work":"pomo-break";s.push(`
-      <div class="stat-item clickable ${r}" id="pomo-toggle">
-        <span>🍅 ${k(n.timeLeft)}</span>
-        <span style="font-size: 10px; opacity: 0.7; margin-left: 4px;">${n.running?"⏸":"▶"}</span>
+    ${r}
+  `,(c=e.querySelector("#close-modal"))==null||c.addEventListener("click",()=>{x=!1,h()}),e.querySelectorAll(".launchpad-item").forEach(l=>{l.addEventListener("click",()=>{const s=parseInt(l.dataset.idx),p=t.navShortcuts[s].url;window.open(p,"_blank"),x=!1,h()})})}function $(t,e,o){var u,_,A,C,j;O();const a=n.getElementById("gtab-container"),r=n.getElementById("gtab-modal-overlay"),m=n.getElementById("gtab-modal-content");t.theme&&(d.style.setProperty("--dock-accent",t.theme.accent),d.style.setProperty("--dock-bg",t.theme.bg),d.style.setProperty("--dock-border",t.theme.border)),x&&o?(r.classList.add("open"),N(t,m)):r.classList.remove("open"),a.className="",o||a.classList.add("hidden");const b=e.dockPosition||"top-center";a.classList.add(`pos-${b}`),E?(a.classList.add("expanded"),a.classList.remove("collapsed")):(a.classList.add("collapsed"),a.classList.remove("expanded"));const c=[];if(t.pomodoro){const i=t.pomodoro,g=i.phase==="work"?"pomo-work":"pomo-break";c.push(`
+      <div class="stat-item clickable ${g}" id="pomo-toggle">
+        <span>🍅 ${S(i.timeLeft)}</span>
+        <span style="font-size: 10px; opacity: 0.7; margin-left: 4px;">${i.running?"⏸":"▶"}</span>
       </div>
-    `)}if(t.gmailUnread>0&&s.push(`<div class="stat-item">✉️ ${t.gmailUnread}</div>`),t.taskCount>0&&s.push(`<div class="stat-item">✅ ${t.taskCount}</div>`),t.weather&&s.push(`<div class="stat-item">🌡️ ${t.weather.temp}°</div>`),t.spotify){const n=t.spotify.name.length>20?t.spotify.name.slice(0,20)+"...":t.spotify.name;s.push(`
+    `)}t.gmailUnread>0&&c.push(`<div class="stat-item clickable" id="mail-toggle">✉️ ${t.gmailUnread}</div>`),t.taskCount>0&&c.push(`<div class="stat-item">✅ ${t.taskCount}</div>`),t.weather&&c.push(`<div class="stat-item">🌡️ ${t.weather.temp}°</div>`);const l=M();if(l){const i=l.title.length>22?l.title.slice(0,22)+"…":l.title;c.push(`
+      <div class="stat-item clickable" id="media-toggle">
+        <span>${l.isPlaying?"⏸":"▶"}</span>
+        <span style="font-size:11px">${i}</span>
+      </div>
+    `)}if(t.spotify&&!l){const i=t.spotify.name.length>20?t.spotify.name.slice(0,20)+"...":t.spotify.name;c.push(`
       <div class="stat-item clickable" id="spotify-toggle">
-        <span>🎵 ${n}</span>
+        <span>🎵 ${i}</span>
         <span style="font-size: 10px; opacity: 0.7; margin-left: 4px;">${t.spotify.isPlaying?"⏸":"▶"}</span>
       </div>
-    `)}let d="";(u=t.navShortcuts)!=null&&u.length&&(d=`
+    `)}let s="";(u=t.navShortcuts)!=null&&u.length&&(s=`
       <div class="divider"></div>
       <div class="nav-shortcuts">
-        ${t.navShortcuts.map((n,r)=>`
-          <div class="nav-item" data-idx="${r}" title="${n.title}">
-            <img src="${n.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=32&domain=${new URL(n.url).hostname}'"/>
+        ${t.navShortcuts.map((i,g)=>`
+          <div class="nav-item" data-idx="${g}" title="${i.title}">
+            <img src="${i.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=32&domain=${new URL(i.url).hostname}'"/>
           </div>
         `).join("")}
       </div>
-    `);let g="G";t.pomodoro&&t.pomodoro.running&&(g=k(t.pomodoro.timeLeft).split(":")[0]),o.innerHTML=`
-    <div class="collapsed-indicator">${g}</div>
+    `);let p="G";t.pomodoro&&t.pomodoro.running&&(p=S(t.pomodoro.timeLeft).split(":")[0]),a.innerHTML=`
+    <div class="collapsed-indicator">${p}</div>
     <div class="bar-content">
-      ${s.join("")}
-      ${d}
+      ${c.join("")}
+      ${s}
     </div>
-  `,o.onclick=n=>{const r=n.target;if(o.classList.contains("collapsed")){e.dockBehavior==="modal"?p=!0:v=!0,f(t,e,a),n.stopPropagation();return}(r===o||r.classList.contains("bar-content"))&&(v=!1,f(t,e,a))},l.onclick=n=>{n.target===l&&(p=!1,f(t,e,a))},o.querySelectorAll(".nav-item").forEach(n=>{n.addEventListener("click",r=>{r.stopPropagation();const L=parseInt(n.dataset.idx),E=t.navShortcuts[L].url;window.open(E,"_blank")})}),($=o.querySelector("#pomo-toggle"))==null||$.addEventListener("click",n=>{var r;n.stopPropagation(),chrome.storage.local.set({gtab_pomo_cmd:{cmd:(r=t.pomodoro)!=null&&r.running?"stop":"start",ts:Date.now()}})})}window.addEventListener("keydown",t=>{if(t.key==="Escape"&&p){p=!1,x();return}const e=S.split("+"),a=e[e.length-1].toLowerCase(),o=e.includes("Alt"),l=e.includes("Ctrl"),m=e.includes("Cmd")||e.includes("Meta");t.key.toLowerCase()===a&&t.altKey===o&&t.ctrlKey===l&&t.metaKey===m&&(t.preventDefault(),I())});async function I(){const e=!((await chrome.storage.local.get(b))[b]??!0);await chrome.storage.local.set({[b]:e})}async function x(){const t=await chrome.storage.local.get([y,w,b]),e=t[y]||{pomodoro:null,gmailUnread:0,taskCount:0,weather:null,spotify:null,navShortcuts:[]},a=t[w],o=t[b]??!0;a!=null&&a.statusBarShortcut&&(S=a.statusBarShortcut),(a==null?void 0:a.statusBarEnabled)!==!1?f(e,a||{},o):i&&(i.remove(),i=null)}chrome.storage.onChanged.addListener(t=>{(t[y]||t[w]||t[b])&&x()});x();console.log("[GTab] Content script initialized ✓");
+  `,a.onclick=i=>{const g=i.target;if(a.classList.contains("collapsed")){e.dockBehavior==="modal"?x=!0:E=!0,$(t,e,o),i.stopPropagation();return}(g===a||g.classList.contains("bar-content"))&&(E=!1,$(t,e,o))},r.onclick=i=>{i.target===r&&(x=!1,$(t,e,o))},a.querySelectorAll(".nav-item").forEach(i=>{i.addEventListener("click",g=>{g.stopPropagation();const I=parseInt(i.dataset.idx),T=t.navShortcuts[I].url;window.open(T,"_blank")})}),(_=a.querySelector("#pomo-toggle"))==null||_.addEventListener("click",i=>{i.stopPropagation(),w("timer")}),(A=a.querySelector("#mail-toggle"))==null||A.addEventListener("click",i=>{i.stopPropagation(),w("mail")}),(C=a.querySelector("#media-toggle"))==null||C.addEventListener("click",i=>{i.stopPropagation(),w("media")}),(j=a.querySelector("#spotify-toggle"))==null||j.addEventListener("click",i=>{var g;i.stopPropagation(),chrome.storage.local.set({gtab_pomo_cmd:{cmd:(g=t.spotify)!=null&&g.isPlaying?"stop":"start",ts:Date.now()}})})}window.addEventListener("keydown",t=>{if(t.key==="Escape"){if(v){L();return}if(x){x=!1,h();return}}const e=q.split("+"),o=e[e.length-1].toLowerCase(),a=e.includes("Alt"),r=e.includes("Ctrl"),m=e.includes("Cmd")||e.includes("Meta");t.key.toLowerCase()===o&&t.altKey===a&&t.ctrlKey===r&&t.metaKey===m&&(t.preventDefault(),F())});async function F(){const e=!((await chrome.storage.local.get(f))[f]??!0);await chrome.storage.local.set({[f]:e})}async function h(){const t=await chrome.storage.local.get([z,P,f]),e=t[z]||{pomodoro:null,gmailUnread:0,taskCount:0,weather:null,spotify:null,navShortcuts:[]},o=t[P]||{};k=e;const a=t[f]??!0;o!=null&&o.statusBarShortcut&&(q=o.statusBarShortcut),(o==null?void 0:o.statusBarEnabled)!==!1?$(e,o||{},a):d&&(d.remove(),d=null)}chrome.storage.onChanged.addListener(t=>{(t[z]||t[P]||t[f])&&h()});h();console.log("[GTab] Content script initialized ✓");

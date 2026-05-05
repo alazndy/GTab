@@ -1,601 +1,368 @@
-
 const STATUS_KEY = 'gtab_global_status';
-const CONFIG_KEY = 'gtab_ai_config';
+const EMAILS_KEY = 'gtab_status_emails';
 const VISIBILITY_KEY = 'gtab_status_bar_visible';
 
-interface NavShortcut {
-  title: string;
-  url: string;
-  icon: string;
-}
-
+interface PomodoroState { phase: string; timeLeft: number; running: boolean; sessions: number; }
 interface GlobalStatus {
-  pomodoro: { phase: string; timeLeft: number; running: boolean } | null;
+  pomodoro: PomodoroState | null;
   gmailUnread: number;
   taskCount: number;
-  weather: { temp: number } | null;
-  spotify: { name: string; isPlaying: boolean } | null;
-  navShortcuts?: NavShortcut[];
-  theme?: { accent: string; bg: string; border: string; };
+  weather: { temp: number; city?: string } | null;
+  spotify: { name: string; artist?: string; isPlaying: boolean } | null;
+  theme?: { accent: string; bg: string; border: string };
 }
+interface Email { id: string; subject: string; from: string; snippet: string; }
 
-interface AIConfig {
-  statusBarEnabled?: boolean;
-  statusBarShortcut?: string;
-  dockPosition?: 'top-center' | 'bottom-center' | 'top-right';
-  dockBehavior?: 'expand' | 'modal';
-}
+let cached: GlobalStatus = { pomodoro: null, gmailUnread: 0, taskCount: 0, weather: null, spotify: null };
+let expanded = false;
+let activePanel: 'timer' | 'mail' | 'media' | null = null;
+let panelInterval: number | null = null;
+let host: HTMLElement | null = null;
+let root: ShadowRoot | null = null;
+let visible = true;
 
-const BAR_CSS = `
-  :host {
-    all: initial;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --dock-bg: rgba(15, 23, 42, 0.75);
-    --dock-border: rgba(255, 255, 255, 0.1);
-    --dock-accent: #3b82f6;
-  }
-  #gtab-container {
-    position: fixed;
-    z-index: 2147483647;
-    display: flex;
-    align-items: center;
-    background: var(--dock-bg);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid var(--dock-border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border-radius: 999px;
-    padding: 4px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: auto;
-    user-select: none;
-    overflow: hidden;
-    color: white;
-    font-size: 13px;
-    box-sizing: border-box;
-    width: 36px;
-    height: 36px;
-    max-width: 36px;
-  }
-  
-  /* Collapsed state */
-  #gtab-container.collapsed {
-    justify-content: center;
-    padding: 0;
-    cursor: pointer;
-  }
-  
-  #gtab-container.collapsed:hover {
-    box-shadow: 0 0 15px var(--dock-accent);
-    border-color: var(--dock-accent);
-  }
-
-  /* Expanded state */
-  #gtab-container.expanded {
-    width: auto;
-    max-width: 1000px;
-    height: 44px;
-    padding: 0 16px;
-    gap: 12px;
-  }
-
-  /* Positions */
-  #gtab-container.pos-top-center { top: 12px; left: 50%; transform: translateX(-50%); }
-  #gtab-container.pos-bottom-center { bottom: 12px; left: 50%; transform: translateX(-50%); }
-  #gtab-container.pos-top-right { top: 12px; right: 12px; }
-
-  #gtab-container.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(-50%, -20px);
-  }
-  #gtab-container.pos-top-right.hidden {
-    transform: translateY(-20px);
-  }
-  #gtab-container.pos-bottom-center.hidden {
-    transform: translate(-50%, 20px);
-  }
-
-  .bar-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  #gtab-container.expanded .bar-content {
-    opacity: 1;
-  }
-  
-  .collapsed-indicator {
-    font-weight: bold;
-    font-size: 16px;
-    display: none;
-    color: var(--dock-accent);
-  }
-  #gtab-container.collapsed .collapsed-indicator {
-    display: block;
-  }
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-  .stat-item.clickable {
-    cursor: pointer;
-  }
-  .stat-item.clickable:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: var(--dock-accent);
-  }
-  .divider {
-    width: 1px;
-    height: 18px;
-    background: var(--dock-border);
-  }
-  .nav-shortcuts {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid transparent;
-  }
-  .nav-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--dock-accent);
-    transform: translateY(-1px);
-  }
-  .nav-item img {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-  }
-  .pomo-work { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); }
-  .pomo-break { color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2); }
-
-  /* Modal Overlay */
-  #gtab-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2147483646;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-    padding: 20px;
-  }
-  #gtab-modal-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* Modal Content */
-  #gtab-modal-content {
-    background: var(--dock-bg);
-    border: 1px solid var(--dock-border);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
-    border-radius: 24px;
-    width: 100%;
-    max-width: 600px;
-    padding: 32px;
-    color: white;
-    transform: scale(0.9);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  #gtab-modal-overlay.open #gtab-modal-content {
-    transform: scale(1);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 32px;
-  }
-  .modal-stats {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .modal-stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 12px 20px;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 100px;
-  }
-  .modal-stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.5;
-  }
-  .modal-stat-value {
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  .launchpad-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 20px;
-    margin-top: 8px;
-  }
-  .launchpad-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 12px;
-    border-radius: 16px;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: inherit;
-  }
-  .launchpad-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-4px);
-  }
-  .launchpad-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.1);
-  }
-  .launchpad-icon img {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-  }
-  .launchpad-title {
-    font-size: 12px;
-    text-align: center;
-    font-weight: 500;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .close-modal-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s;
-    font-size: 18px;
-  }
-  .close-modal-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: var(--dock-accent);
-  }
-`;
-
-let shadowHost: HTMLElement | null = null;
-let shadowRoot: ShadowRoot | null = null;
-let currentShortcut = 'Alt+S';
-let isExpanded = false;
-let isModalOpen = false;
-
-function fmt(s: number): string {
+// ── helpers ──────────────────────────────────────────────────────────────────
+function fmt(s: number) {
   return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 }
-
-function initShadowDOM() {
-  if (shadowHost) return;
-  
-  shadowHost = document.createElement('div');
-  shadowHost.id = 'gtab-status-bar-host';
-  shadowHost.style.position = 'fixed';
-  shadowHost.style.zIndex = '2147483647';
-  shadowHost.style.pointerEvents = 'none';
-  
-  shadowRoot = shadowHost.attachShadow({ mode: 'closed' });
-  
-  const style = document.createElement('style');
-  style.id = 'gtab-style';
-  style.textContent = BAR_CSS;
-  shadowRoot.appendChild(style);
-
-  // Modal Overlay
-  const overlay = document.createElement('div');
-  overlay.id = 'gtab-modal-overlay';
-  overlay.innerHTML = `<div id="gtab-modal-content"></div>`;
-  shadowRoot.appendChild(overlay);
-  
-  const container = document.createElement('div');
-  container.id = 'gtab-container';
-  container.classList.add('collapsed');
-  shadowRoot.appendChild(container);
-  
-  document.documentElement.appendChild(shadowHost);
+function shortFrom(from: string) {
+  return (from.match(/^(.*?)\s*<.*>$/) || ['', from])[1].trim() || from;
 }
+function accentColor() { return cached.theme?.accent || '#3b82f6'; }
 
-function renderModal(status: GlobalStatus, content: HTMLElement, config: AIConfig) {
-  const statsHtml = `
-    <div class="modal-stats">
-      ${status.pomodoro ? `
-        <div class="modal-stat-card">
-          <span class="modal-stat-label">Focus</span>
-          <span class="modal-stat-value">🍅 ${fmt(status.pomodoro.timeLeft)}</span>
-        </div>
-      ` : ''}
-      <div class="modal-stat-card">
-        <span class="modal-stat-label">Weather</span>
-        <span class="modal-stat-value">🌡️ ${status.weather?.temp || '--'}°</span>
-      </div>
-      <div class="modal-stat-card">
-        <span class="modal-stat-label">Tasks</span>
-        <span class="modal-stat-value">✅ ${status.taskCount}</span>
-      </div>
-    </div>
-  `;
-
-  const shortcutsHtml = status.navShortcuts?.length ? `
-    <div class="launchpad-grid">
-      ${status.navShortcuts.map((ns, i) => `
-        <div class="launchpad-item" data-idx="${i}">
-          <div class="launchpad-icon">
-            <img src="${ns.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=64&domain=${new URL(ns.url).hostname}'"/>
-          </div>
-          <div class="launchpad-title">${ns.title}</div>
-        </div>
-      `).join('')}
-    </div>
-  ` : '<div style="opacity: 0.5; padding: 20px; text-align: center;">No shortcuts added yet.</div>';
-
-  content.innerHTML = `
-    <div class="modal-header">
-      ${statsHtml}
-      <div class="close-modal-btn" id="close-modal">✕</div>
-    </div>
-    ${shortcutsHtml}
-  `;
-
-  content.querySelector('#close-modal')?.addEventListener('click', () => {
-    isModalOpen = false;
-    start();
-  });
-
-  content.querySelectorAll('.launchpad-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const idx = parseInt((el as HTMLElement).dataset.idx!);
-      const url = status.navShortcuts![idx].url;
-      window.open(url, '_blank');
-      isModalOpen = false;
-      start();
-    });
-  });
+function getMediaEl(): HTMLMediaElement | null {
+  const all = [...document.querySelectorAll('video'), ...document.querySelectorAll('audio')] as HTMLMediaElement[];
+  return all.find(e => !e.paused && e.duration > 0) || all.find(e => e.readyState >= 2) || null;
 }
-
-function renderBar(status: GlobalStatus, config: AIConfig, visible: boolean) {
-  initShadowDOM();
-  const container = shadowRoot!.getElementById('gtab-container')!;
-  const overlay = shadowRoot!.getElementById('gtab-modal-overlay')!;
-  const modalContent = shadowRoot!.getElementById('gtab-modal-content')!;
-  
-  // Apply Theme Colors
-  if (status.theme) {
-    shadowHost!.style.setProperty('--dock-accent', status.theme.accent);
-    shadowHost!.style.setProperty('--dock-bg', status.theme.bg);
-    shadowHost!.style.setProperty('--dock-border', status.theme.border);
-  }
-
-  // Modal logic
-  if (isModalOpen && visible) {
-    overlay.classList.add('open');
-    renderModal(status, modalContent, config);
-  } else {
-    overlay.classList.remove('open');
-  }
-
-  // Update visibility and position
-  container.className = ''; // Reset classes
-  if (!visible) container.classList.add('hidden');
-  
-  const pos = config.dockPosition || 'top-center';
-  container.classList.add(`pos-${pos}`);
-  
-  if (isExpanded) {
-    container.classList.add('expanded');
-    container.classList.remove('collapsed');
-  } else {
-    container.classList.add('collapsed');
-    container.classList.remove('expanded');
-  }
-
-  const parts: string[] = [];
-  
-  if (status.pomodoro) {
-    const p = status.pomodoro;
-    const cls = p.phase === 'work' ? 'pomo-work' : 'pomo-break';
-    parts.push(`
-      <div class="stat-item clickable ${cls}" id="pomo-toggle">
-        <span>🍅 ${fmt(p.timeLeft)}</span>
-        <span style="font-size: 10px; opacity: 0.7; margin-left: 4px;">${p.running ? '⏸' : '▶'}</span>
-      </div>
-    `);
-  }
-  
-  if (status.gmailUnread > 0) parts.push(`<div class="stat-item">✉️ ${status.gmailUnread}</div>`);
-  if (status.taskCount > 0) parts.push(`<div class="stat-item">✅ ${status.taskCount}</div>`);
-  if (status.weather) parts.push(`<div class="stat-item">🌡️ ${status.weather.temp}°</div>`);
-  
-  if (status.spotify) {
-    const name = status.spotify.name.length > 20 ? status.spotify.name.slice(0, 20) + '...' : status.spotify.name;
-    parts.push(`
-      <div class="stat-item clickable" id="spotify-toggle">
-        <span>🎵 ${name}</span>
-        <span style="font-size: 10px; opacity: 0.7; margin-left: 4px;">${status.spotify.isPlaying ? '⏸' : '▶'}</span>
-      </div>
-    `);
-  }
-  
-  let navHtml = '';
-  if (status.navShortcuts?.length) {
-    navHtml = `
-      <div class="divider"></div>
-      <div class="nav-shortcuts">
-        ${status.navShortcuts.map((ns, i) => `
-          <div class="nav-item" data-idx="${i}" title="${ns.title}">
-            <img src="${ns.icon}" onerror="this.src='https://www.google.com/s2/favicons?sz=32&domain=${new URL(ns.url).hostname}'"/>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-  
-  // Collapsed indicator content
-  let indicator = 'G';
-  if (status.pomodoro && status.pomodoro.running) {
-    indicator = fmt(status.pomodoro.timeLeft).split(':')[0]; // Just minutes
-  }
-
-  container.innerHTML = `
-    <div class="collapsed-indicator">${indicator}</div>
-    <div class="bar-content">
-      ${parts.join('')}
-      ${navHtml}
-    </div>
-  `;
-  
-  // Re-attach listeners because we use innerHTML
-  container.onclick = (e) => {
-    const target = e.target as HTMLElement;
-    if (container.classList.contains('collapsed')) {
-      if (config.dockBehavior === 'modal') {
-        isModalOpen = true;
-      } else {
-        isExpanded = true;
-      }
-      renderBar(status, config, visible);
-      e.stopPropagation();
-      return;
-    }
-    
-    // If clicking the container itself while expanded, collapse it
-    if (target === container || target.classList.contains('bar-content')) {
-      isExpanded = false;
-      renderBar(status, config, visible);
-    }
+function mediaInfo() {
+  const el = getMediaEl();
+  const ms = navigator.mediaSession?.metadata;
+  if (!el && !ms) return null;
+  return {
+    title: ms?.title || document.title.slice(0, 40) || window.location.hostname,
+    artist: ms?.artist || window.location.hostname,
+    isPlaying: el ? !el.paused : navigator.mediaSession?.playbackState === 'playing',
+    progress: el && el.duration > 0 ? (el.currentTime / el.duration) * 100 : 0,
+    currentTime: el?.currentTime || 0,
+    duration: el?.duration || 0,
   };
-
-  overlay.onclick = (e) => {
-    if (e.target === overlay) {
-      isModalOpen = false;
-      renderBar(status, config, visible);
+}
+function doMedia(action: 'play' | 'pause' | 'prev' | 'next') {
+  const el = getMediaEl();
+  if (action === 'play') {
+    if (el) el.play().catch(() => {});
+    else { try { navigator.mediaSession.callAction('play'); } catch {} }
+  } else if (action === 'pause') {
+    if (el) el.pause();
+    else { try { navigator.mediaSession.callAction('pause'); } catch {} }
+  } else if (action === 'prev') {
+    try { navigator.mediaSession.callAction('previoustrack'); } catch {
+      const el2 = getMediaEl(); if (el2) el2.currentTime = 0;
     }
-  };
-
-  container.querySelectorAll('.nav-item').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const idx = parseInt((el as HTMLElement).dataset.idx!);
-      const url = status.navShortcuts![idx].url;
-      window.open(url, '_blank');
-    });
-  });
-  
-  container.querySelector('#pomo-toggle')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    chrome.storage.local.set({ gtab_pomo_cmd: { cmd: status.pomodoro?.running ? 'stop' : 'start', ts: Date.now() } });
-  });
+  } else if (action === 'next') {
+    try { navigator.mediaSession.callAction('nexttrack'); } catch {}
+  }
 }
 
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && isModalOpen) {
-    isModalOpen = false;
-    start();
+// ── CSS ───────────────────────────────────────────────────────────────────────
+const CSS = `
+  :host { all: initial; font-family: ui-sans-serif, system-ui, sans-serif; }
+
+  #wrap {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 2147483647; pointer-events: none;
+  }
+
+  /* Thin trigger bar */
+  #trigger {
+    height: 4px;
+    background: linear-gradient(90deg, var(--ac,#3b82f6) 0%, rgba(0,0,0,0) 100%);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: height .2s ease, opacity .2s;
+    opacity: .6;
+  }
+  #trigger:hover { height: 6px; opacity: 1; }
+  #wrap.expanded #trigger { height: 3px; opacity: 1; }
+  #wrap.hidden #trigger { opacity: 0; pointer-events: none; }
+
+  /* Expanded panel */
+  #panel {
+    background: rgba(8,10,18,.88);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .28s cubic-bezier(.4,0,.2,1);
+    pointer-events: auto;
+    color: white;
+    font-size: 12px;
+  }
+  #wrap.expanded #panel { max-height: 600px; }
+
+  /* Main bar row */
+  .bar-row {
+    display: flex; align-items: center;
+    padding: 6px 16px; gap: 4px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.07);
+    background: rgba(255,255,255,.04);
+    cursor: pointer; white-space: nowrap;
+    transition: all .15s; font-size: 11px;
+    user-select: none;
+  }
+  .chip:hover, .chip.active { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.15); }
+  .chip.pomo { color: #f87171; }
+  .chip.mail { color: #fb923c; }
+  .chip.tasks { color: #4ade80; }
+  .chip.wx { color: #38bdf8; }
+  .chip.media { color: #a78bfa; }
+  .chip.sp { color: #86efac; }
+  .spacer { flex: 1; }
+  .close-chip {
+    opacity: .25; cursor: pointer; padding: 3px 8px;
+    border-radius: 999px; font-size: 11px; transition: opacity .15s;
+    user-select: none;
+  }
+  .close-chip:hover { opacity: .6; }
+
+  /* Sub-panel */
+  .sub { padding: 12px 16px 16px; }
+
+  /* Timer */
+  .pomo-tabs { display: flex; gap: 3px; margin-bottom: 10px; }
+  .pomo-tab {
+    flex: 1; padding: 4px 6px; border-radius: 8px; text-align: center;
+    border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.03);
+    cursor: pointer; font-size: 10px; color: rgba(255,255,255,.45);
+    transition: all .15s;
+  }
+  .pomo-tab.active { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.15); color: white; }
+  .pomo-time { font-size: 40px; font-weight: 200; text-align: center; padding: 4px 0 2px; color: var(--ac,#3b82f6); font-variant-numeric: tabular-nums; }
+  .pomo-phase { text-align: center; font-size: 10px; opacity: .4; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+  .pomo-dots { display: flex; justify-content: center; gap: 5px; margin-bottom: 12px; }
+  .pomo-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.12); }
+  .pomo-dot.done { background: #f87171; }
+  .ctrl-row { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; color: white; transition: all .15s; }
+  .btn.primary { width: 46px; height: 46px; font-size: 18px; background: var(--ac,#3b82f6); border: none; }
+  .btn:hover { background: rgba(255,255,255,.12); }
+  .btn.primary:hover { filter: brightness(1.15); }
+
+  /* Mail */
+  .mail-item { padding: 7px 10px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+  .mail-item:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+  .mail-from { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.85); }
+  .mail-subject { font-size: 11px; color: rgba(255,255,255,.5); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mail-snippet { font-size: 10px; color: rgba(255,255,255,.28); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Media */
+  .media-info { margin-bottom: 10px; }
+  .media-title { font-size: 13px; font-weight: 600; }
+  .media-artist { font-size: 11px; opacity: .45; margin-top: 1px; }
+  .prog-track { width: 100%; height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; margin: 10px 0; overflow: hidden; cursor: pointer; }
+  .prog-fill { height: 100%; background: var(--ac,#3b82f6); border-radius: 2px; transition: width .6s linear; }
+  .time-row { display: flex; justify-content: space-between; font-size: 10px; opacity: .35; margin-bottom: 10px; }
+`;
+
+// ── init shadow DOM ───────────────────────────────────────────────────────────
+function init() {
+  if (host) return;
+  host = document.createElement('div');
+  host.id = 'gtab-bar';
+  root = host.attachShadow({ mode: 'closed' });
+  const s = document.createElement('style');
+  s.textContent = CSS;
+  root.appendChild(s);
+  const wrap = document.createElement('div');
+  wrap.id = 'wrap';
+  wrap.innerHTML = `<div id="trigger"></div><div id="panel"></div>`;
+  root.appendChild(wrap);
+  document.documentElement.prepend(host);
+  wrap.style.setProperty('--ac', accentColor());
+
+  wrap.querySelector('#trigger')!.addEventListener('click', () => {
+    expanded = !expanded;
+    update();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!expanded) return;
+    if (!host!.contains(e.target as Node)) {
+      activePanel = null;
+      expanded = false;
+      update();
+    }
+  }, true);
+}
+
+// ── render ────────────────────────────────────────────────────────────────────
+function update() {
+  if (!root) return;
+  const wrap = root.getElementById('wrap')!;
+  wrap.style.setProperty('--ac', accentColor());
+  wrap.className = [expanded ? 'expanded' : '', !visible ? 'hidden' : ''].filter(Boolean).join(' ');
+
+  if (!expanded) {
+    clearPanelInterval();
+    wrap.querySelector('#panel')!.innerHTML = '';
     return;
   }
 
-  const parts = currentShortcut.split('+');
-  const key = parts[parts.length - 1].toLowerCase();
-  const alt = parts.includes('Alt');
-  const ctrl = parts.includes('Ctrl');
-  const meta = parts.includes('Cmd') || parts.includes('Meta');
-  
-  if (e.key.toLowerCase() === key && 
-      e.altKey === alt && 
-      e.ctrlKey === ctrl && 
-      e.metaKey === meta) {
-    e.preventDefault();
-    toggleVisibility();
+  renderBarRow(wrap.querySelector('#panel')!);
+}
+
+function renderBarRow(panel: Element) {
+  const chips: string[] = [];
+  const m = mediaInfo();
+
+  if (cached.pomodoro) {
+    const p = cached.pomodoro;
+    const label = { work: 'Odak', 'short-break': 'Kısa', 'long-break': 'Mola' }[p.phase] || p.phase;
+    chips.push(`<div class="chip pomo${activePanel === 'timer' ? ' active' : ''}" data-panel="timer">⏱ ${fmt(p.timeLeft)} <span style="opacity:.55;font-size:9px">${label}</span> ${p.running ? '⏸' : '▶'}</div>`);
+  }
+  if (cached.gmailUnread > 0) chips.push(`<div class="chip mail${activePanel === 'mail' ? ' active' : ''}" data-panel="mail">✉ ${cached.gmailUnread}</div>`);
+  if (cached.taskCount > 0) chips.push(`<div class="chip tasks">✓ ${cached.taskCount}</div>`);
+  if (cached.weather) chips.push(`<div class="chip wx">🌤 ${cached.weather.temp}°</div>`);
+  if (m) chips.push(`<div class="chip media${activePanel === 'media' ? ' active' : ''}" data-panel="media">${m.isPlaying ? '⏸' : '▶'} <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${m.title}</span></div>`);
+  else if (cached.spotify) chips.push(`<div class="chip sp">♪ <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${cached.spotify.name}</span></div>`);
+
+  panel.innerHTML = `
+    <div class="bar-row">
+      ${chips.join('')}
+      <div class="spacer"></div>
+      <div class="close-chip" data-close>✕</div>
+    </div>
+    <div class="sub" id="sub-panel"></div>
+  `;
+
+  panel.querySelector('[data-close]')!.addEventListener('click', () => { expanded = false; activePanel = null; update(); });
+  panel.querySelectorAll('[data-panel]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const t = (el as HTMLElement).dataset.panel as typeof activePanel;
+      activePanel = activePanel === t ? null : t;
+      renderSubPanel(panel.querySelector('#sub-panel')!);
+      renderBarRow(panel);
+    });
+  });
+
+  renderSubPanel(panel.querySelector('#sub-panel')!);
+}
+
+function clearPanelInterval() {
+  if (panelInterval) { clearInterval(panelInterval); panelInterval = null; }
+}
+
+function renderSubPanel(el: Element) {
+  clearPanelInterval();
+  el.innerHTML = '';
+  if (!activePanel) return;
+  if (activePanel === 'timer') { renderTimer(el); panelInterval = window.setInterval(() => renderTimer(el), 1000); }
+  if (activePanel === 'mail') renderMail(el);
+  if (activePanel === 'media') { renderMedia(el); panelInterval = window.setInterval(() => renderMedia(el), 1000); }
+}
+
+function renderTimer(el: Element) {
+  const p = cached.pomodoro;
+  const phases = [['work', 'Odak'], ['short-break', 'Kısa Mola'], ['long-break', 'Uzun Mola']] as const;
+  const cur = p?.phase || 'work';
+  const t = p?.timeLeft ?? ({ work: 25*60, 'short-break': 5*60, 'long-break': 15*60 }[cur] || 1500);
+  const running = p?.running || false;
+  const sessions = (p as any)?.sessions || 0;
+
+  el.innerHTML = `
+    <div class="pomo-tabs">
+      ${phases.map(([id, lbl]) => `<div class="pomo-tab${cur === id ? ' active' : ''}" data-phase="${id}">${lbl}</div>`).join('')}
+    </div>
+    <div class="pomo-time">${fmt(t)}</div>
+    <div class="pomo-phase">${phases.find(([id]) => id === cur)?.[1] || ''}</div>
+    <div class="pomo-dots">${Array.from({length:4}).map((_,i) => `<div class="pomo-dot${i < sessions % 4 ? ' done' : ''}"></div>`).join('')}</div>
+    <div class="ctrl-row">
+      <div class="btn" data-cmd="reset">↺</div>
+      <div class="btn primary" data-cmd="${running ? 'stop' : 'start'}">${running ? '⏸' : '▶'}</div>
+      <div class="btn" data-cmd="skip">⏭</div>
+    </div>
+  `;
+  el.querySelectorAll('[data-phase]').forEach(b => b.addEventListener('click', () => {
+    chrome.storage.local.set({ gtab_pomo_cmd: { cmd: 'switch-phase', phase: (b as HTMLElement).dataset.phase, ts: Date.now() } });
+  }));
+  el.querySelectorAll('[data-cmd]').forEach(b => b.addEventListener('click', () => {
+    chrome.storage.local.set({ gtab_pomo_cmd: { cmd: (b as HTMLElement).dataset.cmd, ts: Date.now() } });
+  }));
+}
+
+function renderMail(el: Element) {
+  chrome.storage.local.get([EMAILS_KEY], (r) => {
+    const emails: Email[] = r[EMAILS_KEY] || [];
+    el.innerHTML = emails.length === 0
+      ? '<div style="padding:12px;opacity:.35;text-align:center;font-size:11px">E-posta yok</div>'
+      : emails.map(m => `
+          <div class="mail-item" data-id="${m.id}">
+            <div class="mail-from">${shortFrom(m.from)}</div>
+            <div class="mail-subject">${m.subject}</div>
+            ${m.snippet ? `<div class="mail-snippet">${m.snippet}</div>` : ''}
+          </div>`).join('');
+    el.querySelectorAll('[data-id]').forEach(item => {
+      item.addEventListener('click', () => {
+        window.open(`https://mail.google.com/mail/#inbox/${(item as HTMLElement).dataset.id}`, '_blank');
+      });
+    });
+  });
+}
+
+function renderMedia(el: Element) {
+  const m = mediaInfo();
+  if (!m) { el.innerHTML = '<div style="padding:12px;opacity:.35;text-align:center;font-size:11px">Bu sayfada medya yok</div>'; return; }
+  const progW = m.progress.toFixed(1);
+  const fmtTime = (s: number) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+  el.innerHTML = `
+    <div class="media-info">
+      <div class="media-title">${m.title}</div>
+      <div class="media-artist">${m.artist}</div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:${progW}%"></div></div>
+    <div class="time-row"><span>${fmtTime(m.currentTime)}</span><span>${fmtTime(m.duration)}</span></div>
+    <div class="ctrl-row">
+      <div class="btn" data-action="prev">⏮</div>
+      <div class="btn primary" data-action="${m.isPlaying ? 'pause' : 'play'}">${m.isPlaying ? '⏸' : '▶'}</div>
+      <div class="btn" data-action="next">⏭</div>
+    </div>
+  `;
+  el.querySelectorAll('[data-action]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      doMedia((b as HTMLElement).dataset.action as any);
+    });
+  });
+}
+
+// ── keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (activePanel) { activePanel = null; if (root) { const p = root.getElementById('sub-panel'); if (p) { clearPanelInterval(); p.innerHTML = ''; } renderBarRow(root.querySelector('#panel')!); } return; }
+    if (expanded) { expanded = false; update(); }
   }
 });
 
-async function toggleVisibility() {
-  const data = await chrome.storage.local.get(VISIBILITY_KEY);
-  const newState = !(data[VISIBILITY_KEY] ?? true);
-  await chrome.storage.local.set({ [VISIBILITY_KEY]: newState });
-}
-
-async function start() {
-  const data = await chrome.storage.local.get([STATUS_KEY, CONFIG_KEY, VISIBILITY_KEY]);
-  const status = (data[STATUS_KEY] || {
-    pomodoro: null,
-    gmailUnread: 0,
-    taskCount: 0,
-    weather: null,
-    spotify: null,
-    navShortcuts: []
-  }) as GlobalStatus;
-  
-  const config = data[CONFIG_KEY] as AIConfig;
-  const visible = data[VISIBILITY_KEY] ?? true;
-  
-  if (config?.statusBarShortcut) currentShortcut = config.statusBarShortcut;
-  
-  if (config?.statusBarEnabled !== false) {
-    renderBar(status, config || {}, visible);
-  } else if (shadowHost) {
-    shadowHost.remove();
-    shadowHost = null;
-  }
-}
-
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes[STATUS_KEY] || changes[CONFIG_KEY] || changes[VISIBILITY_KEY]) {
-    start();
-  }
+// ── storage ───────────────────────────────────────────────────────────────────
+chrome.storage.local.get([STATUS_KEY, VISIBILITY_KEY], (r) => {
+  if (r[STATUS_KEY]) cached = r[STATUS_KEY];
+  visible = r[VISIBILITY_KEY] !== false;
+  init();
+  update();
 });
 
-start();
-console.log('[GTab] Content script initialized ✓');
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+  if (changes[STATUS_KEY]) { cached = changes[STATUS_KEY].newValue || cached; if (expanded) update(); }
+  if (changes[VISIBILITY_KEY]) { visible = changes[VISIBILITY_KEY].newValue !== false; update(); }
+});
+
+console.log('[GTab v5.3.1] Content script ready');
