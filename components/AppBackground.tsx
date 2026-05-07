@@ -18,7 +18,10 @@ interface AppBackgroundProps {
   themeOrbs?: GlowOrb[];
 }
 
-export const AppBackground: React.FC<AppBackgroundProps> = ({
+// Wrapped in React.memo to prevent expensive re-renders of the background layer
+// (especially animated or image layers) during unrelated app state updates
+// like drag-and-drop or modal toggles.
+export const AppBackground: React.FC<AppBackgroundProps> = React.memo(({
   bgConfig,
   isThemeBg,
   isColorBg,
@@ -69,4 +72,4 @@ export const AppBackground: React.FC<AppBackgroundProps> = ({
       )}
     </div>
   );
-};
+});
