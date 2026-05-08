@@ -8,7 +8,9 @@ interface HeaderControlsProps {
   resetLayout: () => void;
 }
 
-export const HeaderControls: React.FC<HeaderControlsProps> = ({
+// Memoized to prevent unnecessary re-renders of the header
+// during drag-and-drop or modal interactions in App.tsx
+export const HeaderControls: React.FC<HeaderControlsProps> = React.memo(({
   isEditMode,
   setIsEditMode,
   setIsBgModalOpen,
@@ -35,4 +37,7 @@ export const HeaderControls: React.FC<HeaderControlsProps> = ({
        )}
     </header>
   );
-};
+});
+
+// Adding displayName for easier debugging in React DevTools
+HeaderControls.displayName = 'HeaderControls';

@@ -18,7 +18,9 @@ interface AppBackgroundProps {
   themeOrbs?: GlowOrb[];
 }
 
-export const AppBackground: React.FC<AppBackgroundProps> = ({
+// Memoized to prevent re-rendering the large background component and its glow animations
+// during frequent global state updates in App.tsx (e.g. dragging, modal toggles)
+export const AppBackground: React.FC<AppBackgroundProps> = React.memo(({
   bgConfig,
   isThemeBg,
   isColorBg,
@@ -69,4 +71,7 @@ export const AppBackground: React.FC<AppBackgroundProps> = ({
       )}
     </div>
   );
-};
+});
+
+// Adding displayName for easier debugging in React DevTools
+AppBackground.displayName = 'AppBackground';
