@@ -5,3 +5,6 @@
 ## 2025-03-09 - Replace .map() with point updates for React state arrays
 **Learning:** For updating single items in small React state arrays (e.g., layout configurations or task lists), using `array.map()` introduces significant performance overhead by iterating through the entire array and calling the callback for every element. This causes unnecessary processing.
 **Action:** Prefer "point updates" using `findIndex` and array spreading over `array.map()`. This minimizes object allocations and improves fluidity, especially on lower-power devices.
+## 2026-05-09 - Memoizing Static Global Backgrounds
+**Learning:** Large background components that receive static props but reside high in the component tree (like `AppBackground`) will re-render unnecessarily on every global state update (e.g., typing in search, dragging widgets). This causes expensive and useless DOM diffing.
+**Action:** Wrap these components in `React.memo()` and assign a `displayName` to prevent them from re-rendering unless their specific props change.
