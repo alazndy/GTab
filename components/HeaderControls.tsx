@@ -8,7 +8,7 @@ interface HeaderControlsProps {
   resetLayout: () => void;
 }
 
-export const HeaderControls: React.FC<HeaderControlsProps> = ({
+export const HeaderControls: React.FC<HeaderControlsProps> = React.memo(({
   isEditMode,
   setIsEditMode,
   setIsBgModalOpen,
@@ -35,4 +35,6 @@ export const HeaderControls: React.FC<HeaderControlsProps> = ({
        )}
     </header>
   );
-};
+});
+
+HeaderControls.displayName = 'HeaderControls';
