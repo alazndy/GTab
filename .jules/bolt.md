@@ -5,3 +5,7 @@
 ## 2025-03-09 - Replace .map() with point updates for React state arrays
 **Learning:** For updating single items in small React state arrays (e.g., layout configurations or task lists), using `array.map()` introduces significant performance overhead by iterating through the entire array and calling the callback for every element. This causes unnecessary processing.
 **Action:** Prefer "point updates" using `findIndex` and array spreading over `array.map()`. This minimizes object allocations and improves fluidity, especially on lower-power devices.
+
+## 2023-11-20 - Consolidating Loops for Multi-Derivation React Hooks
+**Learning:** When multiple distinct pieces of data (e.g., a list of categories and a list of profiles) need to be derived from the same large source array (e.g., `shortcuts`), using separate `useMemo` hooks with chained declarative array methods (`.map().filter()`, etc.) causes redundant iterations over the entire dataset and allocates multiple intermediate arrays that quickly become garbage.
+**Action:** Consolidate the calculation into a single `useMemo` hook and replace chained declarative methods with a single imperative `for...of` loop. This approach allows computing all required derived data structures simultaneously in a single O(n) pass, significantly reducing CPU overhead and memory churn.
