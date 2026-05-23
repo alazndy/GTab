@@ -15,6 +15,16 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
   const [showAdvanced, setShowAdvanced] = useState(false);
   const visibleWidgets = localLayout.filter(w => w.visible);
 
+  // Helper to safely perform point updates without full array map iterations (Performance Optimization)
+  const updateWidget = (id: string, updates: Partial<WidgetConfig>) => {
+    const idx = localLayout.findIndex(w => w.id === id);
+    if (idx === -1) return;
+    const next = [...localLayout];
+    next[idx] = { ...next[idx], ...updates };
+    setLocalLayout(next);
+    onSaveLayout(next);
+  };
+
   return (
     <div className="space-y-5 animate-fade-in">
 
@@ -28,10 +38,7 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                 {localLayout.map(w => (
                     <button
                         key={w.id}
-                        onClick={() => {
-                            const next = localLayout.map(item => item.id === w.id ? { ...item, visible: !item.visible } : item);
-                            setLocalLayout(next); onSaveLayout(next);
-                        }}
+                        onClick={() => updateWidget(w.id, { visible: !w.visible })}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-medium ${w.visible ? 'bg-blue-500/15 border-blue-500/30 text-blue-300' : 'bg-white/5 border-white/10 text-white/30 hover:bg-white/10'}`}
                     >
                         {w.visible ? <EyeIcon className="w-3.5 h-3.5" /> : <EyeSlashIcon className="w-3.5 h-3.5" />}
@@ -114,10 +121,7 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                             <div key={w.id} className="border border-white/5 rounded-xl p-4 bg-black/20">
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-xs font-medium text-white/90">{WIDGET_LABELS[w.id]}</h4>
-                                    <button onClick={() => {
-                                        const next = localLayout.map(item => item.id === w.id ? { ...item, showBorder: item.showBorder === false ? true : false } : item);
-                                        setLocalLayout(next); onSaveLayout(next);
-                                        }}
+                                    <button onClick={() => updateWidget(w.id, { showBorder: w.showBorder === false ? true : false })}
                                         className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold transition-colors ${w.showBorder !== false ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
                                     >
                                         Çerçeve: {w.showBorder !== false ? 'Açık' : 'Kapalı'}
@@ -127,10 +131,7 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                                 <div className="space-y-3">
                                     <div>
                                         <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Arkaplan</span><span>{w.opacity ?? 10}%</span></div>
-                                        <input type="range" min={0} max={100} step={5} value={w.opacity ?? 10} onChange={e => {
-                                                const next = localLayout.map(item => item.id === w.id ? { ...item, opacity: Number(e.target.value) } : item);
-                                                setLocalLayout(next); onSaveLayout(next);
-                                            }}
+                                        <input type="range" min={0} max={100} step={5} value={w.opacity ?? 10} onChange={e => updateWidget(w.id, { opacity: Number(e.target.value) })}
                                             className="w-full accent-white/80 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                                         />
                                     </div>
@@ -138,10 +139,7 @@ export const WidgetsTab: React.FC<WidgetsTabProps> = ({ localLayout, setLocalLay
                                     {w.showBorder !== false && (
                                         <div>
                                             <div className="flex justify-between mb-1 text-[10px] text-white/40"><span>Çerçeve</span><span>{w.borderOpacity ?? 20}%</span></div>
-                                            <input type="range" min={0} max={100} step={5} value={w.borderOpacity ?? 20} onChange={e => {
-                                                const next = localLayout.map(item => item.id === w.id ? { ...item, borderOpacity: Number(e.target.value) } : item);
-                                                setLocalLayout(next); onSaveLayout(next);
-                                            }}
+                                            <input type="range" min={0} max={100} step={5} value={w.borderOpacity ?? 20} onChange={e => updateWidget(w.id, { borderOpacity: Number(e.target.value) })}
                                             className="w-full accent-green-400 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                                             />
                                         </div>
