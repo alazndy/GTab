@@ -5,3 +5,7 @@
 ## 2025-03-09 - Replace .map() with point updates for React state arrays
 **Learning:** For updating single items in small React state arrays (e.g., layout configurations or task lists), using `array.map()` introduces significant performance overhead by iterating through the entire array and calling the callback for every element. This causes unnecessary processing.
 **Action:** Prefer "point updates" using `findIndex` and array spreading over `array.map()`. This minimizes object allocations and improves fluidity, especially on lower-power devices.
+
+## 2023-10-27 - Point Updates vs. map() for Small Arrays
+**Learning:** For updating single items in large React state arrays, prefer using `findIndex` and array spreading (point updates) instead of declarative `Array.map()` calls. However, avoid applying this optimization to tiny arrays (like small UI widget lists, e.g., in `WidgetsTab.tsx`), as the execution time difference is absolutely negligible and completely dwarfed by React's rendering/reconciliation overhead. Refactoring tiny arrays this way is an unmeasurable micro-optimization that does not deliver real-world performance gains.
+**Action:** Only optimize `Array.map()` to point updates on lists that are demonstrably large or frequently updated in tight loops. Measure before optimizing to ensure the gain outweighs the complexity.
