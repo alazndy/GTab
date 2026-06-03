@@ -18,7 +18,7 @@ interface AppBackgroundProps {
   themeOrbs?: GlowOrb[];
 }
 
-export const AppBackground: React.FC<AppBackgroundProps> = ({
+export const AppBackground: React.FC<AppBackgroundProps> = React.memo(({
   bgConfig,
   isThemeBg,
   isColorBg,
@@ -69,4 +69,6 @@ export const AppBackground: React.FC<AppBackgroundProps> = ({
       )}
     </div>
   );
-};
+});
+
+AppBackground.displayName = 'AppBackground';
