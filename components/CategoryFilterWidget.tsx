@@ -6,12 +6,26 @@ import { UsersIcon } from '@heroicons/react/24/outline';
 export const CategoryFilterWidget: React.FC = () => {
   const { shortcuts, filterCategory, setFilterCategory, filterProfile, setFilterProfile } = useGTab();
 
-  const activeCategories = useMemo(() => {
-    return ['All', ...new Set(shortcuts.map(s => s.category))];
-  }, [shortcuts]);
+  // ⚡ Bolt: Consolidated categories and profiles derivation into a single O(n) pass
+  // without intermediate map/flatMap arrays
+  const { activeCategories, uniqueProfiles } = useMemo(() => {
+    const categoriesSet = new Set<string>();
+    const profilesSet = new Set<string>();
 
-  const uniqueProfiles = useMemo(() => {
-    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+    for (let i = 0; i < shortcuts.length; i++) {
+      const s = shortcuts[i];
+      categoriesSet.add(s.category);
+      if (s.profiles) {
+        for (let j = 0; j < s.profiles.length; j++) {
+          profilesSet.add(s.profiles[j].name);
+        }
+      }
+    }
+
+    return {
+      activeCategories: ['All', ...categoriesSet],
+      uniqueProfiles: Array.from(profilesSet).sort()
+    };
   }, [shortcuts]);
 
   return (
