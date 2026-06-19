@@ -6,12 +6,26 @@ import { UsersIcon } from '@heroicons/react/24/outline';
 export const CategoryFilterWidget: React.FC = () => {
   const { shortcuts, filterCategory, setFilterCategory, filterProfile, setFilterProfile } = useGTab();
 
-  const activeCategories = useMemo(() => {
-    return ['All', ...new Set(shortcuts.map(s => s.category))];
-  }, [shortcuts]);
+  const { activeCategories, uniqueProfiles } = useMemo(() => {
+    // ⚡ Bolt: Consolidate derivation of active categories and unique profiles
+    // into a single loop to avoid multiple intermediate array allocations from map/flatMap.
+    // This reduces O(3N) time complexity to O(N).
+    const categoriesSet = new Set<string>();
+    const profilesSet = new Set<string>();
 
-  const uniqueProfiles = useMemo(() => {
-    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+    for (const s of shortcuts) {
+      categoriesSet.add(s.category);
+      if (s.profiles) {
+        for (const p of s.profiles) {
+          profilesSet.add(p.name);
+        }
+      }
+    }
+
+    return {
+      activeCategories: ['All', ...categoriesSet],
+      uniqueProfiles: Array.from(profilesSet).sort(),
+    };
   }, [shortcuts]);
 
   return (
