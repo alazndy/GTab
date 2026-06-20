@@ -5,3 +5,7 @@
 ## 2025-03-09 - Replace .map() with point updates for React state arrays
 **Learning:** For updating single items in small React state arrays (e.g., layout configurations or task lists), using `array.map()` introduces significant performance overhead by iterating through the entire array and calling the callback for every element. This causes unnecessary processing.
 **Action:** Prefer "point updates" using `findIndex` and array spreading over `array.map()`. This minimizes object allocations and improves fluidity, especially on lower-power devices.
+
+## 2023-11-09 - Combine Category and Profile Derivation loops
+**Learning:** In the GTab project, deriving multiple unique sets of data (like categories and profiles) from a single large array (`shortcuts`) using multiple hooks or chained declarative methods (`map`, `flatMap`, `Set`) is inefficient because it iterates over the same list multiple times and allocates multiple intermediate objects/arrays.
+**Action:** When calculating multiple distinct views of a large array for state derivation, consolidate calculations into a single `useMemo` hook using a single `for...of` or standard `for` loop to minimize iterations and avoid unnecessary memory allocations.
