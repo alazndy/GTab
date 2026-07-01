@@ -5,3 +5,7 @@
 ## 2025-03-09 - Replace .map() with point updates for React state arrays
 **Learning:** For updating single items in small React state arrays (e.g., layout configurations or task lists), using `array.map()` introduces significant performance overhead by iterating through the entire array and calling the callback for every element. This causes unnecessary processing.
 **Action:** Prefer "point updates" using `findIndex` and array spreading over `array.map()`. This minimizes object allocations and improves fluidity, especially on lower-power devices.
+
+## 2025-03-09 - Consolidate Array Derivations for Performance
+**Learning:** Deriving multiple unique sets of data (like categories and profiles) from a single large source array using multiple chained `.map()`, `.flatMap()`, and `Set` operations in separate `useMemo` hooks creates significant overhead due to repeated iterations and intermediate array allocations.
+**Action:** When deriving multiple sets of data from a single source array, consolidate the logic into a single `useMemo` hook using a standard `for...of` loop to minimize iterations, avoid intermediate allocations, and improve overall rendering performance.
