@@ -6,12 +6,27 @@ import { UsersIcon } from '@heroicons/react/24/outline';
 export const CategoryFilterWidget: React.FC = () => {
   const { shortcuts, filterCategory, setFilterCategory, filterProfile, setFilterProfile } = useGTab();
 
-  const activeCategories = useMemo(() => {
-    return ['All', ...new Set(shortcuts.map(s => s.category))];
-  }, [shortcuts]);
+  const { activeCategories, uniqueProfiles } = useMemo(() => {
+    const categorySet = new Set<string>();
+    const profileSet = new Set<string>();
 
-  const uniqueProfiles = useMemo(() => {
-    return Array.from(new Set(shortcuts.flatMap(s => s.profiles?.map(p => p.name) || []))).sort();
+    for (const shortcut of shortcuts) {
+      if (shortcut.category) {
+        categorySet.add(shortcut.category);
+      }
+      if (shortcut.profiles) {
+        for (const profile of shortcut.profiles) {
+          if (profile.name) {
+            profileSet.add(profile.name);
+          }
+        }
+      }
+    }
+
+    return {
+      activeCategories: ['All', ...categorySet],
+      uniqueProfiles: Array.from(profileSet).sort()
+    };
   }, [shortcuts]);
 
   return (
