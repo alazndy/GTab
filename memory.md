@@ -102,3 +102,4 @@
 | 2026-04-29 | Claude | İki build edition | Personal (dist/) tam özellikli, store (dist-store/) verification-ready. |
 | 2026-04-29 | Claude | Google Keep → local notes | Keep'in public API'si yok, iframe X-Frame-Options ile bloklu. |
 | 2026-04-29 | Claude | Spotify user-setup | Her kullanıcı kendi app'ini kuruyor; Extended Quota başvurusu gelecekte yapılabilir. |
+| 2026-11-17 | Claude | Add vite/client types; update deps in range | tsc had 2 import.meta.env errors; pnpm audit had 28 dev-tool vulns, now 0. Both builds pass. |
