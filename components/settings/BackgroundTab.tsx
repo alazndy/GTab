@@ -146,7 +146,7 @@ export const BackgroundTab: React.FC<BackgroundTabProps> = ({ bgMode, setBgMode,
                 value={customUrl}
                 onChange={e => setCustomUrl(e.target.value)}
                 placeholder="https://example.com/bg.jpg"
-                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/20 focus:border-white/30 focus:outline-none"
+                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/40 focus:border-white/30 focus:outline-none"
               />
             </div>
             <button

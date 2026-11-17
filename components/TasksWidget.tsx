@@ -56,7 +56,7 @@ const TasksWidget: React.FC = () => {
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
           placeholder="Yeni görev..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-white/20 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all"
+          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-white/40 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all"
         />
         <button 
           type="submit"

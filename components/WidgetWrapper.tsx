@@ -64,11 +64,11 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
 
   const isGlass = widget.glassEffect !== false;
   const showBorder = isGlass && widget.showBorder !== false;
-  const glassStyle = isGlass ? `${themeStyles.glass} shadow-2xl shadow-black/20` : 'bg-transparent border-transparent';
+  const glassStyle = isGlass ? `${themeStyles.glass} shadow-xl shadow-black/10` : 'bg-transparent border-transparent';
   
   const editStyle = isEditMode 
     ? `border-2 border-dashed ${isDragged ? 'opacity-20 scale-95' : 'opacity-100'} ${isDragOver ? 'border-blue-400 bg-blue-500/10 scale-[1.02] z-40' : 'border-white/20 hover:border-white/40'}`
-    : `${glassStyle} ${showBorder ? 'border-2' : 'border-0'}`;
+    : `${glassStyle} ${showBorder ? 'border' : 'border-0'}`;
 
   const dynamicStyle: React.CSSProperties = {
      width: widget.widthPx ? `${widget.widthPx}px` : '100%',

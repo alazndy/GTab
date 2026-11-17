@@ -131,7 +131,7 @@ const WeatherWidget: React.FC = () => {
 
   if (loading && !weather) {
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex items-center justify-center">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex items-center justify-center">
         <div className="text-white/30 text-xs">Konum alınıyor...</div>
       </div>
     );
@@ -139,7 +139,7 @@ const WeatherWidget: React.FC = () => {
 
   if (error && !weather) {
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4 text-center">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4 text-center">
         <MapPinIcon className="w-8 h-8 text-white/20" />
         <p className="text-xs text-white/50">{error}</p>
         <button
@@ -153,7 +153,7 @@ const WeatherWidget: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden flex flex-col">
+    <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl overflow-hidden flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-1">
         <span className="text-6xl leading-none">{getEmoji(weather!.code)}</span>
         <div className="flex items-end gap-1 mt-2">

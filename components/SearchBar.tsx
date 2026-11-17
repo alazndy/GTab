@@ -18,7 +18,7 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mb-12 animate-slide-up group relative z-50">
+    <div className="w-full max-w-2xl mx-auto animate-slide-up group relative z-50">
       <form ref={formRef} onSubmit={handleSubmit} className="relative flex items-center">
         <MagnifyingGlassIcon className="absolute left-4 w-6 h-6 text-white/70 transition-colors group-focus-within:text-white" />
         

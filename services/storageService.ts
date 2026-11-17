@@ -73,11 +73,11 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
 ];
 
 export const DEFAULT_LAYOUT: WidgetConfig[] = [
-  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'tasks',      visible: true, order: 2, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'categories', visible: true, order: 3, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
-  { id: 'shortcuts',  visible: true, order: 4, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
+  { id: 'clock',      visible: true, order: 0, opacity: 10, glassEffect: false, showBorder: false, borderOpacity: 20 },
+  { id: 'search',     visible: true, order: 1, opacity: 10, glassEffect: false, showBorder: false, borderOpacity: 20 },
+  { id: 'categories', visible: true, order: 2, opacity: 10, glassEffect: false, showBorder: false, borderOpacity: 20 },
+  { id: 'shortcuts',  visible: true, order: 3, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 12 },
+  { id: 'tasks',      visible: true, order: 4, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 12 },
   { id: 'gmail',      visible: false, order: 5, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'calendar',   visible: false, order: 6, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },
   { id: 'stocks',     visible: false, order: 7, opacity: 10, glassEffect: true, showBorder: true, borderOpacity: 20 },

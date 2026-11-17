@@ -42,13 +42,12 @@ export const AppBackground: React.FC<AppBackgroundProps> = ({
       {isThemeBg && themeOrbs && themeOrbs.map((orb, i) => (
         <div
           key={i}
-          className={`absolute rounded-full ${orb.animClass}`}
+          className={`absolute top-0 left-0 rounded-full will-change-transform ${orb.animClass}`}
           style={{
             width: orb.size,
             height: orb.size,
+            // The gradient already fades to transparent; a blur filter on a 90vmax layer only adds raster cost.
             background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
-            transform: 'translate(-50%, -50%)',
-            filter: 'blur(30px)',
           }}
         />
       ))}
@@ -62,7 +61,9 @@ export const AppBackground: React.FC<AppBackgroundProps> = ({
       {!isThemeBg && !isColorBg && (
          <img 
             src={activeBgUrl}
-            alt="Background"
+            alt=""
+            decoding="async"
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
             style={{ opacity: isBgImageLoaded ? 0.6 : 0, filter: 'brightness(0.6) contrast(1.1)' }}
          />

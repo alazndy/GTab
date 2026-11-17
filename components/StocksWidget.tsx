@@ -86,7 +86,7 @@ const StocksWidget: React.FC = () => {
 
   return (
     <div className="w-full h-full animate-slide-up">
-      <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full">
+      <div className="bg-black/40 border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/5">
           <div className="flex items-center gap-2 text-white">
@@ -109,11 +109,11 @@ const StocksWidget: React.FC = () => {
               {error}
             </div>
           ) : loading && Object.keys(quotes).length === 0 ? (
-            <div className="text-center py-6 text-white/20 text-xs italic">
+            <div className="text-center py-6 text-white/45 text-xs">
               Yükleniyor...
             </div>
           ) : symbols.length === 0 ? (
-            <div className="text-center py-6 text-white/20 text-xs italic">
+            <div className="text-center py-6 text-white/45 text-xs">
               Takip edilen hisse yok.
             </div>
           ) : (

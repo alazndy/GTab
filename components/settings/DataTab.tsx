@@ -85,7 +85,7 @@ export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport,
                 setStocksConfig(next);
                 }}
                 placeholder="İsteğe bağlı. Boş bırakılırsa Yahoo Finance kullanılır."
-                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/20 focus:border-blue-500/50 focus:outline-none transition-all"
+                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/40 focus:border-blue-500/50 focus:outline-none transition-all"
             />
             </div>
 
@@ -100,7 +100,7 @@ export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport,
                 setStocksConfig(next);
                 }}
                 placeholder="AAPL, MSFT, GOOGL..."
-                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/20 focus:border-blue-500/50 focus:outline-none transition-all"
+                className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/40 focus:border-blue-500/50 focus:outline-none transition-all"
             />
             </div>
         </div>

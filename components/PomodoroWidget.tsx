@@ -109,7 +109,7 @@ const PomodoroWidget: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col overflow-hidden">
       {/* Phase tabs */}
       <div className="flex border-b border-white/10 shrink-0">
         {(['work', 'short-break', 'long-break'] as Phase[]).map(p => (

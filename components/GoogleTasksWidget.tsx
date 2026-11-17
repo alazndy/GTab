@@ -150,7 +150,7 @@ const GoogleTasksWidget: React.FC = () => {
 
   if (loading && tasks.length === 0) {
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex items-center justify-center">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex items-center justify-center">
         <div className="text-white/30 text-xs">Yükleniyor...</div>
       </div>
     );
@@ -159,7 +159,7 @@ const GoogleTasksWidget: React.FC = () => {
   if (error && !connected) {
     const isApiNotEnabled = error === 'API_NOT_ENABLED';
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4">
         <ListBulletIcon className="w-8 h-8 text-blue-400 opacity-50" />
         <div className="text-center">
           <p className="text-sm font-medium text-white">Google Tasks</p>
@@ -182,7 +182,7 @@ const GoogleTasksWidget: React.FC = () => {
   }
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+    <div className="relative w-full h-full flex flex-col bg-black/40 border border-white/10 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/5 shrink-0">
         <ListBulletIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -227,7 +227,7 @@ const GoogleTasksWidget: React.FC = () => {
           <div className="text-center py-4 text-red-400/60 text-xs">{error}</div>
         )}
         {!loading && tasks.length === 0 && !error && (
-          <div className="text-center py-8 text-white/20 text-xs italic">Bekleyen görev yok.</div>
+          <div className="text-center py-8 text-white/45 text-xs">Bekleyen görev yok.</div>
         )}
         {tasks.map(task => (
           <div
@@ -270,7 +270,7 @@ const GoogleTasksWidget: React.FC = () => {
             onChange={e => setNewTaskText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAddTask()}
             placeholder="Görev ekle..."
-            className="flex-1 bg-transparent text-xs text-white/80 placeholder-white/20 outline-none"
+            className="flex-1 bg-transparent text-xs text-white/80 placeholder-white/40 outline-none"
           />
           {addingTask && <ArrowPathIcon className="w-3 h-3 text-white/20 animate-spin shrink-0" />}
         </div>

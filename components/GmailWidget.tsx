@@ -135,7 +135,7 @@ const GmailWidget: React.FC = () => {
   if (accounts.length === 0) {
     return (
       <div className="w-full h-full animate-slide-up">
-        <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-2xl flex flex-col items-center justify-center text-center gap-4 h-full">
+        <div className="bg-black/40 border border-white/10 rounded-xl p-6 shadow-2xl flex flex-col items-center justify-center text-center gap-4 h-full">
           <EnvelopeIcon className="w-8 h-8 text-red-400 opacity-50" />
           <div>
             <h3 className="text-sm font-medium text-white">Gmail</h3>
@@ -154,7 +154,7 @@ const GmailWidget: React.FC = () => {
 
   return (
     <div className="w-full h-full animate-slide-up">
-      <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full">
+      <div className="bg-black/40 border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full">
 
         {/* Account Tabs */}
         <div className="flex items-center gap-1 p-1 bg-white/5 border-b border-white/10 overflow-x-auto no-scrollbar">
@@ -218,11 +218,11 @@ const GmailWidget: React.FC = () => {
               </button>
             </div>
           ) : activeAccount?.loading && activeAccount.messages.length === 0 ? (
-            <div className="text-center py-6 text-white/20 text-xs italic">
+            <div className="text-center py-6 text-white/45 text-xs">
               Yükleniyor...
             </div>
           ) : activeAccount?.messages.length === 0 ? (
-            <div className="text-center py-6 text-white/20 text-xs italic">
+            <div className="text-center py-6 text-white/45 text-xs">
               Okunmamış ileti yok.
             </div>
           ) : (

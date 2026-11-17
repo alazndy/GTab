@@ -39,9 +39,9 @@ export const ALIGNMENTS: { id: CardAlignment; label: string; bars: [boolean, boo
 ];
 
 export const FONTS: { id: FontFamily; label: string; style: React.CSSProperties }[] = [
-  { id: 'geist',  label: 'Geist Sans',  style: { fontFamily: '"Geist Sans", system-ui, sans-serif' } },
+  { id: 'geist',  label: 'Geist Sans',  style: { fontFamily: '"Geist Variable", "Geist Sans", system-ui, sans-serif' } },
   { id: 'system', label: 'Sistem',      style: { fontFamily: 'system-ui, sans-serif' } },
-  { id: 'mono',   label: 'Monospace',   style: { fontFamily: '"Geist Mono", monospace' } },
+  { id: 'mono',   label: 'Monospace',   style: { fontFamily: '"Geist Mono Variable", "Geist Mono", monospace' } },
   { id: 'serif',  label: 'Serif',       style: { fontFamily: 'Georgia, serif' } },
 ];
 

@@ -219,7 +219,7 @@ const SpotifyWidget: React.FC = () => {
       ? chrome.identity.getRedirectURL()
       : '(extension yüklenince görünür)';
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-5">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-5">
         <MusicalNoteIcon className="w-8 h-8 text-green-400 opacity-60" />
         <div className="text-center">
           <p className="text-sm font-semibold text-white">Spotify Kurulumu</p>
@@ -235,7 +235,7 @@ const SpotifyWidget: React.FC = () => {
           onChange={e => setInputClientId(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && saveSetup()}
           placeholder="Spotify Client ID..."
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 placeholder-white/20 outline-none focus:border-green-400/40 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 placeholder-white/40 outline-none focus:border-green-400/40 transition-colors"
         />
         <button
           onClick={saveSetup}
@@ -250,7 +250,7 @@ const SpotifyWidget: React.FC = () => {
 
   if (!connected) {
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4">
         <MusicalNoteIcon className="w-8 h-8 text-green-400 opacity-60" />
         <p className="text-sm font-semibold text-white">Spotify</p>
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
@@ -271,7 +271,7 @@ const SpotifyWidget: React.FC = () => {
 
   if (!track) {
     return (
-      <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-2 p-4">
+      <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center gap-2 p-4">
         <MusicalNoteIcon className="w-8 h-8 text-white/10" />
         <p className="text-xs text-white/30">Spotify&apos;da bir şey çalmıyor.</p>
         <button onClick={() => setSetup(true)} className="text-[10px] text-white/20 hover:text-white/40 mt-2">
@@ -284,7 +284,7 @@ const SpotifyWidget: React.FC = () => {
   const pct = track.duration > 0 ? (track.progress / track.duration) * 100 : 0;
 
   return (
-    <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-black/40 border border-white/10 rounded-xl flex flex-col overflow-hidden">
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
         {track.albumArt ? (
           <img

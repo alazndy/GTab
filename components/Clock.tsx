@@ -39,9 +39,9 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
 
   const clockStyle = React.useMemo(() => {
     const fonts: Record<string, string> = {
-      geist: '"Geist Sans", system-ui, sans-serif',
+      geist: '"Geist Variable", "Geist Sans", system-ui, sans-serif',
       system: 'system-ui, sans-serif',
-      mono: '"Geist Mono", monospace',
+      mono: '"Geist Mono Variable", "Geist Mono", monospace',
       serif: 'Georgia, serif',
     };
     
@@ -71,10 +71,10 @@ const Clock: React.FC<ClockProps> = ({ config, isEditMode, onOpenSettings }) => 
   const formatDate = () => dateFormatter.format(time);
 
   return (
-    <div className="text-center mb-8 animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
+    <div className="text-center animate-fade-in relative group" style={{ fontFamily: clockStyle.fontFamily }}>
 
       <div 
-        className={`${clockStyle.sizeClass} font-thin tracking-tight drop-shadow-lg transition-all duration-700`}
+        className={`${clockStyle.sizeClass} font-thin tracking-tight tabular-nums drop-shadow-lg transition-all duration-700`}
         style={{ color: 'var(--theme-accent, white)' }}
       >
         {formatTime()}

@@ -65,7 +65,7 @@ const GoogleKeepWidget: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-black/40 border border-white/10 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/5 shrink-0">
         <DocumentTextIcon className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
@@ -93,7 +93,7 @@ const GoogleKeepWidget: React.FC = () => {
             onBlur={addNote}
             placeholder="Not yaz... (Enter ile kaydet)"
             rows={3}
-            className="w-full bg-white/5 border border-yellow-400/20 rounded-lg px-2 py-1.5 text-xs text-white/80 placeholder-white/20 outline-none focus:border-yellow-400/40 resize-none transition-colors"
+            className="w-full bg-white/5 border border-yellow-400/20 rounded-lg px-2 py-1.5 text-xs text-white/80 placeholder-white/40 outline-none focus:border-yellow-400/40 resize-none transition-colors"
           />
         </div>
       )}

@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  }
+
+  body {
+    font-family: "Geist Variable", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background: #000;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--theme-accent, #3b82f6) 45%, transparent);
+    color: #fff;
+  }
+
+  /* Keyboard users get a visible focus ring; mouse clicks do not show it. */
+  :focus-visible {
+    outline: 2px solid var(--theme-accent, #60a5fa);
+    outline-offset: 2px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: rgb(255 255 255 / 0.4);
+  }
+}
+
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -20,21 +52,20 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Glow orb orbital animations - orbs travel along screen edges */
+/* Glow orbs travel along the screen edges. Only `transform` is animated, so the browser
+   moves a cached GPU layer instead of re-running layout and paint every frame. */
 @keyframes orb-orbit-a {
-  0%   { top: 80%; left: 0%;  }
-  25%  { top: 0%;  left: 0%;  }
-  50%  { top: 0%;  left: 80%; }
-  75%  { top: 80%; left: 80%; }
-  100% { top: 80%; left: 0%;  }
+  0%, 100% { transform: translate(calc(0vw - 50%),  calc(80vh - 50%)); }
+  25%      { transform: translate(calc(0vw - 50%),  calc(0vh - 50%)); }
+  50%      { transform: translate(calc(80vw - 50%), calc(0vh - 50%)); }
+  75%      { transform: translate(calc(80vw - 50%), calc(80vh - 50%)); }
 }
 
 @keyframes orb-orbit-b {
-  0%   { top: 0%;  left: 80%; }
-  25%  { top: 80%; left: 80%; }
-  50%  { top: 80%; left: 0%;  }
-  75%  { top: 0%;  left: 0%;  }
-  100% { top: 0%;  left: 80%; }
+  0%, 100% { transform: translate(calc(80vw - 50%), calc(0vh - 50%)); }
+  25%      { transform: translate(calc(80vw - 50%), calc(80vh - 50%)); }
+  50%      { transform: translate(calc(0vw - 50%),  calc(80vh - 50%)); }
+  75%      { transform: translate(calc(0vw - 50%),  calc(0vh - 50%)); }
 }
 
 .animate-orb-a {
@@ -70,4 +101,16 @@
 }
 .animate-slide-up {
   animation: slide-up 0.3s ease-out both;
+}
+
+/* Respect the OS "reduce motion" setting: no drifting background, no entrance animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

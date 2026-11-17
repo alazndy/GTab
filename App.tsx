@@ -6,14 +6,20 @@ import {
 import Clock from './components/Clock';
 import SearchBar from './components/SearchBar';
 import TasksWidget from './components/TasksWidget';
-import GmailWidget from './components/GmailWidget';
-import CalendarWidget from './components/CalendarWidget';
-import StocksWidget from './components/StocksWidget';
-import GoogleTasksWidget from './components/GoogleTasksWidget';
-import GoogleKeepWidget from './components/GoogleKeepWidget';
-import WeatherWidget from './components/WeatherWidget';
-import PomodoroWidget from './components/PomodoroWidget';
-import SpotifyWidget from './components/SpotifyWidget';
+
+// Optional widgets are hidden by default; load their code only when a user turns them on.
+const GmailWidget = React.lazy(() => import('./components/GmailWidget'));
+const CalendarWidget = React.lazy(() => import('./components/CalendarWidget'));
+const StocksWidget = React.lazy(() => import('./components/StocksWidget'));
+const GoogleTasksWidget = React.lazy(() => import('./components/GoogleTasksWidget'));
+const GoogleKeepWidget = React.lazy(() => import('./components/GoogleKeepWidget'));
+const WeatherWidget = React.lazy(() => import('./components/WeatherWidget'));
+const PomodoroWidget = React.lazy(() => import('./components/PomodoroWidget'));
+const SpotifyWidget = React.lazy(() => import('./components/SpotifyWidget'));
+
+const WidgetSkeleton: React.FC = () => (
+  <div className="w-full h-full min-h-32 rounded-xl bg-white/[0.04] animate-pulse" aria-hidden="true" />
+);
 
 const AddModal = React.lazy(() => import('./components/AddModal'));
 const ShortcutSettingsModal = React.lazy(() => import('./components/ShortcutSettingsModal'));
@@ -94,9 +100,9 @@ const App: React.FC = () => {
 
   const fontStyle = useMemo((): React.CSSProperties => {
     const map: Record<string, string> = {
-      geist: '"Geist Sans", system-ui, sans-serif',
+      geist: '"Geist Variable", "Geist Sans", system-ui, sans-serif',
       system: 'system-ui, sans-serif',
-      mono: '"Geist Mono", "Courier New", monospace',
+      mono: '"Geist Mono Variable", "Geist Mono", "Courier New", monospace',
       serif: 'Georgia, serif',
     };
     return { fontFamily: map[cardConfig.font] ?? map.geist };
@@ -230,7 +236,9 @@ const App: React.FC = () => {
                   isFreeLayout={bgConfig.isFreeLayout}
                   onPointerDownFreeDrag={freeLayoutDragHandler}
                 >
-                  {widget.visible ? renderWidgetContent(widget.id) : (
+                  {widget.visible ? (
+                    <Suspense fallback={<WidgetSkeleton />}>{renderWidgetContent(widget.id)}</Suspense>
+                  ) : (
                     // Hidden widgets stay unmounted in edit mode so they do not start API calls or auth flows.
                     <div className="w-full min-h-24 h-full flex items-center justify-center rounded-xl border border-dashed border-white/15 text-xs text-white/40">
                       {getWidgetLabel(widget.id)} · gizli

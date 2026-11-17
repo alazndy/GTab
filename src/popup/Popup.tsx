@@ -36,7 +36,7 @@ const flatAll = (s: Shortcut[]) => s.flatMap(x => x.isFolder ? (x.children ?? []
 // ── inline style atoms ─────────────────────────────────────────────────────
 
 const S = {
-  root:      { width: 380, background: '#0a0a0a', color: '#fff', fontFamily: '"Geist Sans", system-ui, sans-serif', display: 'flex', flexDirection: 'column' } as React.CSSProperties,
+  root:      { width: 380, background: '#0a0a0a', color: '#fff', fontFamily: '"Geist Variable", "Geist Sans", system-ui, sans-serif', display: 'flex', flexDirection: 'column' } as React.CSSProperties,
   header:    { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' } as React.CSSProperties,
   logo:      { width: 22, height: 22, borderRadius: 6, background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', flexShrink: 0 } as React.CSSProperties,
   scroll:    { maxHeight: 420, overflowY: 'auto' as const, paddingBottom: 8 },

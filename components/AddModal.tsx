@@ -120,7 +120,7 @@ const AddModal: React.FC<AddModalProps> = ({ isOpen, onClose, onAdd, groups, isI
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Örn: Spotify"
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:border-blue-500/50 focus:outline-none"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/40 focus:border-blue-500/50 focus:outline-none"
                 />
               </div>
 
@@ -132,7 +132,7 @@ const AddModal: React.FC<AddModalProps> = ({ isOpen, onClose, onAdd, groups, isI
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://... veya spotify: steam:"
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white font-mono placeholder-white/20 focus:border-blue-500/50 focus:outline-none"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white font-mono placeholder-white/40 focus:border-blue-500/50 focus:outline-none"
                 />
               </div>
 
@@ -198,7 +198,7 @@ const AddModal: React.FC<AddModalProps> = ({ isOpen, onClose, onAdd, groups, isI
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Örn: Geliştirici Araçları"
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/20 focus:border-yellow-500/50 focus:outline-none"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/40 focus:border-yellow-500/50 focus:outline-none"
                 />
               </div>
 

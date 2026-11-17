@@ -109,3 +109,5 @@
 | 2026-11-17 | Claude | Stocks: no built-in Alpha Vantage key; Yahoo by default; 30 min shared cache | Shared public key hit the 25/day limit. Old key is in git history: treat it as leaked. |
 | 2026-11-17 | Claude | Removed `tabs` permission | `activeTab` covers the popup; fewer install warnings. |
 | 2026-11-17 | Claude | Kept Google s2 favicon service | Chrome `_favicon` API shows a blank globe for sites not in history; privacy vs UX, decision open. |
+| 2026-11-17 | Claude | Perf/UI pass: orb animation uses transform only; one backdrop-blur layer per widget; optional widgets lazy-loaded; Geist bundled via @fontsource-variable | Idle cost on portal theme: 61 ms main-thread work and 27 layouts per 5 s became 4 ms and 0. Main chunk 124 KB to 72 KB. |
+| 2026-11-17 | Claude | New-user default layout: clock, search, categories without a box; shortcuts above the fold | Shortcuts were below the fold at 1440x900. Stored layouts are not migrated. |

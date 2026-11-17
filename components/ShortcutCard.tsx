@@ -154,7 +154,7 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
         >
             <div
                 onClick={handleMainClick}
-                className={`relative backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${cardConfig?.showCardBorder !== false ? 'border' : 'border-0'}`}
+                className={`relative flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${cardConfig?.showCardBorder !== false ? 'border' : 'border-0'}`}
                 style={{ 
                   backgroundColor: `rgba(255,255,255,${bgOpacity / 100})`,
                   borderColor: cardConfig?.showCardBorder !== false ? `rgba(255,255,255,${(cardConfig?.cardBorderOpacity ?? 10) / 100})` : 'transparent'
@@ -223,7 +223,7 @@ const ShortcutCard: React.FC<ShortcutCardProps> = memo(({
         style={cardWidthStyle}
     >
       <div
-        className={`relative backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-sm w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${
+        className={`relative flex flex-col items-center justify-center transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-sm w-full overflow-hidden ${shapeClass} ${sizeClass} ${paddingClass} ${glowClass} ${
           cardConfig?.showCardBorder !== false ? 'border' : 'border-0'
         }`}
         style={{
