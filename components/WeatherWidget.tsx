@@ -39,6 +39,15 @@ const getDesc = (code: number) => WMO_DESC[code] ?? 'Bilinmiyor';
 const CACHE_KEY = 'gtab_weather_v2';
 const CACHE_TTL = 30 * 60 * 1000;
 
+const readCache = (): WeatherInfo | null => {
+  try {
+    const data = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null');
+    return data && typeof data.cachedAt === 'number' ? data : null;
+  } catch {
+    return null;
+  }
+};
+
 const WeatherWidget: React.FC = () => {
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,14 +55,11 @@ const WeatherWidget: React.FC = () => {
 
   const loadWeather = useCallback(async (forceRefresh = false) => {
     if (!forceRefresh) {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const data: WeatherInfo = JSON.parse(cached);
-        if (Date.now() - data.cachedAt < CACHE_TTL) {
-          setWeather(data);
-          setLoading(false);
-          return;
-        }
+      const data = readCache();
+      if (data && Date.now() - data.cachedAt < CACHE_TTL) {
+        setWeather(data);
+        setLoading(false);
+        return;
       }
     }
 
@@ -65,7 +71,9 @@ const WeatherWidget: React.FC = () => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
       });
 
-      const { latitude: lat, longitude: lon } = pos.coords;
+      // Two decimals (~1 km) are enough for weather and city lookup; do not send the exact location to third parties.
+      const lat = pos.coords.latitude.toFixed(2);
+      const lon = pos.coords.longitude.toFixed(2);
 
       const [weatherRes, geoRes] = await Promise.all([
         fetch(
@@ -105,9 +113,9 @@ const WeatherWidget: React.FC = () => {
       } else {
         setError('Hava durumu yüklenemedi.');
       }
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = readCache();
       if (cached) {
-        setWeather(JSON.parse(cached));
+        setWeather(cached);
         setError(null);
       }
     } finally {

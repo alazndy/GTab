@@ -27,7 +27,6 @@
     "storage",
     "contextMenus",
     "activeTab",
-    "tabs",
     "identity"
   ],
   "host_permissions": [

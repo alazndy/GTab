@@ -15,7 +15,7 @@
 
 - **🌦️ Weather Widget:** Real-time weather data via Open-Meteo API. Automatic location detection with 30-minute caching.
 - **⏱️ Pomodoro Widget:** Stay focused with 25/5/15 minute sessions, visual SVG progress ring, and browser notifications.
-- **🎵 Spotify Widget:** Control your music directly from the dashboard. OAuth integration for playback and "Now Playing" status.
+- **🎵 Spotify Widget:** Control your music directly from the dashboard. OAuth (Authorization Code + PKCE, auto refresh) for playback and "Now Playing" status.
 - **✅ Google Tasks API:** Completely rewritten Tasks integration using the official REST API for better reliability and real-time sync.
 - **📝 Quick Notes:** A lightweight local notes widget replacing the iframe-restricted Google Keep.
 - **📦 Dual-Edition Build System:** We now offer separate builds for Personal use and Chrome Web Store compliance.

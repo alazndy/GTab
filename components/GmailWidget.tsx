@@ -1,155 +1,138 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { EnvelopeIcon, ArrowTopRightOnSquareIcon, ArrowPathIcon, PlusIcon, UserCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { getAuthToken, fetchUnreadEmails, fetchMessageDetails, GmailMessageDetails } from '../services/googleAuthService';
+import {
+  AUTH_REQUIRED, authenticate, getAuthToken, storeToken, invalidateToken,
+  fetchUnreadEmails, fetchMessageDetails, GmailMessageDetails,
+} from '../services/googleAuthService';
 
 interface GmailAccount {
   email: string;
-  token: string;
   messages: GmailMessageDetails[];
   loading: boolean;
   error: string | null;
+  needsLogin: boolean;
 }
 
-const GmailWidget: React.FC = () => {
-  const [accounts, setAccounts] = useState<GmailAccount[]>([]);
-  const [activeAccountIndex, setActiveAccountIndex] = useState(0);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+const ACCOUNTS_KEY = 'gtab_gmail_accounts';
+const REFRESH_MS = 2 * 60 * 1000;
 
-  const activeAccount = accounts[activeAccountIndex];
+const readStoredEmails = (): string[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((e): e is string => typeof e === 'string' && e.length > 0) : [];
+  } catch {
+    return [];
+  }
+};
+
+const newAccount = (email: string): GmailAccount => ({ email, messages: [], loading: true, error: null, needsLogin: false });
+
+const newestDate = (messages: GmailMessageDetails[]) =>
+  messages.reduce((max, m) => Math.max(max, Number(m.internalDate) || 0), 0);
+
+const formatSender = (from: string) => {
+  const match = from.match(/^(.*?)\s*<.*>$/);
+  return match ? match[1].replace(/^"|"$/g, '') : from;
+};
+
+const GmailWidget: React.FC = () => {
+  const [accounts, setAccounts] = useState<GmailAccount[]>(() => readStoredEmails().map(newAccount));
+  const [activeEmail, setActiveEmail] = useState<string | null>(null);
+  const accountsRef = useRef(accounts);
+
+  useEffect(() => { accountsRef.current = accounts; }, [accounts]);
+
+  const emailList = accounts.map(a => a.email).join('\n');
+  useEffect(() => {
+    try {
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(emailList ? emailList.split('\n') : []));
+    } catch {
+      // Storage full or blocked: the account list is rebuilt on the next login.
+    }
+  }, [emailList]);
+
+  const patchAccount = useCallback((email: string, update: Partial<GmailAccount>) => {
+    setAccounts(prev => prev.map(a => (a.email === email ? { ...a, ...update } : a)));
+  }, []);
+
+  const loadAccount = useCallback(async (email: string): Promise<GmailMessageDetails[]> => {
+    patchAccount(email, { loading: true, error: null });
+    try {
+      // login_hint makes Google return a token for this exact account, not the browser's default one.
+      const auth = { loginHint: email };
+      const list = await fetchUnreadEmails(auth);
+      const details = list.messages?.length
+        ? await Promise.all(list.messages.map(m => fetchMessageDetails(m.id, auth)))
+        : [];
+      patchAccount(email, { messages: details, loading: false, needsLogin: false });
+      return details;
+    } catch (err) {
+      const needsLogin = err instanceof Error && err.message === AUTH_REQUIRED;
+      patchAccount(email, { loading: false, needsLogin, error: needsLogin ? 'Bu hesap için giriş gerekli.' : 'Yüklenemedi' });
+      return [];
+    }
+  }, [patchAccount]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const emails = accountsRef.current.map(a => a.email);
+
+    // On open, show the account with the most recent unread mail.
+    Promise.all(emails.map(async email => ({ email, newest: newestDate(await loadAccount(email)) }))).then(results => {
+      if (cancelled || results.length === 0) return;
+      const best = results.reduce((a, b) => (b.newest > a.newest ? b : a));
+      setActiveEmail(prev => prev ?? best.email);
+    });
+
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      accountsRef.current.forEach(a => { if (!a.needsLogin) loadAccount(a.email); });
+    }, REFRESH_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [loadAccount]);
 
   const addNewAccount = async () => {
     try {
-      const token = await getAuthToken(true);
+      const entry = await authenticate({ interactive: true });
       const resp = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${entry.token}` },
       });
+      if (!resp.ok) throw new Error(`userinfo ${resp.status}`);
       const profile = await resp.json();
-      const email = profile.email;
+      const email = typeof profile.email === 'string' ? profile.email : '';
+      if (!email) throw new Error('Google did not return an e-mail address');
 
-      const existingIdx = accounts.findIndex(a => a.email === email);
-      if (existingIdx !== -1) {
-        setActiveAccountIndex(existingIdx);
-        loadEmailsForAccount(existingIdx, token);
-        return;
-      }
-
-      const newAcc: GmailAccount = {
-        email,
-        token,
-        messages: [],
-        loading: true,
-        error: null
-      };
-
-      const newAccounts = [...accounts, newAcc];
-      setAccounts(newAccounts);
-      const newIdx = newAccounts.length - 1;
-      setActiveAccountIndex(newIdx);
-      loadEmailsForAccount(newIdx, token);
-      
-      const emailsToStore = newAccounts.map(a => a.email);
-      localStorage.setItem('gtab_gmail_accounts', JSON.stringify(emailsToStore));
+      await storeToken(email, entry);
+      setAccounts(prev => (prev.some(a => a.email === email) ? prev : [...prev, newAccount(email)]));
+      setActiveEmail(email);
+      loadAccount(email);
     } catch (err) {
       console.error('Failed to add account', err);
     }
   };
 
-  const removeAccount = (index: number) => {
-    const newAccounts = accounts.filter((_, i) => i !== index);
-    setAccounts(newAccounts);
-    if (activeAccountIndex >= newAccounts.length) {
-      setActiveAccountIndex(Math.max(0, newAccounts.length - 1));
-    }
-    const emailsToStore = newAccounts.map(a => a.email);
-    localStorage.setItem('gtab_gmail_accounts', JSON.stringify(emailsToStore));
-  };
-
-  const loadEmailsForAccount = async (index: number, manualToken?: string) => {
-    setAccounts(prev => prev.map((a, i) => i === index ? { ...a, loading: true, error: null } : a));
-    
+  const reconnect = async (email: string) => {
     try {
-      const account = accounts[index] || { token: manualToken };
-      const token = manualToken || account.token || await getAuthToken(false);
-      
-      const data = await fetchUnreadEmails(token);
-      let details: GmailMessageDetails[] = [];
-      
-      if (data.messages && data.messages.length > 0) {
-        details = await Promise.all(
-          data.messages.map(msg => fetchMessageDetails(token, msg.id))
-        );
-      }
-
-      setAccounts(prev => {
-        const next = prev.map((a, i) => i === index ? { ...a, token, messages: details, loading: false, error: null } : a);
-        
-        // --- Auto Switch to Most Recent ---
-        // Find account with the globally latest message across all accounts
-        let newestDate = 0;
-        let newestIdx = activeAccountIndex;
-
-        next.forEach((acc, idx) => {
-          if (acc.messages.length > 0) {
-            const accNewest = Math.max(...acc.messages.map(m => parseInt(m.internalDate)));
-            if (accNewest > newestDate) {
-              newestDate = accNewest;
-              newestIdx = idx;
-            }
-          }
-        });
-
-        if (newestIdx !== activeAccountIndex) {
-          setActiveAccountIndex(newestIdx);
-        }
-
-        return next;
-      });
-    } catch (err: any) {
-      setAccounts(prev => prev.map((a, i) => i === index ? { ...a, loading: false, error: 'Yüklenemedi' } : a));
+      await getAuthToken({ interactive: true, loginHint: email });
+      loadAccount(email);
+    } catch (err) {
+      console.error('Failed to reconnect account', err);
     }
   };
 
-  const refreshAll = useCallback(async () => {
-    accounts.forEach((_, i) => loadEmailsForAccount(i));
-  }, [accounts.length]);
-
-  useEffect(() => {
-    const init = async () => {
-      const stored = localStorage.getItem('gtab_gmail_accounts');
-      if (stored) {
-        try {
-          const emails = JSON.parse(stored) as string[];
-          if (emails.length > 0) {
-            const initialAccounts = emails.map(email => ({
-              email,
-              token: '',
-              messages: [],
-              loading: true,
-              error: null
-            }));
-            setAccounts(initialAccounts);
-            // Load all accounts to find the most recent one
-            emails.forEach((_, i) => loadEmailsForAccount(i));
-          }
-        } catch (e) {
-          console.error('Failed to parse stored accounts', e);
-        }
-      }
-      setIsInitialLoading(false);
-    };
-    init();
-
-    // Auto refresh every 2 minutes
-    const timer = setInterval(refreshAll, 2 * 60 * 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatSender = (from: string) => {
-    const match = from.match(/^(.*?)\s*<.*>$/);
-    return match ? match[1] : from;
+  const removeAccount = (email: string) => {
+    setAccounts(prev => prev.filter(a => a.email !== email));
+    setActiveEmail(prev => (prev === email ? null : prev));
+    invalidateToken(email);
   };
 
-  if (accounts.length === 0 && !isInitialLoading) {
+  const activeAccount = accounts.find(a => a.email === activeEmail) ?? accounts[0];
+
+  if (accounts.length === 0) {
     return (
       <div className="w-full h-full animate-slide-up">
         <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-2xl flex flex-col items-center justify-center text-center gap-4 h-full">
@@ -172,16 +155,16 @@ const GmailWidget: React.FC = () => {
   return (
     <div className="w-full h-full animate-slide-up">
       <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full">
-        
+
         {/* Account Tabs */}
         <div className="flex items-center gap-1 p-1 bg-white/5 border-b border-white/10 overflow-x-auto no-scrollbar">
-          {accounts.map((acc, i) => (
+          {accounts.map(acc => (
             <div key={acc.email} className="relative group shrink-0">
               <button
-                onClick={() => setActiveAccountIndex(i)}
+                onClick={() => setActiveEmail(acc.email)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all flex items-center gap-2 ${
-                  i === activeAccountIndex 
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                  acc.email === activeAccount?.email
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                     : 'text-white/40 hover:bg-white/5 hover:text-white/60 border border-transparent'
                 }`}
                 title={acc.email}
@@ -193,9 +176,10 @@ const GmailWidget: React.FC = () => {
                 )}
               </button>
               {accounts.length > 1 && (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); removeAccount(i); }}
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeAccount(acc.email); }}
                   className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity border border-white/10"
+                  title="Hesabı kaldır"
                 >
                   <XMarkIcon className="w-2 h-2" />
                 </button>
@@ -209,11 +193,11 @@ const GmailWidget: React.FC = () => {
           >
             <PlusIcon className="w-3 h-3" />
           </button>
-          
+
           <div className="flex-1" />
-          
-          <button 
-            onClick={() => loadEmailsForAccount(activeAccountIndex)}
+
+          <button
+            onClick={() => activeAccount && loadAccount(activeAccount.email)}
             className="p-1.5 text-white/30 hover:text-red-300 transition-colors shrink-0"
             title="Yenile"
           >
@@ -226,9 +210,14 @@ const GmailWidget: React.FC = () => {
           {activeAccount?.error ? (
             <div className="text-center py-6 text-red-400/60 text-xs italic flex flex-col items-center gap-2">
               <span>{activeAccount.error}</span>
-              <button onClick={() => loadEmailsForAccount(activeAccountIndex)} className="text-white/40 hover:text-white underline">Yeniden Dene</button>
+              <button
+                onClick={() => (activeAccount.needsLogin ? reconnect(activeAccount.email) : loadAccount(activeAccount.email))}
+                className="text-white/40 hover:text-white underline"
+              >
+                {activeAccount.needsLogin ? 'Giriş Yap' : 'Yeniden Dene'}
+              </button>
             </div>
-          ) : activeAccount?.loading && activeAccount?.messages.length === 0 ? (
+          ) : activeAccount?.loading && activeAccount.messages.length === 0 ? (
             <div className="text-center py-6 text-white/20 text-xs italic">
               Yükleniyor...
             </div>
@@ -238,9 +227,9 @@ const GmailWidget: React.FC = () => {
             </div>
           ) : (
             activeAccount?.messages.map(email => (
-              <a 
-                key={email.id} 
-                href={`https://mail.google.com/mail/#inbox/${email.id}`}
+              <a
+                key={email.id}
+                href={`https://mail.google.com/mail/?authuser=${encodeURIComponent(activeAccount.email)}#inbox/${encodeURIComponent(email.id)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex flex-col gap-0.5 p-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5"

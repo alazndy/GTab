@@ -1,45 +1,88 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChartBarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { StockQuote } from '../types';
 import { fetchStockQuote } from '../services/finnhubService';
-import { getStocksConfig } from '../services/storageService';
+import { useGTab } from '../context/GTabContext';
+
+const CACHE_KEY = 'gtab_stocks_cache';
+// Alpha Vantage free keys allow 25 requests per day, and every new tab mounts this widget.
+const CACHE_TTL = 30 * 60 * 1000;
+
+interface QuoteCache {
+  key: string;
+  at: number;
+  quotes: Record<string, StockQuote>;
+}
+
+const readCache = (key: string): Record<string, StockQuote> | null => {
+  try {
+    const cache: QuoteCache = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null');
+    if (cache && cache.key === key && Date.now() - cache.at < CACHE_TTL) return cache.quotes;
+  } catch {
+    // Corrupt cache: fetch again.
+  }
+  return null;
+};
+
+const writeCache = (key: string, quotes: Record<string, StockQuote>) => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ key, at: Date.now(), quotes }));
+  } catch {
+    // Storage full: the next tab fetches again.
+  }
+};
 
 const StocksWidget: React.FC = () => {
+  const { stocksConfig } = useGTab();
+  const { apiKey, symbols } = stocksConfig;
   const [quotes, setQuotes] = useState<Record<string, StockQuote>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { apiKey, symbols } = getStocksConfig();
 
-  const loadQuotes = async () => {
+  const symbolsKey = symbols.join(',');
+  const cacheKey = `${symbolsKey}|${apiKey ? 'av' : 'yahoo'}`;
+
+  const loadQuotes = useCallback(async (force = false) => {
+    if (!force) {
+      const cached = readCache(cacheKey);
+      if (cached) {
+        setQuotes(cached);
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
-    try {
-      const results: Record<string, StockQuote> = {};
-      await Promise.all(
-        symbols.map(async (symbol) => {
-          try {
-            const quote = await fetchStockQuote(symbol, apiKey);
-            results[symbol] = quote;
-          } catch (e) {
-            console.error(`Failed to fetch ${symbol}`, e);
-          }
-        })
-      );
-      setQuotes(results);
-    } catch (err) {
+    const results: Record<string, StockQuote> = {};
+    await Promise.all(
+      symbolsKey.split(',').filter(Boolean).map(async (symbol) => {
+        try {
+          results[symbol] = await fetchStockQuote(symbol, apiKey);
+        } catch (e) {
+          console.error(`Failed to fetch ${symbol}`, e);
+        }
+      })
+    );
+    if (symbolsKey && Object.keys(results).length === 0) {
       setError('Hisse bilgileri yüklenemedi.');
-      console.error(err);
-    } finally {
-      setLoading(false);
+    } else {
+      writeCache(cacheKey, results);
     }
-  };
+    setQuotes(results);
+    setLoading(false);
+  }, [apiKey, symbolsKey, cacheKey]);
 
   useEffect(() => {
-    loadQuotes();
-    // Refresh every 30 minutes (Alpha Vantage limit is 25 per day)
-    const interval = setInterval(loadQuotes, 30 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [symbols.join(','), apiKey]);
+    // Settings update the symbol list on every keystroke; wait until typing stops before fetching.
+    const delay = readCache(cacheKey) ? 0 : 800;
+    const start = setTimeout(() => loadQuotes(), delay);
+    const interval = setInterval(() => loadQuotes(), CACHE_TTL);
+    return () => {
+      clearTimeout(start);
+      clearInterval(interval);
+    };
+  }, [loadQuotes, cacheKey]);
 
   return (
     <div className="w-full h-full animate-slide-up">
@@ -51,7 +94,7 @@ const StocksWidget: React.FC = () => {
             <span className="font-medium text-sm">Borsa</span>
           </div>
           <button 
-            onClick={loadQuotes}
+            onClick={() => loadQuotes(true)}
             className="text-white/30 hover:text-green-300 transition-colors"
             title="Yenile"
           >
@@ -87,7 +130,7 @@ const StocksWidget: React.FC = () => {
                 >
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-white/90">{symbol}</span>
-                    <span className="text-[10px] text-white/40">Yahoo Finance</span>
+                    <span className="text-[10px] text-white/40">{quote.source}</span>
                   </div>
 
                   <div className="flex flex-col items-end">

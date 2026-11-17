@@ -103,3 +103,9 @@
 | 2026-04-29 | Claude | Google Keep → local notes | Keep'in public API'si yok, iframe X-Frame-Options ile bloklu. |
 | 2026-04-29 | Claude | Spotify user-setup | Her kullanıcı kendi app'ini kuruyor; Extended Quota başvurusu gelecekte yapılabilir. |
 | 2026-11-17 | Claude | Add vite/client types; update deps in range | tsc had 2 import.meta.env errors; pnpm audit had 28 dev-tool vulns, now 0. Both builds pass. |
+| 2026-11-17 | Claude | Google tokens cached per account in chrome.storage.session (`services/googleAuthService.ts`) | One auth flow per account instead of one per widget per tab; 401 triggers one silent retry; fixes 1-hour token expiry. |
+| 2026-11-17 | Claude | Gmail list uses `labelIds=UNREAD`, not `q=is:unread` | gmail.metadata scope (store edition) rejects `q`. |
+| 2026-11-17 | Claude | Spotify uses Authorization Code + PKCE with refresh token | Spotify removed the implicit grant. |
+| 2026-11-17 | Claude | Stocks: no built-in Alpha Vantage key; Yahoo by default; 30 min shared cache | Shared public key hit the 25/day limit. Old key is in git history: treat it as leaked. |
+| 2026-11-17 | Claude | Removed `tabs` permission | `activeTab` covers the popup; fewer install warnings. |
+| 2026-11-17 | Claude | Kept Google s2 favicon service | Chrome `_favicon` API shows a blank globe for sites not in history; privacy vs UX, decision open. |

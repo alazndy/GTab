@@ -263,12 +263,18 @@ export const saveCardConfig = (config: CardConfig) => {
   }
 };
 
+const DEFAULT_STOCKS_CONFIG: StocksConfig = { apiKey: '', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+
 export const getStocksConfig = (): StocksConfig => {
   try {
-    const stored = localStorage.getItem(STOCKS_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : { apiKey: '4QO8AQO0Y6B6NIPI', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
-  } catch (e) {
-    return { apiKey: '4QO8AQO0Y6B6NIPI', symbols: ['AAPL', 'MSFT', 'GOOGL'] };
+    const stored = JSON.parse(localStorage.getItem(STOCKS_CONFIG_KEY) ?? 'null');
+    if (!stored || typeof stored !== 'object') return DEFAULT_STOCKS_CONFIG;
+    return {
+      apiKey: typeof stored.apiKey === 'string' ? stored.apiKey : '',
+      symbols: Array.isArray(stored.symbols) ? stored.symbols.filter((s: unknown): s is string => typeof s === 'string') : DEFAULT_STOCKS_CONFIG.symbols,
+    };
+  } catch {
+    return DEFAULT_STOCKS_CONFIG;
   }
 };
 
@@ -292,6 +298,57 @@ export const exportShortcutsToFile = (shortcuts: Shortcut[]) => {
   URL.revokeObjectURL(url);
 };
 
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+// Script URLs never belong in a shortcut; everything else (https:, spotify:, steam: ...) is allowed.
+const isSafeUrl = (url: string) => !/^\s*(javascript|vbscript|data):/i.test(url);
+
+const sanitizeShortcut = (raw: unknown, allowFolder: boolean): Shortcut | null => {
+  if (!isRecord(raw) || typeof raw.title !== 'string' || !raw.title.trim()) return null;
+  const url = typeof raw.url === 'string' ? raw.url : '';
+  const isFolder = allowFolder && raw.isFolder === true;
+  if (!isFolder && (!url.trim() || !isSafeUrl(url))) return null;
+
+  const shortcut: Shortcut = {
+    ...(raw as unknown as Shortcut),
+    id: typeof raw.id === 'string' && raw.id ? raw.id : crypto.randomUUID(),
+    title: raw.title,
+    url: isFolder ? '' : url,
+    category: Object.values(Category).includes(raw.category as Category) ? (raw.category as Category) : Category.OTHER,
+    isFolder,
+  };
+
+  if (isFolder) {
+    shortcut.children = Array.isArray(raw.children)
+      ? raw.children.map(c => sanitizeShortcut(c, false)).filter((c): c is Shortcut => c !== null)
+      : [];
+  } else {
+    delete shortcut.children;
+  }
+
+  if (raw.profiles !== undefined) {
+    shortcut.profiles = Array.isArray(raw.profiles)
+      ? raw.profiles.filter(
+          (p): p is NonNullable<Shortcut['profiles']>[number] =>
+            isRecord(p) && typeof p.id === 'string' && typeof p.name === 'string' &&
+            (p.url === undefined || (typeof p.url === 'string' && isSafeUrl(p.url)))
+        )
+      : undefined;
+  }
+
+  if (shortcut.iconValue !== undefined && (typeof shortcut.iconValue !== 'string' || /^\s*(javascript|vbscript):/i.test(shortcut.iconValue))) {
+    delete shortcut.iconValue;
+    shortcut.iconType = 'favicon';
+  }
+  return shortcut;
+};
+
+/** Validates an imported backup. Returns null when the file is not a shortcut list. */
+export const sanitizeShortcuts = (data: unknown): Shortcut[] | null => {
+  if (!Array.isArray(data)) return null;
+  return data.map(item => sanitizeShortcut(item, true)).filter((s): s is Shortcut => s !== null);
+};
+
 export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
   return new Promise((resolve, reject) => {
     const input = document.createElement('input');
@@ -304,7 +361,8 @@ export const importShortcutsFromFile = (): Promise<Shortcut[]> => {
       reader.onload = (ev) => {
         try {
           const data = JSON.parse(ev.target?.result as string);
-          if (Array.isArray(data)) resolve(data as Shortcut[]);
+          const shortcuts = sanitizeShortcuts(data);
+          if (shortcuts) resolve(shortcuts);
           else reject(new Error('Geçersiz format'));
         } catch {
           reject(new Error('Dosya okunamadı'));

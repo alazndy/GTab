@@ -159,7 +159,9 @@ const Popup: React.FC = () => {
 
   // ── sub-views ──
 
-  const ViewSettings = () => (
+  // Render helpers, not components: a component defined inside render remounts on every
+  // keystroke, which drops input focus and re-triggers autoFocus.
+  const renderSettings = () => (
     <>
       <div style={S.scroll}>
         <p style={{ ...S.label, marginTop: 12 }}>Göster / Gizle</p>
@@ -181,7 +183,7 @@ const Popup: React.FC = () => {
     </>
   );
 
-  const ViewAdd = () => (
+  const renderAdd = () => (
     <div style={{ padding: '12px 14px 16px' }}>
 
       {/* Profile chips */}
@@ -262,10 +264,10 @@ const Popup: React.FC = () => {
       </div>
 
       {/* Settings view */}
-      {view === 'settings' && <ViewSettings />}
+      {view === 'settings' && renderSettings()}
 
       {/* Add view */}
-      {view === 'add' && <ViewAdd />}
+      {view === 'add' && renderAdd()}
 
       {/* Main view */}
       {view === 'main' && (

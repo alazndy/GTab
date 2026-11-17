@@ -230,7 +230,12 @@ const App: React.FC = () => {
                   isFreeLayout={bgConfig.isFreeLayout}
                   onPointerDownFreeDrag={freeLayoutDragHandler}
                 >
-                  {renderWidgetContent(widget.id)}
+                  {widget.visible ? renderWidgetContent(widget.id) : (
+                    // Hidden widgets stay unmounted in edit mode so they do not start API calls or auth flows.
+                    <div className="w-full min-h-24 h-full flex items-center justify-center rounded-xl border border-dashed border-white/15 text-xs text-white/40">
+                      {getWidgetLabel(widget.id)} · gizli
+                    </div>
+                  )}
                 </WidgetWrapper>
               );
             })}

@@ -5,9 +5,10 @@ import {
 } from '@heroicons/react/24/outline';
 import {
   BackgroundConfig, BackgroundType, CardConfig,
-  Shortcut, WidgetConfig, CustomThemeConfig, StocksConfig
+  Shortcut, WidgetConfig, CustomThemeConfig
 } from '../types';
-import { exportShortcutsToFile, importShortcutsFromFile, DEFAULT_CUSTOM_THEME, getStocksConfig, saveStocksConfig } from '../services/storageService';
+import { exportShortcutsToFile, importShortcutsFromFile, DEFAULT_CUSTOM_THEME } from '../services/storageService';
+import { useGTab } from '../context/GTabContext';
 
 import { BackgroundTab, BgMode } from './settings/BackgroundTab';
 import { CardsTab } from './settings/CardsTab';
@@ -38,7 +39,7 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
   const [customUrl, setCustomUrl]     = useState('');
   const [localCard, setLocalCard]     = useState<CardConfig>(cardConfig);
   const [localLayout, setLocalLayout] = useState<WidgetConfig[]>(layout);
-  const [stocksConfig, setStocksConfig] = useState<StocksConfig>({ apiKey: '', symbols: [] });
+  const { stocksConfig, setStocksConfig } = useGTab();
   const [importStatus, setImportStatus] = useState<'idle' | 'ok' | 'err'>('idle');
   const [importError, setImportError] = useState('');
 
@@ -49,7 +50,6 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
     if (isOpen) {
         setLocalCard(cardConfig);
         setLocalLayout(layout);
-        setStocksConfig(getStocksConfig());
         if (currentConfig.customTheme) setCustomTheme(currentConfig.customTheme);
     }
   }, [isOpen, cardConfig, layout, currentConfig.customTheme]);
@@ -183,7 +183,6 @@ const BackgroundSettingsModal: React.FC<BackgroundSettingsModalProps> = ({
                     importError={importError} 
                     stocksConfig={stocksConfig} 
                     setStocksConfig={setStocksConfig} 
-                    saveStocksConfig={saveStocksConfig} 
                 />
             )}
           </div>

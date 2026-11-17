@@ -102,6 +102,7 @@ export interface StockQuote {
   o: number; // Open price of the day
   pc: number; // Previous close price
   t: number; // Timestamp
+  source: 'Alpha Vantage' | 'Yahoo Finance';
 }
 
 export type BackgroundType = 'image' | 'color' | 'random' | 'theme';

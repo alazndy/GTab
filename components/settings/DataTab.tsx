@@ -11,10 +11,9 @@ interface DataTabProps {
   importError: string;
   stocksConfig: StocksConfig;
   setStocksConfig: (config: StocksConfig) => void;
-  saveStocksConfig: (config: StocksConfig) => void;
 }
 
-export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport, importStatus, importError, stocksConfig, setStocksConfig, saveStocksConfig }) => {
+export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport, importStatus, importError, stocksConfig, setStocksConfig }) => {
   return (
     <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
@@ -72,7 +71,7 @@ export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport,
         </div>
         
         <p className="text-xs text-white/40 leading-relaxed">
-            Borsa verileri Alpha Vantage üzerinden çekilir. Ücretsiz bir API anahtarı kullanarak daha kararlı veriler alabilirsiniz. Sembolleri virgülle ayırarak girin (Örn: AAPL, TSLA, BTCUSD).
+            Borsa verileri varsayılan olarak Yahoo Finance üzerinden çekilir. Kendi ücretsiz Alpha Vantage anahtarınızı girerseniz önce o kullanılır. Sembolleri virgülle ayırarak girin (Örn: AAPL, TSLA, BTCUSD).
         </p>
 
         <div className="space-y-4">
@@ -84,9 +83,8 @@ export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport,
                 onChange={e => {
                 const next = { ...stocksConfig, apiKey: e.target.value };
                 setStocksConfig(next);
-                saveStocksConfig(next);
                 }}
-                placeholder="API Key yapıştırın (Varsayılan aktif)..."
+                placeholder="İsteğe bağlı. Boş bırakılırsa Yahoo Finance kullanılır."
                 className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/20 focus:border-blue-500/50 focus:outline-none transition-all"
             />
             </div>
@@ -100,7 +98,6 @@ export const DataTab: React.FC<DataTabProps> = ({ shortcuts, doExport, doImport,
                 const symbols = e.target.value.split(',').map(s => s.trim()).filter(s => s !== '');
                 const next = { ...stocksConfig, symbols };
                 setStocksConfig(next);
-                saveStocksConfig(next);
                 }}
                 placeholder="AAPL, MSFT, GOOGL..."
                 className="w-full bg-black/30 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder-white/20 focus:border-blue-500/50 focus:outline-none transition-all"

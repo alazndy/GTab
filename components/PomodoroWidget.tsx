@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlayIcon, PauseIcon, ForwardIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
 type Phase = 'work' | 'short-break' | 'long-break';
@@ -38,9 +38,11 @@ const CIRCUMFERENCE = 2 * Math.PI * 54;
 const PomodoroWidget: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('work');
   const [timeLeft, setTimeLeft] = useState(DURATIONS.work);
-  const [running, setRunning] = useState(false);
+  // Wall-clock end time while running. Chrome throttles timers in background tabs
+  // (down to once per minute), so the remaining time is derived from Date.now(), not counted down.
+  const [endAt, setEndAt] = useState<number | null>(null);
   const [sessions, setSessions] = useState(0);
-  const intervalRef = useRef<number | null>(null);
+  const running = endAt !== null;
 
   const progress = (DURATIONS[phase] - timeLeft) / DURATIONS[phase];
   const dashOffset = CIRCUMFERENCE * (1 - progress);
@@ -49,52 +51,60 @@ const PomodoroWidget: React.FC = () => {
     `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   const switchPhase = (p: Phase) => {
-    setRunning(false);
+    setEndAt(null);
     setPhase(p);
     setTimeLeft(DURATIONS[p]);
   };
 
   const advance = useCallback((auto: boolean) => {
-    setRunning(false);
-    setSessions(prev => {
-      const next = phase === 'work' && auto ? prev + 1 : prev;
-      if (phase === 'work') {
-        const nextPhase = next > 0 && next % 4 === 0 ? 'long-break' : 'short-break';
-        setPhase(nextPhase);
-        setTimeLeft(DURATIONS[nextPhase]);
-      } else {
-        setPhase('work');
-        setTimeLeft(DURATIONS.work);
-      }
-      return next;
-    });
-  }, [phase]);
+    setEndAt(null);
+    if (phase === 'work') {
+      const next = auto ? sessions + 1 : sessions;
+      const nextPhase: Phase = next > 0 && next % 4 === 0 ? 'long-break' : 'short-break';
+      setSessions(next);
+      setPhase(nextPhase);
+      setTimeLeft(DURATIONS[nextPhase]);
+    } else {
+      setPhase('work');
+      setTimeLeft(DURATIONS.work);
+    }
+  }, [phase, sessions]);
 
   useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (!running) return;
+    if (endAt === null) return;
 
-    intervalRef.current = window.setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(intervalRef.current!);
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(
-              phase === 'work' ? '⏰ Odak tamamlandı! Mola zamanı.' : '✅ Mola bitti! Odağa dön.'
-            );
-          }
-          advance(true);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
+    let finished = false;
+    const tick = () => {
+      if (finished) return;
+      const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      setTimeLeft(left);
+      if (left > 0) return;
+      finished = true;
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(phase === 'work' ? '⏰ Odak tamamlandı! Mola zamanı.' : '✅ Mola bitti! Odağa dön.');
+      }
+      advance(true);
+    };
 
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, phase, advance]);
+    const interval = window.setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', tick);
+    };
+  }, [endAt, phase, advance]);
+
+  const toggleRunning = () => {
+    if (endAt !== null) {
+      setTimeLeft(Math.max(0, Math.ceil((endAt - Date.now()) / 1000)));
+      setEndAt(null);
+    } else {
+      setEndAt(Date.now() + timeLeft * 1000);
+    }
+  };
 
   const reset = () => {
-    setRunning(false);
+    setEndAt(null);
     setTimeLeft(DURATIONS[phase]);
   };
 
@@ -145,7 +155,7 @@ const PomodoroWidget: React.FC = () => {
             <ArrowPathIcon className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setRunning(r => !r)}
+            onClick={toggleRunning}
             className={`p-3 rounded-full transition-all ${PHASE_BG[phase]} hover:opacity-90 shadow-lg`}
           >
             {running

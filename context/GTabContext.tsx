@@ -7,7 +7,7 @@ import {
   getViewState, saveViewState,
   getClockConfig, saveClockConfig,
   getCardConfig, saveCardConfig,
-  getStocksConfig
+  getStocksConfig, saveStocksConfig
 } from '../services/storageService';
 
 interface GTabContextType {
@@ -106,6 +106,7 @@ export const GTabProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => { saveBackgroundConfig(bgConfig); }, [bgConfig]);
   useEffect(() => { saveClockConfig(clockConfig); }, [clockConfig]);
   useEffect(() => { saveCardConfig(cardConfig); }, [cardConfig]);
+  useEffect(() => { saveStocksConfig(stocksConfig); }, [stocksConfig]);
   useEffect(() => { saveViewState({ category: filterCategory, profile: filterProfile }); }, [filterCategory, filterProfile]);
 
   useEffect(() => {

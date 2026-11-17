@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CheckCircleIcon, PlusIcon, ArrowPathIcon, ListBulletIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
-import { getAuthToken } from '../services/googleAuthService';
+import { AUTH_REQUIRED, getAuthToken, googleFetch } from '../services/googleAuthService';
 
 interface Task {
   id: string;
@@ -16,10 +16,11 @@ interface TaskList {
   title: string;
 }
 
-const fetchTaskLists = async (token: string): Promise<TaskList[]> => {
-  const res = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists?maxResults=20', {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+const TASKS_API = 'https://tasks.googleapis.com/tasks/v1';
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+const fetchTaskLists = async (): Promise<TaskList[]> => {
+  const res = await googleFetch(`${TASKS_API}/users/@me/lists?maxResults=20`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const msg: string = body?.error?.message || '';
@@ -35,34 +36,35 @@ const fetchTaskLists = async (token: string): Promise<TaskList[]> => {
   return data.items || [];
 };
 
-const fetchTasks = async (token: string, listId: string): Promise<Task[]> => {
-  const res = await fetch(
-    `https://tasks.googleapis.com/tasks/v1/lists/${listId}/tasks?showCompleted=false&showHidden=false&maxResults=50`,
-    { headers: { Authorization: `Bearer ${token}` } }
+const fetchTasks = async (listId: string): Promise<Task[]> => {
+  const res = await googleFetch(
+    `${TASKS_API}/lists/${encodeURIComponent(listId)}/tasks?showCompleted=false&showHidden=false&maxResults=50`
   );
   if (!res.ok) throw new Error(`Tasks API: ${res.statusText}`);
   const data = await res.json();
   return (data.items || []).filter((t: Task) => t.title);
 };
 
-const completeTask = async (token: string, listId: string, taskId: string): Promise<void> => {
-  await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${listId}/tasks/${taskId}`, {
+const completeTask = async (listId: string, taskId: string): Promise<void> => {
+  const res = await googleFetch(`${TASKS_API}/lists/${encodeURIComponent(listId)}/tasks/${encodeURIComponent(taskId)}`, {
     method: 'PATCH',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: JSON_HEADERS,
     body: JSON.stringify({ status: 'completed' })
   });
+  if (!res.ok) throw new Error(`Tasks API: ${res.statusText}`);
 };
 
-const insertTask = async (token: string, listId: string, title: string): Promise<void> => {
-  await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${listId}/tasks`, {
+const insertTask = async (listId: string, title: string): Promise<void> => {
+  const res = await googleFetch(`${TASKS_API}/lists/${encodeURIComponent(listId)}/tasks`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: JSON_HEADERS,
     body: JSON.stringify({ title })
   });
+  if (!res.ok) throw new Error(`Tasks API: ${res.statusText}`);
 };
 
 const GoogleTasksWidget: React.FC = () => {
-  const [token, setToken] = useState<string | null>(null);
+  const [connected, setConnected] = useState(false);
   const [taskLists, setTaskLists] = useState<TaskList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -79,22 +81,22 @@ const GoogleTasksWidget: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const t = await getAuthToken(interactive, forceConsent);
-      setToken(t);
-      const lists = await fetchTaskLists(t);
+      if (interactive) await getAuthToken({ interactive: true, forceConsent });
+      const lists = await fetchTaskLists();
+      setConnected(true);
       setTaskLists(lists);
       const listId = selectedListId || lists[0]?.id;
       if (listId) {
         setSelectedListId(listId);
-        const items = await fetchTasks(t, listId);
-        setTasks(items);
+        setTasks(await fetchTasks(listId));
       }
-    } catch (e: any) {
-      if (e.message === 'REAUTH_REQUIRED' || e.message === 'API_NOT_ENABLED') {
-        setToken(null);
-        setError(e.message);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '';
+      if (message === AUTH_REQUIRED || message === 'REAUTH_REQUIRED' || message === 'API_NOT_ENABLED') {
+        setConnected(false);
+        setError(message === AUTH_REQUIRED ? 'REAUTH_REQUIRED' : message);
       } else {
-        setError(e.message || 'Yüklenemedi');
+        setError(message || 'Yüklenemedi');
       }
     } finally {
       setLoading(false);
@@ -104,42 +106,41 @@ const GoogleTasksWidget: React.FC = () => {
   const switchList = async (listId: string) => {
     setShowListPicker(false);
     setSelectedListId(listId);
-    if (!token) return;
+    if (!connected) return;
     setLoading(true);
     try {
-      const items = await fetchTasks(token, listId);
-      setTasks(items);
-    } catch (e: any) {
-      setError(e.message || 'Yüklenemedi');
+      setTasks(await fetchTasks(listId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Yüklenemedi');
     } finally {
       setLoading(false);
     }
   };
 
   const handleComplete = async (taskId: string) => {
-    if (!token || !selectedListId) return;
+    if (!connected || !selectedListId) return;
     setCompletingIds(prev => new Set(prev).add(taskId));
     try {
-      await completeTask(token, selectedListId, taskId);
+      await completeTask(selectedListId, taskId);
       setTimeout(() => {
         setTasks(prev => prev.filter(t => t.id !== taskId));
         setCompletingIds(prev => { const s = new Set(prev); s.delete(taskId); return s; });
       }, 400);
     } catch {
+      setError('Görev tamamlanamadı.');
       setCompletingIds(prev => { const s = new Set(prev); s.delete(taskId); return s; });
     }
   };
 
   const handleAddTask = async () => {
-    if (!token || !selectedListId || !newTaskText.trim()) return;
+    if (!connected || !selectedListId || !newTaskText.trim()) return;
     setAddingTask(true);
     try {
-      await insertTask(token, selectedListId, newTaskText.trim());
+      await insertTask(selectedListId, newTaskText.trim());
       setNewTaskText('');
-      const items = await fetchTasks(token, selectedListId);
-      setTasks(items);
-    } catch (e: any) {
-      setError(e.message || 'Eklenemedi');
+      setTasks(await fetchTasks(selectedListId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Eklenemedi');
     } finally {
       setAddingTask(false);
     }
@@ -155,7 +156,7 @@ const GoogleTasksWidget: React.FC = () => {
     );
   }
 
-  if (error && !token) {
+  if (error && !connected) {
     const isApiNotEnabled = error === 'API_NOT_ENABLED';
     return (
       <div className="w-full h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 p-4">
@@ -181,7 +182,7 @@ const GoogleTasksWidget: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+    <div className="relative w-full h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/5 shrink-0">
         <ListBulletIcon className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -226,7 +227,7 @@ const GoogleTasksWidget: React.FC = () => {
           <div className="text-center py-4 text-red-400/60 text-xs">{error}</div>
         )}
         {!loading && tasks.length === 0 && !error && (
-          <div className="text-center py-8 text-white/20 text-xs italic">Tamamlanmış görev yok.</div>
+          <div className="text-center py-8 text-white/20 text-xs italic">Bekleyen görev yok.</div>
         )}
         {tasks.map(task => (
           <div

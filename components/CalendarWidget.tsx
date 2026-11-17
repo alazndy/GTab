@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarDaysIcon, ArrowTopRightOnSquareIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { CalendarEvent } from '../types';
-import { getAuthToken, fetchUpcomingEvents } from '../services/googleAuthService';
+import { AUTH_REQUIRED, getAuthToken, fetchUpcomingEvents } from '../services/googleAuthService';
 
 const CalendarWidget: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -13,16 +13,18 @@ const CalendarWidget: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = await getAuthToken(interactive);
+      if (interactive) await getAuthToken({ interactive: true });
+      const data = await fetchUpcomingEvents();
       setAuthorized(true);
-      const data = await fetchUpcomingEvents(token);
       setEvents(data.items || []);
-    } catch (err: any) {
-      if (err.message !== 'No token' && !err.message.includes('User interaction required')) {
+    } catch (err) {
+      if (err instanceof Error && err.message === AUTH_REQUIRED) {
+        setAuthorized(false);
+      } else {
+        setAuthorized(true);
         setError('Etkinlikler yüklenemedi.');
         console.error(err);
       }
-      setAuthorized(false);
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,8 @@ const CalendarWidget: React.FC = () => {
   const isToday = (dateTimeStr?: string, dateStr?: string) => {
     const today = new Date().toDateString();
     if (dateTimeStr) return new Date(dateTimeStr).toDateString() === today;
-    if (dateStr) return new Date(dateStr).toDateString() === today;
+    // All-day events use a bare YYYY-MM-DD date; new Date() would read it as UTC midnight.
+    if (dateStr) return new Date(`${dateStr}T00:00:00`).toDateString() === today;
     return false;
   };
 
